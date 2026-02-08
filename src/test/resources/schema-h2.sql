@@ -26,9 +26,24 @@ CREATE TABLE IF NOT EXISTS `order` (
     `id`           BIGINT         NOT NULL AUTO_INCREMENT,
     `user_id`      BIGINT         NOT NULL,
     `total_amount` DECIMAL(10,2)  NOT NULL,
+    `coupon_id`    BIGINT         DEFAULT NULL,
     `status`       INT            NOT NULL DEFAULT 0,
     `create_time`  TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `update_time`  TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `deleted`      INT            DEFAULT 0,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `coupon` (
+    `id`          BIGINT         NOT NULL AUTO_INCREMENT,
+    `name`        VARCHAR(100)   NOT NULL,
+    `discount`    DECIMAL(10,2)  NOT NULL,
+    `min_amount`  DECIMAL(10,2)  NOT NULL DEFAULT 0,
+    `start_time`  TIMESTAMP      DEFAULT NULL,
+    `end_time`    TIMESTAMP      DEFAULT NULL,
+    `status`      INT            NOT NULL DEFAULT 0,
+    `create_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `update_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `deleted`     INT            DEFAULT 0,
     PRIMARY KEY (`id`)
 );

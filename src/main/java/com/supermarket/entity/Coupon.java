@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.supermarket.enums.OrderStatus;
+import com.supermarket.enums.CouponStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -12,25 +12,31 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("`order`")
-@Schema(description = "订单实体")
-public class Order {
+@TableName("coupon")
+@Schema(description = "优惠券实体")
+public class Coupon {
 
-    @Schema(description = "订单ID")
+    @Schema(description = "优惠券ID")
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    @Schema(description = "用户ID")
-    private Long userId;
+    @Schema(description = "优惠券名称")
+    private String name;
 
-    @Schema(description = "订单总金额")
-    private BigDecimal totalAmount;
+    @Schema(description = "折扣金额")
+    private BigDecimal discount;
 
-    @Schema(description = "优惠券ID")
-    private Long couponId;
+    @Schema(description = "最低使用金额")
+    private BigDecimal minAmount;
 
-    @Schema(description = "订单状态：PENDING-待支付，PAID-已支付，COMPLETED-已完成，CANCELLED-已取消")
-    private OrderStatus status;
+    @Schema(description = "生效时间")
+    private LocalDateTime startTime;
+
+    @Schema(description = "过期时间")
+    private LocalDateTime endTime;
+
+    @Schema(description = "优惠券状态：AVAILABLE-可用，USED-已使用，EXPIRED-已过期")
+    private CouponStatus status;
 
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
