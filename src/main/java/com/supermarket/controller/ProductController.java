@@ -87,4 +87,13 @@ public class ProductController {
         }
         return productService.deleteProduct(id) ? Result.success() : Result.error("删除商品失败");
     }
+
+    @Operation(summary = "批量删除商品")
+    @DeleteMapping("/deleteBatch")
+    public Result<Void> deleteBatchProducts(@RequestBody List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("ID列表不能为空");
+        }
+        return productService.deleteBatchProducts(ids) ? Result.success() : Result.error("批量删除商品失败");
+    }
 }

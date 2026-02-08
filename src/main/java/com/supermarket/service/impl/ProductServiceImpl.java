@@ -47,4 +47,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     public boolean deleteProduct(Long id) {
         return removeById(id);
     }
+
+    @Override
+    public boolean deleteBatchProducts(List<Long> ids) {
+        return removeByIds(ids);
+    }
 }

@@ -91,4 +91,13 @@ public class CouponController {
         }
         return couponService.deleteCoupon(id) ? Result.success() : Result.error("删除优惠券失败");
     }
+
+    @Operation(summary = "批量删除优惠券")
+    @DeleteMapping("/deleteBatch")
+    public Result<Void> deleteBatchCoupons(@RequestBody List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("ID列表不能为空");
+        }
+        return couponService.deleteBatchCoupons(ids) ? Result.success() : Result.error("批量删除优惠券失败");
+    }
 }

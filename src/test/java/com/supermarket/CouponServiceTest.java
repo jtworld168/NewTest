@@ -96,4 +96,26 @@ class CouponServiceTest {
         Coupon deleted = couponService.getCouponById(coupon.getId());
         assertNull(deleted);
     }
+
+    @Test
+    void testDeleteBatchCoupons() {
+        Coupon c1 = new Coupon();
+        c1.setName("批量删除券1");
+        c1.setDiscount(new BigDecimal("5.00"));
+        c1.setMinAmount(new BigDecimal("50.00"));
+        c1.setStatus(CouponStatus.AVAILABLE);
+        couponService.addCoupon(c1);
+
+        Coupon c2 = new Coupon();
+        c2.setName("批量删除券2");
+        c2.setDiscount(new BigDecimal("10.00"));
+        c2.setMinAmount(new BigDecimal("100.00"));
+        c2.setStatus(CouponStatus.AVAILABLE);
+        couponService.addCoupon(c2);
+
+        assertTrue(couponService.deleteBatchCoupons(List.of(c1.getId(), c2.getId())));
+
+        assertNull(couponService.getCouponById(c1.getId()));
+        assertNull(couponService.getCouponById(c2.getId()));
+    }
 }

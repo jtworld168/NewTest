@@ -18,4 +18,6 @@ public interface ProductService extends IService<Product> {
     boolean updateProduct(Product product);
 
     boolean deleteProduct(Long id);
+
+    boolean deleteBatchProducts(List<Long> ids);
 }

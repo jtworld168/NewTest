@@ -208,4 +208,22 @@ class OrderServiceTest {
         assertTrue(orders.size() >= 1);
         assertEquals(product.getId(), orders.get(0).getProductId());
     }
+
+    @Test
+    void testDeleteBatchOrders() {
+        User user = createTestUser("batch_del_order_user");
+        Product product = createTestProduct("批量删除订单商品", new BigDecimal("10.00"), null);
+
+        orderService.addOrder(user.getId(), product.getId(), 1, null);
+        orderService.addOrder(user.getId(), product.getId(), 2, null);
+
+        List<Order> orders = orderService.getOrdersByUserId(user.getId());
+        assertTrue(orders.size() >= 2);
+
+        List<Long> ids = List.of(orders.get(0).getId(), orders.get(1).getId());
+        assertTrue(orderService.deleteBatchOrders(ids));
+
+        assertNull(orderService.getOrderById(ids.get(0)));
+        assertNull(orderService.getOrderById(ids.get(1)));
+    }
 }

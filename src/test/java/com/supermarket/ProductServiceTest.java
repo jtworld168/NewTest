@@ -94,4 +94,24 @@ class ProductServiceTest {
         Product deleted = productService.getProductById(product.getId());
         assertNull(deleted);
     }
+
+    @Test
+    void testDeleteBatchProducts() {
+        Product p1 = new Product();
+        p1.setName("批量删除商品1");
+        p1.setPrice(new BigDecimal("10.00"));
+        p1.setStock(10);
+        productService.addProduct(p1);
+
+        Product p2 = new Product();
+        p2.setName("批量删除商品2");
+        p2.setPrice(new BigDecimal("20.00"));
+        p2.setStock(20);
+        productService.addProduct(p2);
+
+        assertTrue(productService.deleteBatchProducts(List.of(p1.getId(), p2.getId())));
+
+        assertNull(productService.getProductById(p1.getId()));
+        assertNull(productService.getProductById(p2.getId()));
+    }
 }

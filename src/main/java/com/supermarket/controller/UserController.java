@@ -81,4 +81,13 @@ public class UserController {
         }
         return userService.deleteUser(id) ? Result.success() : Result.error("删除用户失败");
     }
+
+    @Operation(summary = "批量删除用户")
+    @DeleteMapping("/deleteBatch")
+    public Result<Void> deleteBatchUsers(@RequestBody List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("ID列表不能为空");
+        }
+        return userService.deleteBatchUsers(ids) ? Result.success() : Result.error("批量删除用户失败");
+    }
 }

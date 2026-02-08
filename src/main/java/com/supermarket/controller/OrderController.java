@@ -97,4 +97,13 @@ public class OrderController {
         }
         return orderService.deleteOrder(id) ? Result.success() : Result.error("删除订单失败");
     }
+
+    @Operation(summary = "批量删除订单")
+    @DeleteMapping("/deleteBatch")
+    public Result<Void> deleteBatchOrders(@RequestBody List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("ID列表不能为空");
+        }
+        return orderService.deleteBatchOrders(ids) ? Result.success() : Result.error("批量删除订单失败");
+    }
 }

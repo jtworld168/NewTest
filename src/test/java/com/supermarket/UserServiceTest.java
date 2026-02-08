@@ -118,4 +118,24 @@ class UserServiceTest {
         User loggedIn = userService.login("login_user2", "wrong_pass");
         assertNull(loggedIn);
     }
+
+    @Test
+    void testDeleteBatchUsers() {
+        User u1 = new User();
+        u1.setUsername("batch_del_user1");
+        u1.setPassword("pass");
+        u1.setRole(UserRole.CUSTOMER);
+        userService.addUser(u1);
+
+        User u2 = new User();
+        u2.setUsername("batch_del_user2");
+        u2.setPassword("pass");
+        u2.setRole(UserRole.CUSTOMER);
+        userService.addUser(u2);
+
+        assertTrue(userService.deleteBatchUsers(List.of(u1.getId(), u2.getId())));
+
+        assertNull(userService.getUserById(u1.getId()));
+        assertNull(userService.getUserById(u2.getId()));
+    }
 }

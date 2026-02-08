@@ -50,6 +50,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public boolean deleteBatchUsers(List<Long> ids) {
+        return removeByIds(ids);
+    }
+
+    @Override
     public User login(String username, String password) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, username)

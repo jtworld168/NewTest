@@ -48,4 +48,9 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
     public boolean deleteCoupon(Long id) {
         return removeById(id);
     }
+
+    @Override
+    public boolean deleteBatchCoupons(List<Long> ids) {
+        return removeByIds(ids);
+    }
 }

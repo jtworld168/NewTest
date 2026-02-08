@@ -20,5 +20,7 @@ public interface UserService extends IService<User> {
 
     boolean deleteUser(Long id);
 
+    boolean deleteBatchUsers(List<Long> ids);
+
     User login(String username, String password);
 }

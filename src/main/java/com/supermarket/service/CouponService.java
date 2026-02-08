@@ -19,4 +19,6 @@ public interface CouponService extends IService<Coupon> {
     boolean updateCoupon(Coupon coupon);
 
     boolean deleteCoupon(Long id);
+
+    boolean deleteBatchCoupons(List<Long> ids);
 }

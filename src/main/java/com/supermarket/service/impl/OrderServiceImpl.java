@@ -101,4 +101,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     public boolean deleteOrder(Long id) {
         return removeById(id);
     }
+
+    @Override
+    public boolean deleteBatchOrders(List<Long> ids) {
+        return removeByIds(ids);
+    }
 }
