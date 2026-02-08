@@ -19,4 +19,6 @@ public interface UserService extends IService<User> {
     boolean updateUser(User user);
 
     boolean deleteUser(Long id);
+
+    User login(String username, String password);
 }

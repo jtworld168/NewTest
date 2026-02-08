@@ -93,4 +93,29 @@ class UserServiceTest {
         User deleted = userService.getUserById(user.getId());
         assertNull(deleted);
     }
+
+    @Test
+    void testLoginSuccess() {
+        User user = new User();
+        user.setUsername("login_user");
+        user.setPassword("login_pass");
+        user.setRole(UserRole.CUSTOMER);
+        userService.addUser(user);
+
+        User loggedIn = userService.login("login_user", "login_pass");
+        assertNotNull(loggedIn);
+        assertEquals("login_user", loggedIn.getUsername());
+    }
+
+    @Test
+    void testLoginWrongPassword() {
+        User user = new User();
+        user.setUsername("login_user2");
+        user.setPassword("correct_pass");
+        user.setRole(UserRole.CUSTOMER);
+        userService.addUser(user);
+
+        User loggedIn = userService.login("login_user2", "wrong_pass");
+        assertNull(loggedIn);
+    }
 }

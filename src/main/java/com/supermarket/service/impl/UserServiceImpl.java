@@ -48,4 +48,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public boolean deleteUser(Long id) {
         return removeById(id);
     }
+
+    @Override
+    public User login(String username, String password) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, username)
+               .eq(User::getPassword, password);
+        return getOne(wrapper);
+    }
 }
