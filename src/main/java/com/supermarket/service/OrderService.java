@@ -19,4 +19,6 @@ public interface OrderService extends IService<Order> {
     boolean updateOrder(Order order);
 
     boolean deleteOrder(Long id);
+
+    List<Order> getOrdersByCouponId(Long couponId);
 }

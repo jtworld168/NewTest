@@ -16,4 +16,6 @@ public interface OrderItemService extends IService<OrderItem> {
     boolean updateOrderItem(OrderItem orderItem);
 
     boolean deleteOrderItem(Long id);
+
+    List<OrderItem> getOrderItemsByProductId(Long productId);
 }

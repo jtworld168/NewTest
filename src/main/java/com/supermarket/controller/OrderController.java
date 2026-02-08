@@ -46,6 +46,12 @@ public class OrderController {
         return Result.success(orderService.getOrdersByStatus(status));
     }
 
+    @Operation(summary = "根据优惠券ID查询订单")
+    @GetMapping("/coupon/{couponId}")
+    public Result<List<Order>> getOrdersByCouponId(@Parameter(description = "优惠券ID") @PathVariable Long couponId) {
+        return Result.success(orderService.getOrdersByCouponId(couponId));
+    }
+
     @Operation(summary = "添加订单")
     @PostMapping
     public Result<Void> addOrder(@RequestBody Order order) {
@@ -70,12 +76,18 @@ public class OrderController {
         if (order.getId() == null) {
             return Result.error("订单ID不能为空");
         }
+        if (orderService.getOrderById(order.getId()) == null) {
+            return Result.error("订单不存在");
+        }
         return orderService.updateOrder(order) ? Result.success() : Result.error("更新订单失败");
     }
 
     @Operation(summary = "删除订单")
     @DeleteMapping("/{id}")
     public Result<Void> deleteOrder(@Parameter(description = "订单ID") @PathVariable Long id) {
+        if (orderService.getOrderById(id) == null) {
+            return Result.error("订单不存在");
+        }
         return orderService.deleteOrder(id) ? Result.success() : Result.error("删除订单失败");
     }
 }

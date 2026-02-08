@@ -82,4 +82,11 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemMapper, OrderItem
     public boolean deleteOrderItem(Long id) {
         return removeById(id);
     }
+
+    @Override
+    public List<OrderItem> getOrderItemsByProductId(Long productId) {
+        LambdaQueryWrapper<OrderItem> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(OrderItem::getProductId, productId);
+        return list(wrapper);
+    }
 }

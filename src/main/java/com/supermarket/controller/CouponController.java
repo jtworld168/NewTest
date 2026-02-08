@@ -40,6 +40,13 @@ public class CouponController {
         return Result.success(couponService.getCouponsByStatus(status));
     }
 
+    @Operation(summary = "根据名称查询优惠券")
+    @GetMapping("/name/{name}")
+    public Result<Coupon> getCouponByName(@Parameter(description = "优惠券名称") @PathVariable String name) {
+        Coupon coupon = couponService.getCouponByName(name);
+        return coupon != null ? Result.success(coupon) : Result.error("优惠券不存在");
+    }
+
     @Operation(summary = "添加优惠券")
     @PostMapping
     public Result<Void> addCoupon(@RequestBody Coupon coupon) {
@@ -70,12 +77,18 @@ public class CouponController {
         if (coupon.getId() == null) {
             return Result.error("优惠券ID不能为空");
         }
+        if (couponService.getCouponById(coupon.getId()) == null) {
+            return Result.error("优惠券不存在");
+        }
         return couponService.updateCoupon(coupon) ? Result.success() : Result.error("更新优惠券失败");
     }
 
     @Operation(summary = "删除优惠券")
     @DeleteMapping("/{id}")
     public Result<Void> deleteCoupon(@Parameter(description = "优惠券ID") @PathVariable Long id) {
+        if (couponService.getCouponById(id) == null) {
+            return Result.error("优惠券不存在");
+        }
         return couponService.deleteCoupon(id) ? Result.success() : Result.error("删除优惠券失败");
     }
 }

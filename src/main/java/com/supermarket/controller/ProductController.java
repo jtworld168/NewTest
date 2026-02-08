@@ -39,6 +39,13 @@ public class ProductController {
         return Result.success(productService.searchProductsByName(name));
     }
 
+    @Operation(summary = "根据名称精确查询商品")
+    @GetMapping("/name/{name}")
+    public Result<Product> getProductByName(@Parameter(description = "商品名称") @PathVariable String name) {
+        Product product = productService.getProductByName(name);
+        return product != null ? Result.success(product) : Result.error("商品不存在");
+    }
+
     @Operation(summary = "添加商品")
     @PostMapping
     public Result<Void> addProduct(@RequestBody Product product) {
@@ -66,12 +73,18 @@ public class ProductController {
         if (product.getId() == null) {
             return Result.error("商品ID不能为空");
         }
+        if (productService.getProductById(product.getId()) == null) {
+            return Result.error("商品不存在");
+        }
         return productService.updateProduct(product) ? Result.success() : Result.error("更新商品失败");
     }
 
     @Operation(summary = "删除商品")
     @DeleteMapping("/{id}")
     public Result<Void> deleteProduct(@Parameter(description = "商品ID") @PathVariable Long id) {
+        if (productService.getProductById(id) == null) {
+            return Result.error("商品不存在");
+        }
         return productService.deleteProduct(id) ? Result.success() : Result.error("删除商品失败");
     }
 }

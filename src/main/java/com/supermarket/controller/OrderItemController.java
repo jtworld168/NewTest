@@ -26,10 +26,22 @@ public class OrderItemController {
         return item != null ? Result.success(item) : Result.error("订单项不存在");
     }
 
+    @Operation(summary = "查询所有订单项")
+    @GetMapping
+    public Result<List<OrderItem>> getAllOrderItems() {
+        return Result.success(orderItemService.list());
+    }
+
     @Operation(summary = "根据订单ID查询订单项列表")
     @GetMapping("/order/{orderId}")
     public Result<List<OrderItem>> getOrderItemsByOrderId(@Parameter(description = "订单ID") @PathVariable Long orderId) {
         return Result.success(orderItemService.getOrderItemsByOrderId(orderId));
+    }
+
+    @Operation(summary = "根据商品ID查询订单项列表")
+    @GetMapping("/product/{productId}")
+    public Result<List<OrderItem>> getOrderItemsByProductId(@Parameter(description = "商品ID") @PathVariable Long productId) {
+        return Result.success(orderItemService.getOrderItemsByProductId(productId));
     }
 
     @Operation(summary = "添加订单项（自动计算员工折扣价）")
@@ -57,12 +69,18 @@ public class OrderItemController {
         if (orderItem.getId() == null) {
             return Result.error("订单项ID不能为空");
         }
+        if (orderItemService.getOrderItemById(orderItem.getId()) == null) {
+            return Result.error("订单项不存在");
+        }
         return orderItemService.updateOrderItem(orderItem) ? Result.success() : Result.error("更新订单项失败");
     }
 
     @Operation(summary = "删除订单项")
     @DeleteMapping("/{id}")
     public Result<Void> deleteOrderItem(@Parameter(description = "订单项ID") @PathVariable Long id) {
+        if (orderItemService.getOrderItemById(id) == null) {
+            return Result.error("订单项不存在");
+        }
         return orderItemService.deleteOrderItem(id) ? Result.success() : Result.error("删除订单项失败");
     }
 }

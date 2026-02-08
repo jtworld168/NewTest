@@ -39,6 +39,13 @@ public class UserController {
         return Result.success(userService.getUsersByRole(role));
     }
 
+    @Operation(summary = "根据用户名查询用户")
+    @GetMapping("/username/{username}")
+    public Result<User> getUserByUsername(@Parameter(description = "用户名") @PathVariable String username) {
+        User user = userService.getUserByUsername(username);
+        return user != null ? Result.success(user) : Result.error("用户不存在");
+    }
+
     @Operation(summary = "添加用户")
     @PostMapping
     public Result<Void> addUser(@RequestBody User user) {
@@ -60,12 +67,18 @@ public class UserController {
         if (user.getId() == null) {
             return Result.error("用户ID不能为空");
         }
+        if (userService.getUserById(user.getId()) == null) {
+            return Result.error("用户不存在");
+        }
         return userService.updateUser(user) ? Result.success() : Result.error("更新用户失败");
     }
 
     @Operation(summary = "删除用户")
     @DeleteMapping("/{id}")
     public Result<Void> deleteUser(@Parameter(description = "用户ID") @PathVariable Long id) {
+        if (userService.getUserById(id) == null) {
+            return Result.error("用户不存在");
+        }
         return userService.deleteUser(id) ? Result.success() : Result.error("删除用户失败");
     }
 }

@@ -48,4 +48,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     public boolean deleteOrder(Long id) {
         return removeById(id);
     }
+
+    @Override
+    public List<Order> getOrdersByCouponId(Long couponId) {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getCouponId, couponId);
+        return list(wrapper);
+    }
 }
