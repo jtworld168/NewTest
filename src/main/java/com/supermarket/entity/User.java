@@ -31,7 +31,7 @@ public class User {
     @Schema(description = "角色：ADMIN-管理员，EMPLOYEE-员工，CUSTOMER-顾客")
     private UserRole role;
 
-    @Schema(description = "是否酒店员工：0-否，1-是")
+    @Schema(description = "是否酒店员工")
     private Boolean isHotelEmployee;
 
     @Schema(description = "创建时间")
