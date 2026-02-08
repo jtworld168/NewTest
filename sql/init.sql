@@ -17,5 +17,5 @@ CREATE TABLE IF NOT EXISTS `user` (
     UNIQUE KEY `uk_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户表';
 
--- 插入默认管理员
-INSERT INTO `user` (`username`, `password`, `phone`, `role`) VALUES ('admin', 'admin123', '13800000000', 0);
+-- 插入默认管理员（部署后请立即修改密码）
+INSERT INTO `user` (`username`, `password`, `phone`, `role`) VALUES ('admin', 'CHANGE_ME_ON_FIRST_LOGIN', '13800000000', 0);

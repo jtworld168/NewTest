@@ -4,17 +4,17 @@ import com.supermarket.common.Result;
 import com.supermarket.entity.User;
 import com.supermarket.enums.UserRole;
 import com.supermarket.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/{id}")
     public Result<User> getUserById(@PathVariable Long id) {
@@ -34,11 +34,23 @@ public class UserController {
 
     @PostMapping
     public Result<Void> addUser(@RequestBody User user) {
+        if (user.getUsername() == null || user.getUsername().isBlank()) {
+            return Result.error("用户名不能为空");
+        }
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            return Result.error("密码不能为空");
+        }
+        if (user.getRole() == null) {
+            return Result.error("角色不能为空");
+        }
         return userService.addUser(user) ? Result.success() : Result.error("添加用户失败");
     }
 
     @PutMapping
     public Result<Void> updateUser(@RequestBody User user) {
+        if (user.getId() == null) {
+            return Result.error("用户ID不能为空");
+        }
         return userService.updateUser(user) ? Result.success() : Result.error("更新用户失败");
     }
 
