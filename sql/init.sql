@@ -19,3 +19,16 @@ CREATE TABLE IF NOT EXISTS `user` (
 
 -- 插入默认管理员（部署后请立即修改密码）
 INSERT INTO `user` (`username`, `password`, `phone`, `role`) VALUES ('admin', 'CHANGE_ME_ON_FIRST_LOGIN', '13800000000', 0);
+
+-- 商品表
+CREATE TABLE IF NOT EXISTS `product` (
+    `id`          BIGINT         NOT NULL AUTO_INCREMENT COMMENT '商品ID',
+    `name`        VARCHAR(100)   NOT NULL COMMENT '商品名称',
+    `price`       DECIMAL(10,2)  NOT NULL COMMENT '商品价格',
+    `stock`       INT            NOT NULL DEFAULT 0 COMMENT '库存数量',
+    `description` VARCHAR(500)   DEFAULT NULL COMMENT '商品描述',
+    `create_time` DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted`     INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='商品表';
