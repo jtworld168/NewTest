@@ -7,35 +7,22 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("product")
-@Schema(description = "商品实体")
-public class Product {
+@TableName("category")
+@Schema(description = "商品分类实体")
+public class Category {
 
-    @Schema(description = "商品ID")
+    @Schema(description = "分类ID")
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    @Schema(description = "商品名称")
+    @Schema(description = "分类名称")
     private String name;
 
-    @Schema(description = "商品价格")
-    private BigDecimal price;
-
-    @Schema(description = "库存数量")
-    private Integer stock;
-
-    @Schema(description = "商品描述")
+    @Schema(description = "分类描述")
     private String description;
-
-    @Schema(description = "分类ID")
-    private Long categoryId;
-
-    @Schema(description = "员工折扣率，如0.8表示八折")
-    private BigDecimal employeeDiscountRate;
 
     @Schema(description = "创建时间")
     private LocalDateTime createTime;

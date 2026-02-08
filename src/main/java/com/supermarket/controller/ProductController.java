@@ -46,6 +46,12 @@ public class ProductController {
         return product != null ? Result.success(product) : Result.error("商品不存在");
     }
 
+    @Operation(summary = "根据分类ID查询商品")
+    @GetMapping("/getByCategoryId/{categoryId}")
+    public Result<List<Product>> getProductsByCategoryId(@Parameter(description = "分类ID") @PathVariable Long categoryId) {
+        return Result.success(productService.getProductsByCategoryId(categoryId));
+    }
+
     @Operation(summary = "添加商品")
     @PostMapping("/add")
     public Result<Void> addProduct(@RequestBody Product product) {

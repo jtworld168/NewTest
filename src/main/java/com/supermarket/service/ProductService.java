@@ -13,6 +13,8 @@ public interface ProductService extends IService<Product> {
 
     List<Product> searchProductsByName(String name);
 
+    List<Product> getProductsByCategoryId(Long categoryId);
+
     boolean addProduct(Product product);
 
     boolean updateProduct(Product product);

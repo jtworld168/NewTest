@@ -34,6 +34,13 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
+    public List<Product> getProductsByCategoryId(Long categoryId) {
+        LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Product::getCategoryId, categoryId);
+        return list(wrapper);
+    }
+
+    @Override
     public boolean addProduct(Product product) {
         return save(product);
     }

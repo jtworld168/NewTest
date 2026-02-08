@@ -11,17 +11,29 @@ CREATE TABLE IF NOT EXISTS `user` (
     PRIMARY KEY (`id`)
 );
 
+CREATE TABLE IF NOT EXISTS `category` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT,
+    `name`        VARCHAR(100) NOT NULL,
+    `description` VARCHAR(500) DEFAULT NULL,
+    `create_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    `update_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    `deleted`     INT          DEFAULT 0,
+    PRIMARY KEY (`id`)
+);
+
 CREATE TABLE IF NOT EXISTS `product` (
     `id`          BIGINT         NOT NULL AUTO_INCREMENT,
     `name`        VARCHAR(100)   NOT NULL,
     `price`       DECIMAL(10,2)  NOT NULL,
     `stock`       INT            NOT NULL DEFAULT 0,
     `description` VARCHAR(500)   DEFAULT NULL,
+    `category_id` BIGINT         DEFAULT NULL,
     `employee_discount_rate` DECIMAL(3,2) DEFAULT NULL,
     `create_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `update_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `deleted`     INT            DEFAULT 0,
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_product_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `coupon` (
