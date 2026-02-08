@@ -10,10 +10,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
-@Tag(name = "订单管理", description = "订单增删改查接口")
+@Tag(name = "订单管理", description = "订单增删改查接口（含员工折扣计算）")
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -46,28 +45,36 @@ public class OrderController {
         return Result.success(orderService.getOrdersByStatus(status));
     }
 
+    @Operation(summary = "根据商品ID查询订单")
+    @GetMapping("/getByProductId/{productId}")
+    public Result<List<Order>> getOrdersByProductId(@Parameter(description = "商品ID") @PathVariable Long productId) {
+        return Result.success(orderService.getOrdersByProductId(productId));
+    }
+
     @Operation(summary = "根据优惠券ID查询订单")
     @GetMapping("/getByCouponId/{couponId}")
     public Result<List<Order>> getOrdersByCouponId(@Parameter(description = "优惠券ID") @PathVariable Long couponId) {
         return Result.success(orderService.getOrdersByCouponId(couponId));
     }
 
-    @Operation(summary = "添加订单")
+    @Operation(summary = "添加订单（自动计算员工折扣价和总金额）")
     @PostMapping("/add")
-    public Result<Void> addOrder(@RequestBody Order order) {
-        if (order.getUserId() == null) {
+    public Result<Void> addOrder(
+            @Parameter(description = "用户ID") @RequestParam Long userId,
+            @Parameter(description = "商品ID") @RequestParam Long productId,
+            @Parameter(description = "购买数量") @RequestParam Integer quantity,
+            @Parameter(description = "优惠券ID（可选）") @RequestParam(required = false) Long couponId) {
+        if (userId == null) {
             return Result.error("用户ID不能为空");
         }
-        if (order.getTotalAmount() == null) {
-            return Result.error("订单金额不能为空");
+        if (productId == null) {
+            return Result.error("商品ID不能为空");
         }
-        if (order.getTotalAmount().compareTo(BigDecimal.ZERO) < 0) {
-            return Result.error("订单金额不能为负数");
+        if (quantity == null || quantity <= 0) {
+            return Result.error("购买数量必须大于0");
         }
-        if (order.getStatus() == null) {
-            order.setStatus(OrderStatus.PENDING);
-        }
-        return orderService.addOrder(order) ? Result.success() : Result.error("添加订单失败");
+        return orderService.addOrder(userId, productId, quantity, couponId)
+                ? Result.success() : Result.error("添加订单失败");
     }
 
     @Operation(summary = "更新订单")

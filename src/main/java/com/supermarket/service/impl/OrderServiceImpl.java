@@ -3,15 +3,26 @@ package com.supermarket.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.supermarket.entity.Order;
+import com.supermarket.entity.Product;
+import com.supermarket.entity.User;
 import com.supermarket.enums.OrderStatus;
 import com.supermarket.mapper.OrderMapper;
 import com.supermarket.service.OrderService;
+import com.supermarket.service.ProductService;
+import com.supermarket.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderService {
+
+    private final UserService userService;
+    private final ProductService productService;
 
     @Override
     public Order getOrderById(Long id) {
@@ -35,7 +46,49 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public boolean addOrder(Order order) {
+    public List<Order> getOrdersByProductId(Long productId) {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getProductId, productId);
+        return list(wrapper);
+    }
+
+    @Override
+    public List<Order> getOrdersByCouponId(Long couponId) {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getCouponId, couponId);
+        return list(wrapper);
+    }
+
+    @Override
+    public boolean addOrder(Long userId, Long productId, Integer quantity, Long couponId) {
+        User user = userService.getUserById(userId);
+        if (user == null) {
+            return false;
+        }
+
+        Product product = productService.getProductById(productId);
+        if (product == null) {
+            return false;
+        }
+
+        BigDecimal unitPrice = product.getPrice();
+
+        // Apply employee discount if user is a hotel employee and product has a discount rate
+        if (Boolean.TRUE.equals(user.getIsHotelEmployee()) && product.getEmployeeDiscountRate() != null) {
+            unitPrice = unitPrice.multiply(product.getEmployeeDiscountRate()).setScale(2, RoundingMode.HALF_UP);
+        }
+
+        BigDecimal totalAmount = unitPrice.multiply(new BigDecimal(quantity));
+
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setProductId(productId);
+        order.setQuantity(quantity);
+        order.setPriceAtPurchase(unitPrice);
+        order.setTotalAmount(totalAmount);
+        order.setCouponId(couponId);
+        order.setStatus(OrderStatus.PENDING);
+
         return save(order);
     }
 
@@ -47,12 +100,5 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Override
     public boolean deleteOrder(Long id) {
         return removeById(id);
-    }
-
-    @Override
-    public List<Order> getOrdersByCouponId(Long couponId) {
-        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Order::getCouponId, couponId);
-        return list(wrapper);
     }
 }

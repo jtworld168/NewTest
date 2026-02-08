@@ -1,10 +1,12 @@
 package com.supermarket;
 
 import com.supermarket.entity.Order;
+import com.supermarket.entity.Product;
 import com.supermarket.entity.User;
 import com.supermarket.enums.OrderStatus;
 import com.supermarket.enums.UserRole;
 import com.supermarket.service.OrderService;
+import com.supermarket.service.ProductService;
 import com.supermarket.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,9 @@ class OrderServiceTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ProductService productService;
+
     private User createTestUser(String username) {
         User user = new User();
         user.setUsername(username);
@@ -33,21 +38,32 @@ class OrderServiceTest {
         return user;
     }
 
+    private Product createTestProduct(String name, BigDecimal price, BigDecimal discountRate) {
+        Product product = new Product();
+        product.setName(name);
+        product.setPrice(price);
+        product.setStock(100);
+        product.setEmployeeDiscountRate(discountRate);
+        productService.addProduct(product);
+        return product;
+    }
+
     @Test
     void testAddAndGetOrder() {
         User user = createTestUser("order_test_user1");
+        Product product = createTestProduct("测试商品1", new BigDecimal("99.90"), null);
 
-        Order order = new Order();
-        order.setUserId(user.getId());
-        order.setTotalAmount(new BigDecimal("99.90"));
-        order.setStatus(OrderStatus.PENDING);
+        assertTrue(orderService.addOrder(user.getId(), product.getId(), 1, null));
 
-        assertTrue(orderService.addOrder(order));
-        assertNotNull(order.getId());
+        List<Order> orders = orderService.getOrdersByUserId(user.getId());
+        assertFalse(orders.isEmpty());
 
-        Order found = orderService.getOrderById(order.getId());
-        assertNotNull(found);
+        Order found = orders.get(0);
+        assertNotNull(found.getId());
         assertEquals(user.getId(), found.getUserId());
+        assertEquals(product.getId(), found.getProductId());
+        assertEquals(1, found.getQuantity());
+        assertEquals(0, new BigDecimal("99.90").compareTo(found.getPriceAtPurchase()));
         assertEquals(0, new BigDecimal("99.90").compareTo(found.getTotalAmount()));
         assertEquals(OrderStatus.PENDING, found.getStatus());
     }
@@ -55,18 +71,10 @@ class OrderServiceTest {
     @Test
     void testGetOrdersByUserId() {
         User user = createTestUser("order_test_user2");
+        Product product = createTestProduct("测试商品2", new BigDecimal("10.00"), null);
 
-        Order o1 = new Order();
-        o1.setUserId(user.getId());
-        o1.setTotalAmount(new BigDecimal("10.00"));
-        o1.setStatus(OrderStatus.PENDING);
-        orderService.addOrder(o1);
-
-        Order o2 = new Order();
-        o2.setUserId(user.getId());
-        o2.setTotalAmount(new BigDecimal("20.00"));
-        o2.setStatus(OrderStatus.PAID);
-        orderService.addOrder(o2);
+        orderService.addOrder(user.getId(), product.getId(), 1, null);
+        orderService.addOrder(user.getId(), product.getId(), 2, null);
 
         List<Order> orders = orderService.getOrdersByUserId(user.getId());
         assertTrue(orders.size() >= 2);
@@ -75,27 +83,23 @@ class OrderServiceTest {
     @Test
     void testGetOrdersByStatus() {
         User user = createTestUser("order_test_user3");
+        Product product = createTestProduct("测试商品3", new BigDecimal("50.00"), null);
 
-        Order order = new Order();
-        order.setUserId(user.getId());
-        order.setTotalAmount(new BigDecimal("50.00"));
-        order.setStatus(OrderStatus.COMPLETED);
-        orderService.addOrder(order);
+        orderService.addOrder(user.getId(), product.getId(), 1, null);
 
-        List<Order> orders = orderService.getOrdersByStatus(OrderStatus.COMPLETED);
+        List<Order> orders = orderService.getOrdersByStatus(OrderStatus.PENDING);
         assertTrue(orders.size() >= 1);
     }
 
     @Test
     void testUpdateOrder() {
         User user = createTestUser("order_test_user4");
+        Product product = createTestProduct("测试商品4", new BigDecimal("30.00"), null);
 
-        Order order = new Order();
-        order.setUserId(user.getId());
-        order.setTotalAmount(new BigDecimal("30.00"));
-        order.setStatus(OrderStatus.PENDING);
-        orderService.addOrder(order);
+        orderService.addOrder(user.getId(), product.getId(), 1, null);
 
+        List<Order> orders = orderService.getOrdersByUserId(user.getId());
+        Order order = orders.get(0);
         order.setStatus(OrderStatus.PAID);
         assertTrue(orderService.updateOrder(order));
 
@@ -106,16 +110,102 @@ class OrderServiceTest {
     @Test
     void testDeleteOrder() {
         User user = createTestUser("order_test_user5");
+        Product product = createTestProduct("测试商品5", new BigDecimal("15.00"), null);
 
-        Order order = new Order();
-        order.setUserId(user.getId());
-        order.setTotalAmount(new BigDecimal("15.00"));
-        order.setStatus(OrderStatus.CANCELLED);
-        orderService.addOrder(order);
+        orderService.addOrder(user.getId(), product.getId(), 1, null);
 
-        assertTrue(orderService.deleteOrder(order.getId()));
+        List<Order> orders = orderService.getOrdersByUserId(user.getId());
+        Long orderId = orders.get(0).getId();
 
-        Order deleted = orderService.getOrderById(order.getId());
+        assertTrue(orderService.deleteOrder(orderId));
+
+        Order deleted = orderService.getOrderById(orderId);
         assertNull(deleted);
+    }
+
+    @Test
+    void testAddOrderWithEmployeeDiscount() {
+        // Create a hotel employee user
+        User employee = new User();
+        employee.setUsername("hotel_emp_order_test");
+        employee.setPassword("pass");
+        employee.setRole(UserRole.EMPLOYEE);
+        employee.setIsHotelEmployee(true);
+        userService.addUser(employee);
+
+        // Create a product with employee discount rate (80% = 0.80)
+        Product product = createTestProduct("员工折扣商品", new BigDecimal("100.00"), new BigDecimal("0.80"));
+
+        // Add order — should apply employee discount
+        assertTrue(orderService.addOrder(employee.getId(), product.getId(), 2, null));
+
+        List<Order> orders = orderService.getOrdersByUserId(employee.getId());
+        assertEquals(1, orders.size());
+
+        Order order = orders.get(0);
+        assertEquals(2, order.getQuantity());
+        // unit price should be 100.00 * 0.80 = 80.00
+        assertEquals(0, new BigDecimal("80.00").compareTo(order.getPriceAtPurchase()));
+        // total should be 80.00 * 2 = 160.00
+        assertEquals(0, new BigDecimal("160.00").compareTo(order.getTotalAmount()));
+    }
+
+    @Test
+    void testAddOrderWithoutEmployeeDiscount() {
+        // Create a normal customer (not hotel employee)
+        User customer = new User();
+        customer.setUsername("normal_customer_order_test");
+        customer.setPassword("pass");
+        customer.setRole(UserRole.CUSTOMER);
+        customer.setIsHotelEmployee(false);
+        userService.addUser(customer);
+
+        // Create a product with employee discount rate
+        Product product = createTestProduct("普通商品测试", new BigDecimal("50.00"), new BigDecimal("0.90"));
+
+        // Add order — should NOT apply employee discount
+        assertTrue(orderService.addOrder(customer.getId(), product.getId(), 1, null));
+
+        List<Order> orders = orderService.getOrdersByUserId(customer.getId());
+        assertEquals(1, orders.size());
+
+        // price should remain 50.00 (no discount for non-employee)
+        assertEquals(0, new BigDecimal("50.00").compareTo(orders.get(0).getPriceAtPurchase()));
+        assertEquals(0, new BigDecimal("50.00").compareTo(orders.get(0).getTotalAmount()));
+    }
+
+    @Test
+    void testAddOrderNoDiscountRate() {
+        // Create a hotel employee
+        User employee = new User();
+        employee.setUsername("emp_no_discount_order_test");
+        employee.setPassword("pass");
+        employee.setRole(UserRole.EMPLOYEE);
+        employee.setIsHotelEmployee(true);
+        userService.addUser(employee);
+
+        // Create a product WITHOUT employee discount rate
+        Product product = createTestProduct("无折扣商品测试", new BigDecimal("200.00"), null);
+
+        // Add order — no discount rate on product, so full price
+        assertTrue(orderService.addOrder(employee.getId(), product.getId(), 1, null));
+
+        List<Order> orders = orderService.getOrdersByUserId(employee.getId());
+        assertEquals(1, orders.size());
+
+        // price should remain 200.00 (no discount rate set)
+        assertEquals(0, new BigDecimal("200.00").compareTo(orders.get(0).getPriceAtPurchase()));
+    }
+
+    @Test
+    void testGetOrdersByProductId() {
+        User user = createTestUser("order_product_test_user");
+        Product product = createTestProduct("按商品查询测试", new BigDecimal("25.00"), null);
+
+        orderService.addOrder(user.getId(), product.getId(), 3, null);
+
+        List<Order> orders = orderService.getOrdersByProductId(product.getId());
+        assertTrue(orders.size() >= 1);
+        assertEquals(product.getId(), orders.get(0).getProductId());
     }
 }

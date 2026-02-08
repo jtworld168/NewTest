@@ -23,6 +23,15 @@ public class Order {
     @Schema(description = "用户ID")
     private Long userId;
 
+    @Schema(description = "商品ID")
+    private Long productId;
+
+    @Schema(description = "购买数量")
+    private Integer quantity;
+
+    @Schema(description = "下单时单价（已计算员工折扣）")
+    private BigDecimal priceAtPurchase;
+
     @Schema(description = "订单总金额")
     private BigDecimal totalAmount;
 

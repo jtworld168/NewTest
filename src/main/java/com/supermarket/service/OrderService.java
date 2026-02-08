@@ -14,11 +14,13 @@ public interface OrderService extends IService<Order> {
 
     List<Order> getOrdersByStatus(OrderStatus status);
 
-    boolean addOrder(Order order);
+    List<Order> getOrdersByProductId(Long productId);
+
+    List<Order> getOrdersByCouponId(Long couponId);
+
+    boolean addOrder(Long userId, Long productId, Integer quantity, Long couponId);
 
     boolean updateOrder(Order order);
 
     boolean deleteOrder(Long id);
-
-    List<Order> getOrdersByCouponId(Long couponId);
 }

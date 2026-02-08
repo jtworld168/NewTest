@@ -52,34 +52,22 @@ CREATE TABLE IF NOT EXISTS `coupon` (
 
 -- 订单表
 CREATE TABLE IF NOT EXISTS `order` (
-    `id`           BIGINT         NOT NULL AUTO_INCREMENT COMMENT '订单ID',
-    `user_id`      BIGINT         NOT NULL COMMENT '用户ID',
-    `total_amount` DECIMAL(10,2)  NOT NULL COMMENT '订单总金额',
-    `coupon_id`    BIGINT         DEFAULT NULL COMMENT '优惠券ID',
-    `status`       INT            NOT NULL DEFAULT 0 COMMENT '订单状态：0-待支付，1-已支付，2-已完成，3-已取消',
-    `create_time`  DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time`  DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted`      INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
-    PRIMARY KEY (`id`),
-    KEY `idx_user_id` (`user_id`),
-    KEY `idx_coupon_id` (`coupon_id`),
-    CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-    CONSTRAINT `fk_order_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单表';
-
--- 订单项表
-CREATE TABLE IF NOT EXISTS `order_item` (
-    `id`                BIGINT         NOT NULL AUTO_INCREMENT COMMENT '订单项ID',
-    `order_id`          BIGINT         NOT NULL COMMENT '订单ID',
+    `id`                BIGINT         NOT NULL AUTO_INCREMENT COMMENT '订单ID',
+    `user_id`           BIGINT         NOT NULL COMMENT '用户ID',
     `product_id`        BIGINT         NOT NULL COMMENT '商品ID',
     `quantity`          INT            NOT NULL DEFAULT 1 COMMENT '购买数量',
     `price_at_purchase` DECIMAL(10,2)  NOT NULL COMMENT '下单时单价（已计算员工折扣）',
+    `total_amount`      DECIMAL(10,2)  NOT NULL COMMENT '订单总金额',
+    `coupon_id`         BIGINT         DEFAULT NULL COMMENT '优惠券ID',
+    `status`            INT            NOT NULL DEFAULT 0 COMMENT '订单状态：0-待支付，1-已支付，2-已完成，3-已取消',
     `create_time`       DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time`       DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted`           INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
     PRIMARY KEY (`id`),
-    KEY `idx_order_id` (`order_id`),
+    KEY `idx_user_id` (`user_id`),
     KEY `idx_product_id` (`product_id`),
-    CONSTRAINT `fk_order_item_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
-    CONSTRAINT `fk_order_item_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单项表';
+    KEY `idx_coupon_id` (`coupon_id`),
+    CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+    CONSTRAINT `fk_order_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
+    CONSTRAINT `fk_order_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单表';

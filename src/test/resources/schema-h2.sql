@@ -39,29 +39,19 @@ CREATE TABLE IF NOT EXISTS `coupon` (
 );
 
 CREATE TABLE IF NOT EXISTS `order` (
-    `id`           BIGINT         NOT NULL AUTO_INCREMENT,
-    `user_id`      BIGINT         NOT NULL,
-    `total_amount` DECIMAL(10,2)  NOT NULL,
-    `coupon_id`    BIGINT         DEFAULT NULL,
-    `status`       INT            NOT NULL DEFAULT 0,
-    `create_time`  TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
-    `update_time`  TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
-    `deleted`      INT            DEFAULT 0,
-    PRIMARY KEY (`id`),
-    CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-    CONSTRAINT `fk_order_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`)
-);
-
-CREATE TABLE IF NOT EXISTS `order_item` (
     `id`                BIGINT         NOT NULL AUTO_INCREMENT,
-    `order_id`          BIGINT         NOT NULL,
+    `user_id`           BIGINT         NOT NULL,
     `product_id`        BIGINT         NOT NULL,
     `quantity`          INT            NOT NULL DEFAULT 1,
     `price_at_purchase` DECIMAL(10,2)  NOT NULL,
+    `total_amount`      DECIMAL(10,2)  NOT NULL,
+    `coupon_id`         BIGINT         DEFAULT NULL,
+    `status`            INT            NOT NULL DEFAULT 0,
     `create_time`       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `update_time`       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `deleted`           INT            DEFAULT 0,
     PRIMARY KEY (`id`),
-    CONSTRAINT `fk_order_item_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
-    CONSTRAINT `fk_order_item_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+    CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+    CONSTRAINT `fk_order_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
+    CONSTRAINT `fk_order_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`)
 );
