@@ -20,32 +20,32 @@ public class OrderItemController {
     private final OrderItemService orderItemService;
 
     @Operation(summary = "根据ID查询订单项")
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public Result<OrderItem> getOrderItemById(@Parameter(description = "订单项ID") @PathVariable Long id) {
         OrderItem item = orderItemService.getOrderItemById(id);
         return item != null ? Result.success(item) : Result.error("订单项不存在");
     }
 
     @Operation(summary = "查询所有订单项")
-    @GetMapping
+    @GetMapping("/list")
     public Result<List<OrderItem>> getAllOrderItems() {
         return Result.success(orderItemService.list());
     }
 
     @Operation(summary = "根据订单ID查询订单项列表")
-    @GetMapping("/order/{orderId}")
+    @GetMapping("/getByOrderId/{orderId}")
     public Result<List<OrderItem>> getOrderItemsByOrderId(@Parameter(description = "订单ID") @PathVariable Long orderId) {
         return Result.success(orderItemService.getOrderItemsByOrderId(orderId));
     }
 
     @Operation(summary = "根据商品ID查询订单项列表")
-    @GetMapping("/product/{productId}")
+    @GetMapping("/getByProductId/{productId}")
     public Result<List<OrderItem>> getOrderItemsByProductId(@Parameter(description = "商品ID") @PathVariable Long productId) {
         return Result.success(orderItemService.getOrderItemsByProductId(productId));
     }
 
     @Operation(summary = "添加订单项（自动计算员工折扣价）")
-    @PostMapping
+    @PostMapping("/add")
     public Result<Void> addOrderItem(
             @Parameter(description = "订单ID") @RequestParam Long orderId,
             @Parameter(description = "商品ID") @RequestParam Long productId,
@@ -64,7 +64,7 @@ public class OrderItemController {
     }
 
     @Operation(summary = "更新订单项")
-    @PutMapping
+    @PutMapping("/update")
     public Result<Void> updateOrderItem(@RequestBody OrderItem orderItem) {
         if (orderItem.getId() == null) {
             return Result.error("订单项ID不能为空");
@@ -76,7 +76,7 @@ public class OrderItemController {
     }
 
     @Operation(summary = "删除订单项")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public Result<Void> deleteOrderItem(@Parameter(description = "订单项ID") @PathVariable Long id) {
         if (orderItemService.getOrderItemById(id) == null) {
             return Result.error("订单项不存在");

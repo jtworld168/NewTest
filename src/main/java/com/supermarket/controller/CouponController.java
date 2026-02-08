@@ -22,33 +22,33 @@ public class CouponController {
     private final CouponService couponService;
 
     @Operation(summary = "根据ID查询优惠券")
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public Result<Coupon> getCouponById(@Parameter(description = "优惠券ID") @PathVariable Long id) {
         Coupon coupon = couponService.getCouponById(id);
         return coupon != null ? Result.success(coupon) : Result.error("优惠券不存在");
     }
 
     @Operation(summary = "查询所有优惠券")
-    @GetMapping
+    @GetMapping("/list")
     public Result<List<Coupon>> getAllCoupons() {
         return Result.success(couponService.list());
     }
 
     @Operation(summary = "根据状态查询优惠券")
-    @GetMapping("/status/{status}")
+    @GetMapping("/getByStatus/{status}")
     public Result<List<Coupon>> getCouponsByStatus(@Parameter(description = "优惠券状态：AVAILABLE/USED/EXPIRED") @PathVariable CouponStatus status) {
         return Result.success(couponService.getCouponsByStatus(status));
     }
 
     @Operation(summary = "根据名称查询优惠券")
-    @GetMapping("/name/{name}")
+    @GetMapping("/getByName/{name}")
     public Result<Coupon> getCouponByName(@Parameter(description = "优惠券名称") @PathVariable String name) {
         Coupon coupon = couponService.getCouponByName(name);
         return coupon != null ? Result.success(coupon) : Result.error("优惠券不存在");
     }
 
     @Operation(summary = "添加优惠券")
-    @PostMapping
+    @PostMapping("/add")
     public Result<Void> addCoupon(@RequestBody Coupon coupon) {
         if (coupon.getName() == null || coupon.getName().isBlank()) {
             return Result.error("优惠券名称不能为空");
@@ -72,7 +72,7 @@ public class CouponController {
     }
 
     @Operation(summary = "更新优惠券")
-    @PutMapping
+    @PutMapping("/update")
     public Result<Void> updateCoupon(@RequestBody Coupon coupon) {
         if (coupon.getId() == null) {
             return Result.error("优惠券ID不能为空");
@@ -84,7 +84,7 @@ public class CouponController {
     }
 
     @Operation(summary = "删除优惠券")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public Result<Void> deleteCoupon(@Parameter(description = "优惠券ID") @PathVariable Long id) {
         if (couponService.getCouponById(id) == null) {
             return Result.error("优惠券不存在");

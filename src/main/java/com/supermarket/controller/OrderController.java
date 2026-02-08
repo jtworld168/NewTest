@@ -22,38 +22,38 @@ public class OrderController {
     private final OrderService orderService;
 
     @Operation(summary = "根据ID查询订单")
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public Result<Order> getOrderById(@Parameter(description = "订单ID") @PathVariable Long id) {
         Order order = orderService.getOrderById(id);
         return order != null ? Result.success(order) : Result.error("订单不存在");
     }
 
     @Operation(summary = "查询所有订单")
-    @GetMapping
+    @GetMapping("/list")
     public Result<List<Order>> getAllOrders() {
         return Result.success(orderService.list());
     }
 
     @Operation(summary = "根据用户ID查询订单")
-    @GetMapping("/user/{userId}")
+    @GetMapping("/getByUserId/{userId}")
     public Result<List<Order>> getOrdersByUserId(@Parameter(description = "用户ID") @PathVariable Long userId) {
         return Result.success(orderService.getOrdersByUserId(userId));
     }
 
     @Operation(summary = "根据状态查询订单")
-    @GetMapping("/status/{status}")
+    @GetMapping("/getByStatus/{status}")
     public Result<List<Order>> getOrdersByStatus(@Parameter(description = "订单状态：PENDING/PAID/COMPLETED/CANCELLED") @PathVariable OrderStatus status) {
         return Result.success(orderService.getOrdersByStatus(status));
     }
 
     @Operation(summary = "根据优惠券ID查询订单")
-    @GetMapping("/coupon/{couponId}")
+    @GetMapping("/getByCouponId/{couponId}")
     public Result<List<Order>> getOrdersByCouponId(@Parameter(description = "优惠券ID") @PathVariable Long couponId) {
         return Result.success(orderService.getOrdersByCouponId(couponId));
     }
 
     @Operation(summary = "添加订单")
-    @PostMapping
+    @PostMapping("/add")
     public Result<Void> addOrder(@RequestBody Order order) {
         if (order.getUserId() == null) {
             return Result.error("用户ID不能为空");
@@ -71,7 +71,7 @@ public class OrderController {
     }
 
     @Operation(summary = "更新订单")
-    @PutMapping
+    @PutMapping("/update")
     public Result<Void> updateOrder(@RequestBody Order order) {
         if (order.getId() == null) {
             return Result.error("订单ID不能为空");
@@ -83,7 +83,7 @@ public class OrderController {
     }
 
     @Operation(summary = "删除订单")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public Result<Void> deleteOrder(@Parameter(description = "订单ID") @PathVariable Long id) {
         if (orderService.getOrderById(id) == null) {
             return Result.error("订单不存在");
