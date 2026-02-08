@@ -98,6 +98,10 @@ public class CouponController {
         if (ids == null || ids.isEmpty()) {
             return Result.error("ID列表不能为空");
         }
+        ids.removeIf(id -> id == null);
+        if (ids.isEmpty()) {
+            return Result.error("ID列表不能为空");
+        }
         return couponService.deleteBatchCoupons(ids) ? Result.success() : Result.error("批量删除优惠券失败");
     }
 }

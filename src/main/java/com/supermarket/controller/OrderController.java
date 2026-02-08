@@ -104,6 +104,10 @@ public class OrderController {
         if (ids == null || ids.isEmpty()) {
             return Result.error("ID列表不能为空");
         }
+        ids.removeIf(id -> id == null);
+        if (ids.isEmpty()) {
+            return Result.error("ID列表不能为空");
+        }
         return orderService.deleteBatchOrders(ids) ? Result.success() : Result.error("批量删除订单失败");
     }
 }

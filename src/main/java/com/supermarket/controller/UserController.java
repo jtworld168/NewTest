@@ -88,6 +88,10 @@ public class UserController {
         if (ids == null || ids.isEmpty()) {
             return Result.error("ID列表不能为空");
         }
+        ids.removeIf(id -> id == null);
+        if (ids.isEmpty()) {
+            return Result.error("ID列表不能为空");
+        }
         return userService.deleteBatchUsers(ids) ? Result.success() : Result.error("批量删除用户失败");
     }
 }
