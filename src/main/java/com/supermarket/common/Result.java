@@ -1,12 +1,19 @@
 package com.supermarket.common;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
+@Schema(description = "统一响应结果")
 public class Result<T> {
 
+    @Schema(description = "状态码")
     private int code;
+
+    @Schema(description = "提示信息")
     private String message;
+
+    @Schema(description = "数据")
     private T data;
 
     private Result() {}
