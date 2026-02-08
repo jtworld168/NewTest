@@ -31,7 +31,8 @@ public class AuthController {
         if (user == null) {
             return Result.error("用户名或密码错误");
         }
-        session.setAttribute("loginUser", user);
+        session.setAttribute("loginUser", user.getId());
+        user.setPassword(null);
         return Result.success(user);
     }
 
