@@ -32,3 +32,16 @@ CREATE TABLE IF NOT EXISTS `product` (
     `deleted`     INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='商品表';
+
+-- 订单表
+CREATE TABLE IF NOT EXISTS `order` (
+    `id`           BIGINT         NOT NULL AUTO_INCREMENT COMMENT '订单ID',
+    `user_id`      BIGINT         NOT NULL COMMENT '用户ID',
+    `total_amount` DECIMAL(10,2)  NOT NULL COMMENT '订单总金额',
+    `status`       INT            NOT NULL DEFAULT 0 COMMENT '订单状态：0-待支付，1-已支付，2-已完成，3-已取消',
+    `create_time`  DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`  DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted`      INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单表';

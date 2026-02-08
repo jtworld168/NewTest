@@ -21,3 +21,14 @@ CREATE TABLE IF NOT EXISTS `product` (
     `deleted`     INT            DEFAULT 0,
     PRIMARY KEY (`id`)
 );
+
+CREATE TABLE IF NOT EXISTS `order` (
+    `id`           BIGINT         NOT NULL AUTO_INCREMENT,
+    `user_id`      BIGINT         NOT NULL,
+    `total_amount` DECIMAL(10,2)  NOT NULL,
+    `status`       INT            NOT NULL DEFAULT 0,
+    `create_time`  TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `update_time`  TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `deleted`      INT            DEFAULT 0,
+    PRIMARY KEY (`id`)
+);
