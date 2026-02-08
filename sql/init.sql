@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     `password`    VARCHAR(100) NOT NULL COMMENT '密码',
     `phone`       VARCHAR(20)  DEFAULT NULL COMMENT '手机号',
     `role`        INT          NOT NULL DEFAULT 2 COMMENT '角色：0-管理员，1-员工，2-顾客',
+    `is_hotel_employee` TINYINT(1) DEFAULT 0 COMMENT '是否酒店员工：0-否，1-是',
     `create_time` DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted`     INT          DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS `product` (
     `price`       DECIMAL(10,2)  NOT NULL COMMENT '商品价格',
     `stock`       INT            NOT NULL DEFAULT 0 COMMENT '库存数量',
     `description` VARCHAR(500)   DEFAULT NULL COMMENT '商品描述',
+    `employee_discount_rate` DECIMAL(3,2) DEFAULT NULL COMMENT '员工折扣率，如0.80表示八折',
     `create_time` DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted`     INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
@@ -61,3 +63,17 @@ CREATE TABLE IF NOT EXISTS `coupon` (
     `deleted`     INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='优惠券表';
+
+-- 订单项表
+CREATE TABLE IF NOT EXISTS `order_item` (
+    `id`                BIGINT         NOT NULL AUTO_INCREMENT COMMENT '订单项ID',
+    `order_id`          BIGINT         NOT NULL COMMENT '订单ID',
+    `product_id`        BIGINT         NOT NULL COMMENT '商品ID',
+    `quantity`          INT            NOT NULL DEFAULT 1 COMMENT '购买数量',
+    `price_at_purchase` DECIMAL(10,2)  NOT NULL COMMENT '下单时单价（已计算员工折扣）',
+    `create_time`       DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`       DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted`           INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    PRIMARY KEY (`id`),
+    KEY `idx_order_id` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单项表';

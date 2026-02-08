@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     `password`    VARCHAR(100) NOT NULL,
     `phone`       VARCHAR(20)  DEFAULT NULL,
     `role`        INT          NOT NULL DEFAULT 2,
+    `is_hotel_employee` BOOLEAN DEFAULT FALSE,
     `create_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     `update_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     `deleted`     INT          DEFAULT 0,
@@ -16,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `product` (
     `price`       DECIMAL(10,2)  NOT NULL,
     `stock`       INT            NOT NULL DEFAULT 0,
     `description` VARCHAR(500)   DEFAULT NULL,
+    `employee_discount_rate` DECIMAL(3,2) DEFAULT NULL,
     `create_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `update_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `deleted`     INT            DEFAULT 0,
@@ -45,5 +47,17 @@ CREATE TABLE IF NOT EXISTS `coupon` (
     `create_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `update_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `deleted`     INT            DEFAULT 0,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `order_item` (
+    `id`                BIGINT         NOT NULL AUTO_INCREMENT,
+    `order_id`          BIGINT         NOT NULL,
+    `product_id`        BIGINT         NOT NULL,
+    `quantity`          INT            NOT NULL DEFAULT 1,
+    `price_at_purchase` DECIMAL(10,2)  NOT NULL,
+    `create_time`       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `update_time`       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `deleted`           INT            DEFAULT 0,
     PRIMARY KEY (`id`)
 );

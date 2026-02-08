@@ -31,6 +31,9 @@ public class Product {
     @Schema(description = "商品描述")
     private String description;
 
+    @Schema(description = "员工折扣率，如0.8表示八折")
+    private BigDecimal employeeDiscountRate;
+
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
 

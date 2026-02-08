@@ -4,35 +4,32 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.supermarket.enums.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("`user`")
-@Schema(description = "用户实体")
-public class User {
+@TableName("order_item")
+@Schema(description = "订单项实体")
+public class OrderItem {
 
-    @Schema(description = "用户ID")
+    @Schema(description = "订单项ID")
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    @Schema(description = "用户名")
-    private String username;
+    @Schema(description = "订单ID")
+    private Long orderId;
 
-    @Schema(description = "密码")
-    private String password;
+    @Schema(description = "商品ID")
+    private Long productId;
 
-    @Schema(description = "手机号")
-    private String phone;
+    @Schema(description = "购买数量")
+    private Integer quantity;
 
-    @Schema(description = "角色：ADMIN-管理员，EMPLOYEE-员工，CUSTOMER-顾客")
-    private UserRole role;
-
-    @Schema(description = "是否酒店员工：0-否，1-是")
-    private Boolean isHotelEmployee;
+    @Schema(description = "下单时单价（已计算员工折扣）")
+    private BigDecimal priceAtPurchase;
 
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
