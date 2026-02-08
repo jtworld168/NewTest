@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Tag(name = "商品管理", description = "商品增删改查接口")
@@ -47,8 +48,14 @@ public class ProductController {
         if (product.getPrice() == null) {
             return Result.error("商品价格不能为空");
         }
+        if (product.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+            return Result.error("商品价格不能为负数");
+        }
         if (product.getStock() == null) {
             return Result.error("库存数量不能为空");
+        }
+        if (product.getStock() < 0) {
+            return Result.error("库存数量不能为负数");
         }
         return productService.addProduct(product) ? Result.success() : Result.error("添加商品失败");
     }
