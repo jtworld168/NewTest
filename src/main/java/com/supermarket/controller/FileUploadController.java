@@ -80,7 +80,7 @@ public class FileUploadController {
 
             file.transferTo(filePath.toFile());
 
-            String imageUrl = "/uploads/" + newFilename;
+            String imageUrl = "/file/" + newFilename;
             return Result.success(imageUrl);
         } catch (IOException e) {
             return Result.error("文件上传失败：" + e.getMessage());

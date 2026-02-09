@@ -16,7 +16,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String absolutePath = Paths.get(uploadDir).toAbsolutePath().toUri().toString();
-        registry.addResourceHandler("/uploads/**")
+        registry.addResourceHandler("/file/**")
                 .addResourceLocations(absolutePath);
     }
 }

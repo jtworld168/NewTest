@@ -57,7 +57,11 @@
       <el-header class="header">
         <span class="header-title">{{ currentTitle }}</span>
         <div class="header-right">
-          <span v-if="userStore.currentUser" class="username">{{ userStore.currentUser.username }}</span>
+          <template v-if="userStore.currentUser">
+            <el-avatar v-if="userStore.currentUser.avatar" :src="userStore.currentUser.avatar" :size="32" />
+            <el-avatar v-else :size="32">{{ userStore.currentUser.username?.charAt(0).toUpperCase() }}</el-avatar>
+            <span class="username">{{ userStore.currentUser.username }}</span>
+          </template>
           <el-button type="danger" size="small" @click="handleLogout">退出</el-button>
         </div>
       </el-header>

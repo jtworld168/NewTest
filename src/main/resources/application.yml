@@ -13,7 +13,7 @@ spring:
       max-request-size: 10MB
 
 file:
-  upload-dir: ${UPLOAD_DIR:uploads}
+  upload-dir: ${UPLOAD_DIR:file}
 
 mybatis-plus:
   configuration:
