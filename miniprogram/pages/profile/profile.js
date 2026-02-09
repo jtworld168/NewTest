@@ -10,22 +10,26 @@ Page({
   data: {
     userInfo: null,
     isLoggedIn: false,
-    roleText: ''
+    roleText: '',
+    isEmployee: false,
+    avatarUrl: '/images/default-avatar.png'
   },
 
   onShow() {
     const app = getApp()
     const userInfo = app.globalData.userInfo
     if (userInfo) {
+      const avatarUrl = userInfo.avatar ? api.getFileUrl(userInfo.avatar) : '/images/default-avatar.png'
       this.setData({
         userInfo,
         isLoggedIn: true,
-        roleText: ROLE_MAP[userInfo.role] || userInfo.role
+        roleText: ROLE_MAP[userInfo.role] || userInfo.role,
+        isEmployee: Boolean(userInfo.isHotelEmployee),
+        avatarUrl
       })
-      // Refresh user data from server
       this.refreshUserInfo(userInfo.id)
     } else {
-      this.setData({ userInfo: null, isLoggedIn: false })
+      this.setData({ userInfo: null, isLoggedIn: false, avatarUrl: '/images/default-avatar.png' })
     }
   },
 
@@ -36,9 +40,12 @@ Page({
         const app = getApp()
         app.globalData.userInfo = res.data
         wx.setStorageSync('userInfo', res.data)
+        const avatarUrl = res.data.avatar ? api.getFileUrl(res.data.avatar) : '/images/default-avatar.png'
         this.setData({
           userInfo: res.data,
-          roleText: ROLE_MAP[res.data.role] || res.data.role
+          roleText: ROLE_MAP[res.data.role] || res.data.role,
+          isEmployee: Boolean(res.data.isHotelEmployee),
+          avatarUrl
         })
       }
     } catch (e) {
@@ -62,6 +69,10 @@ Page({
     wx.switchTab({ url: '/pages/cart/cart' })
   },
 
+  goCoupons() {
+    wx.navigateTo({ url: '/pages/coupons/coupons' })
+  },
+
   async doLogout() {
     wx.showModal({
       title: '提示',
@@ -76,14 +87,10 @@ Page({
           const app = getApp()
           app.globalData.userInfo = null
           wx.removeStorageSync('userInfo')
-          this.setData({ userInfo: null, isLoggedIn: false })
+          this.setData({ userInfo: null, isLoggedIn: false, avatarUrl: '/images/default-avatar.png' })
           wx.showToast({ title: '已退出登录', icon: 'success' })
         }
       }
     })
-  },
-
-  getFileUrl(filename) {
-    return api.getFileUrl(filename)
   }
 })

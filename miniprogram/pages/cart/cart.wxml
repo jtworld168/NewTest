@@ -1,5 +1,5 @@
 <view class="container">
-  <!-- Not logged in -->
+  <!-- Not logged in / Empty -->
   <view class="empty-state" wx:if="{{!loading && !cartItems.length}}">
     <text class="empty-icon">🛒</text>
     <text class="empty-text">购物车空空如也</text>
@@ -26,7 +26,12 @@
       <!-- Info -->
       <view class="item-info">
         <text class="item-name">{{productMap[item.productId].name || '商品'}}</text>
-        <text class="price">¥{{productMap[item.productId].price || '0'}}</text>
+        <view class="item-price-row">
+          <text class="price">¥{{productMap[item.productId].price || '0'}}</text>
+          <text class="employee-price" wx:if="{{isEmployee && productMap[item.productId].employeeDiscountRate}}">
+            员工价 ¥{{(productMap[item.productId].price * productMap[item.productId].employeeDiscountRate).toFixed(2)}}
+          </text>
+        </view>
         <view class="quantity-control">
           <view class="qty-btn" bindtap="changeQuantity" data-id="{{item.id}}" data-action="minus">-</view>
           <text class="qty-num">{{item.quantity}}</text>
@@ -34,6 +39,41 @@
           <view class="delete-btn" bindtap="deleteItem" data-id="{{item.id}}">删除</view>
         </view>
       </view>
+    </view>
+
+    <!-- Coupon Section -->
+    <view class="coupon-section" wx:if="{{!isEmployee && availableCoupons.length > 0}}">
+      <view class="coupon-header" bindtap="toggleCouponPicker">
+        <text class="coupon-label">🎫 优惠券</text>
+        <text class="coupon-selected" wx:if="{{selectedCouponId}}">已选 -¥{{selectedCouponDiscount}}</text>
+        <text class="coupon-selected" wx:else>{{availableCoupons.length}}张可用</text>
+        <text class="menu-arrow">></text>
+      </view>
+      <view class="coupon-picker" wx:if="{{showCouponPicker}}">
+        <view class="coupon-option" wx:for="{{availableCoupons}}" wx:key="id" bindtap="selectCoupon" data-id="{{item.id}}">
+          <view class="coupon-option-left">
+            <text class="coupon-option-amount">¥{{item.discount}}</text>
+          </view>
+          <view class="coupon-option-right">
+            <text class="coupon-option-name">{{item.couponName}}</text>
+            <text class="coupon-option-condition">满{{item.minAmount}}元可用</text>
+          </view>
+          <text class="coupon-check" wx:if="{{selectedCouponId === item.id}}">✓</text>
+        </view>
+        <view class="coupon-option" bindtap="clearCoupon">
+          <text class="coupon-option-name" style="color: #999;">不使用优惠券</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Employee discount notice -->
+    <view class="employee-notice" wx:if="{{isEmployee && hasEmployeeDiscount}}">
+      <text>🏷️ 员工折扣已应用 | 原价 ¥{{totalPrice}} → 折后 ¥{{employeeTotal}}</text>
+    </view>
+
+    <!-- Cannot use coupon notice for employees -->
+    <view class="employee-notice" wx:if="{{isEmployee && availableCoupons.length > 0}}">
+      <text>💡 员工折扣与优惠券不可叠加使用</text>
     </view>
 
     <!-- Bottom Bar -->
@@ -46,7 +86,7 @@
       </view>
       <view class="total">
         <text>合计: </text>
-        <text class="price">¥{{totalPrice}}</text>
+        <text class="price">¥{{finalPrice}}</text>
       </view>
       <button class="checkout-btn" bindtap="checkout">结算 ({{selectedIds.length}})</button>
     </view>

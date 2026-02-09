@@ -37,6 +37,42 @@ Page({
     wx.switchTab({ url: '/pages/category/category' })
   },
 
+  onScan() {
+    wx.scanCode({
+      onlyFromCamera: false,
+      success: (res) => {
+        const code = res.result
+        // Search for product by barcode
+        wx.showLoading({ title: '查找商品...' })
+        api.searchProducts(code).then(searchRes => {
+          wx.hideLoading()
+          const products = searchRes.data || []
+          if (products.length > 0) {
+            const product = products[0]
+            wx.showActionSheet({
+              itemList: ['加入购物车', '立即购买'],
+              success: (actionRes) => {
+                if (actionRes.tapIndex === 0) {
+                  this.addToCart(product)
+                } else if (actionRes.tapIndex === 1) {
+                  this.buyNow(product)
+                }
+              }
+            })
+          } else {
+            wx.showToast({ title: '未找到该商品', icon: 'none' })
+          }
+        }).catch(() => {
+          wx.hideLoading()
+          wx.showToast({ title: '查找失败', icon: 'error' })
+        })
+      },
+      fail: () => {
+        // User cancelled or scan failed
+      }
+    })
+  },
+
   goToCategoryDetail(e) {
     const id = e.currentTarget.dataset.id
     wx.switchTab({

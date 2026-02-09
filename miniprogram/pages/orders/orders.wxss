@@ -121,3 +121,23 @@
 .order-total .price {
   font-size: 32rpx;
 }
+
+.order-discount-tag {
+  font-size: 20rpx;
+  color: #d48806;
+  background-color: #fff9e6;
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+  margin-right: 8rpx;
+  border: 1rpx solid #ffe58f;
+}
+
+.order-coupon-tag {
+  font-size: 20rpx;
+  color: #ee0a24;
+  background-color: #fff1f0;
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+  margin-right: 8rpx;
+  border: 1rpx solid #ffccc7;
+}

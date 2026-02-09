@@ -29,6 +29,8 @@
         <view class="order-footer">
           <text class="order-time" wx:if="{{item.createTime}}">{{item.createTime}}</text>
           <view class="order-total">
+            <text class="order-discount-tag" wx:if="{{item.priceAtPurchase && productMap[item.productId] && item.priceAtPurchase < productMap[item.productId].price}}">员工折扣</text>
+            <text class="order-coupon-tag" wx:if="{{item.userCouponId}}">已用券</text>
             <text>合计: </text>
             <text class="price">¥{{item.totalAmount}}</text>
           </view>

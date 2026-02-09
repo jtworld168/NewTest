@@ -37,9 +37,65 @@
   width: fit-content;
 }
 
+.role-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
+}
+
+.employee-badge {
+  font-size: 22rpx;
+  background-color: rgba(255, 215, 0, 0.3);
+  padding: 4rpx 14rpx;
+  border-radius: 20rpx;
+  color: #fff;
+}
+
 .user-phone {
   font-size: 24rpx;
   opacity: 0.9;
+}
+
+/* Employee Info Card */
+.employee-info {
+  margin: 20rpx;
+  background: linear-gradient(135deg, #fff9e6, #fff3cc);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  border: 1rpx solid #ffe58f;
+}
+
+.employee-info-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.employee-info-icon {
+  font-size: 36rpx;
+  margin-right: 10rpx;
+}
+
+.employee-info-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #d48806;
+}
+
+.employee-info-desc {
+  font-size: 24rpx;
+  color: #8c6d1f;
+  line-height: 1.6;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.employee-info-note {
+  font-size: 22rpx;
+  color: #ad8b00;
+  display: block;
 }
 
 /* Menu */

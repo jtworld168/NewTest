@@ -1,0 +1,137 @@
+.tabs {
+  display: flex;
+  background-color: #fff;
+  padding: 0 10rpx;
+  border-bottom: 1rpx solid #eee;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 28rpx;
+  color: #666;
+  position: relative;
+}
+
+.tab.active {
+  color: #07c160;
+  font-weight: bold;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 4rpx;
+  background-color: #07c160;
+  border-radius: 2rpx;
+}
+
+.coupon-list {
+  padding: 20rpx;
+}
+
+.coupon-card {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.coupon-card.disabled {
+  opacity: 0.5;
+}
+
+.coupon-left {
+  width: 200rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx 0;
+  background: linear-gradient(135deg, #07c160, #06ad56);
+  color: #fff;
+}
+
+.coupon-symbol {
+  font-size: 24rpx;
+}
+
+.coupon-amount {
+  font-size: 56rpx;
+  font-weight: bold;
+}
+
+.coupon-divider {
+  width: 2rpx;
+  height: 80rpx;
+  background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 8rpx, transparent 8rpx, transparent 16rpx);
+}
+
+.coupon-right {
+  flex: 1;
+  padding: 24rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.coupon-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.coupon-condition {
+  font-size: 22rpx;
+  color: #999;
+  margin-bottom: 4rpx;
+}
+
+.coupon-expire {
+  font-size: 20rpx;
+  color: #bbb;
+}
+
+.coupon-status-tag {
+  font-size: 20rpx;
+  color: #999;
+  margin-top: 6rpx;
+}
+
+.coupon-status-tag.expired {
+  color: #ee0a24;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 0;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.loading {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #999;
+}

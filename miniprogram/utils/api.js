@@ -114,6 +114,22 @@ function clearCart(userId) {
   return request({ url: '/cart-items/clear/' + userId, method: 'DELETE' })
 }
 
+// ==================== Coupon ====================
+
+function getCouponById(id) {
+  return request({ url: '/coupons/get/' + id })
+}
+
+// ==================== UserCoupon ====================
+
+function getUserCouponsByUserId(userId) {
+  return request({ url: '/user-coupons/getByUserId/' + userId })
+}
+
+function getUserCouponsByUserIdAndStatus(userId, status) {
+  return request({ url: '/user-coupons/getByUserIdAndStatus?userId=' + userId + '&status=' + status })
+}
+
 // ==================== File ====================
 
 function getFileUrl(filename) {
@@ -139,5 +155,8 @@ module.exports = {
   updateCartItem,
   deleteCartItem,
   clearCart,
+  getCouponById,
+  getUserCouponsByUserId,
+  getUserCouponsByUserIdAndStatus,
   getFileUrl
 }
