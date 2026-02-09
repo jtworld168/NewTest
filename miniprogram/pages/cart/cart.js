@@ -304,12 +304,12 @@ Page({
           orderIds.push(res.data.id)
         }
         await api.deleteCartItem(item.id)
-        // Only apply coupon to first order
+        // Coupon is only applied to the first order to avoid double deduction
         couponId = null
       }
       wx.hideLoading()
 
-      // Mark the coupon as used
+      // Mark the user coupon as used (selectedCouponId is the UserCoupon record ID)
       if (this.data.selectedCouponId) {
         try {
           await api.updateUserCoupon({
