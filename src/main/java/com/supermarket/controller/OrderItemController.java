@@ -86,10 +86,10 @@ public class OrderItemController {
         if (ids == null || ids.isEmpty()) {
             return Result.error("ID列表不能为空");
         }
-        ids.removeIf(id -> id == null);
-        if (ids.isEmpty()) {
+        List<Long> validIds = ids.stream().filter(id -> id != null).toList();
+        if (validIds.isEmpty()) {
             return Result.error("ID列表不能为空");
         }
-        return orderItemService.deleteBatchOrderItems(ids) ? Result.success() : Result.error("批量删除订单商品明细失败");
+        return orderItemService.deleteBatchOrderItems(validIds) ? Result.success() : Result.error("批量删除订单商品明细失败");
     }
 }

@@ -14,9 +14,7 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemMapper, OrderItem
 
     @Override
     public OrderItem getOrderItemById(Long id) {
-        LambdaQueryWrapper<OrderItem> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(OrderItem::getId, id);
-        return getOne(wrapper);
+        return getById(id);
     }
 
     @Override
