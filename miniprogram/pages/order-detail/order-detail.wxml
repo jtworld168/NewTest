@@ -14,6 +14,7 @@
         <text class="product-name">{{order._productName || '商品'}}</text>
         <text class="product-price">单价: ¥{{order.priceAtPurchase}}</text>
         <text class="product-qty">数量: x{{order.quantity}}</text>
+        <text class="product-barcode" wx:if="{{order._barcode}}">条形码: {{order._barcode}}</text>
       </view>
     </view>
   </view>

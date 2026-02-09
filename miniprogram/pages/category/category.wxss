@@ -117,6 +117,28 @@
   font-size: 30rpx;
 }
 
+.price-area {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.price-area .original-price {
+  font-size: 22rpx;
+  color: #999;
+  text-decoration: line-through;
+  margin-left: 8rpx;
+}
+
+.price-area .employee-tag {
+  font-size: 20rpx;
+  color: #fff;
+  background-color: #ff6034;
+  border-radius: 4rpx;
+  padding: 2rpx 8rpx;
+  margin-left: 8rpx;
+}
+
 .item-stock {
   font-size: 22rpx;
   color: #999;

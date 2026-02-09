@@ -42,7 +42,7 @@ Page({
     try {
       const res = await api.getProductsByCategoryId(categoryId)
       this.setData({
-        products: res.data || [],
+        products: this._enrichProducts(res.data || []),
         loading: false
       })
     } catch (e) {
@@ -73,7 +73,7 @@ Page({
     try {
       const res = await api.searchProducts(keyword)
       this.setData({
-        products: res.data || [],
+        products: this._enrichProducts(res.data || []),
         selectedCategoryId: null,
         loading: false
       })
@@ -125,7 +125,19 @@ Page({
     }
   },
 
-  getFileUrl(filename) {
-    return api.getFileUrl(filename)
+  _enrichProducts(products) {
+    const app = getApp()
+    const isEmployee = app.globalData.userInfo && Boolean(app.globalData.userInfo.isHotelEmployee)
+    return products.map(p => {
+      p._imageUrl = p.image ? api.getFileUrl(p.image) : ''
+      if (isEmployee && p.employeeDiscountRate) {
+        p._isEmployee = true
+        p._displayPrice = (p.price * p.employeeDiscountRate).toFixed(2)
+      } else {
+        p._isEmployee = false
+        p._displayPrice = p.price.toFixed(2)
+      }
+      return p
+    })
   }
 })

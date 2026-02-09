@@ -17,12 +17,16 @@
     <scroll-view class="product-list" scroll-y="true">
       <view wx:if="{{!loading && products.length > 0}}">
         <view class="product-item" wx:for="{{products}}" wx:key="id" bindtap="goToProductDetail" data-id="{{item.id}}">
-          <image class="item-image" src="{{item.image ? getFileUrl(item.image) : '/images/product-placeholder.png'}}" mode="aspectFill"></image>
+          <image class="item-image" src="{{item._imageUrl || '/images/product-placeholder.png'}}" mode="aspectFill"></image>
           <view class="item-info">
             <text class="item-name">{{item.name}}</text>
             <text class="item-desc" wx:if="{{item.description}}">{{item.description}}</text>
             <view class="item-bottom">
-              <text class="price">¥{{item.price}}</text>
+              <view class="price-area">
+                <text class="price">¥{{item._displayPrice}}</text>
+                <text class="original-price" wx:if="{{item._isEmployee}}">¥{{item.price}}</text>
+                <text class="employee-tag" wx:if="{{item._isEmployee}}">内购价</text>
+              </view>
               <text class="item-stock">库存: {{item.stock}}</text>
             </view>
           </view>

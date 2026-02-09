@@ -60,7 +60,11 @@
           <text class="product-name" bindtap="goToProductDetail" data-id="{{item.id}}">{{item.name}}</text>
           <text class="product-desc" wx:if="{{item.description}}">{{item.description}}</text>
           <view class="product-bottom">
-            <text class="price">¥{{item.price}}</text>
+            <view class="price-area">
+              <text class="price">¥{{item._displayPrice}}</text>
+              <text class="original-price" wx:if="{{item._isEmployee}}">¥{{item.price}}</text>
+              <text class="employee-tag" wx:if="{{item._isEmployee}}">内购价</text>
+            </view>
             <view class="product-qty-control">
               <view class="product-qty-btn" bindtap="decreaseQty" data-id="{{item.id}}">-</view>
               <text class="product-qty-num">{{item._cartQty || 0}}</text>

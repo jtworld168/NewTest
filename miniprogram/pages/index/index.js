@@ -26,13 +26,23 @@ Page({
 
       const products = (productRes.data || []).slice(0, 8)
 
-      // Pre-calculate image URLs
+      // Check employee status
+      const app = getApp()
+      const isEmployee = app.globalData.userInfo && Boolean(app.globalData.userInfo.isHotelEmployee)
+
+      // Pre-calculate image URLs and employee pricing
       products.forEach(p => {
         p._imageUrl = p.image ? api.getFileUrl(p.image) : ''
+        if (isEmployee && p.employeeDiscountRate) {
+          p._isEmployee = true
+          p._displayPrice = (p.price * p.employeeDiscountRate).toFixed(2)
+        } else {
+          p._isEmployee = false
+          p._displayPrice = p.price.toFixed(2)
+        }
       })
 
       // Load cart items to show quantities
-      const app = getApp()
       let cartMap = {}
       if (app.globalData.userInfo) {
         try {
