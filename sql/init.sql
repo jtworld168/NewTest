@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `coupon` (
     KEY `idx_coupon_name` (`name`),
     CONSTRAINT `chk_coupon_discount` CHECK (`discount` > 0),
     CONSTRAINT `chk_coupon_min_amount` CHECK (`min_amount` >= 0),
-    CONSTRAINT `chk_coupon_total_count` CHECK (`total_count` >= 0),
+    CONSTRAINT `chk_coupon_total` CHECK (`total_count` >= 0),
     CONSTRAINT `chk_coupon_remaining` CHECK (`remaining_count` >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='优惠券面额表';
 
