@@ -35,7 +35,7 @@ Page({
 
       order._productName = product ? product.name : '商品 #' + order.productId
       order._imageUrl = product && product.image ? api.getFileUrl(product.image) : ''
-      order._barcode = product ? product.barcode : ''
+      order._barcode = product ? (product.barcode || '') : ''
       order._hasEmployeeDiscount = product && order.priceAtPurchase && order.priceAtPurchase < product.price
       order._originalPrice = product ? (product.price * order.quantity).toFixed(2) : ''
       order._discountAmount = order._hasEmployeeDiscount
