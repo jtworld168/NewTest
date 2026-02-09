@@ -1,12 +1,5 @@
 const api = require('../../utils/api')
 
-const STATUS_MAP = {
-  'PENDING': { text: '待支付', color: '#ff9800' },
-  'PAID': { text: '已支付', color: '#07c160' },
-  'COMPLETED': { text: '已完成', color: '#999' },
-  'CANCELLED': { text: '已取消', color: '#ee0a24' }
-}
-
 Page({
   data: {
     orders: [],
@@ -59,16 +52,6 @@ Page({
 
   switchTab(e) {
     this.setData({ currentTab: e.currentTarget.dataset.tab })
-  },
-
-  getFilteredOrders() {
-    const { orders, currentTab } = this.data
-    if (currentTab === 'all') return orders
-    return orders.filter(o => o.status === currentTab)
-  },
-
-  getStatusInfo(status) {
-    return STATUS_MAP[status] || { text: status, color: '#999' }
   },
 
   goLogin() {

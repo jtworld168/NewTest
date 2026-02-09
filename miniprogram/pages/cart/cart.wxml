@@ -3,7 +3,7 @@
   <view class="empty-state" wx:if="{{!loading && !cartItems.length}}">
     <text class="empty-icon">🛒</text>
     <text class="empty-text">购物车空空如也</text>
-    <button class="btn-primary go-shop-btn" bindtap="goLogin" wx:if="{{!cartItems.length}}">去逛逛</button>
+    <button class="btn-primary go-shop-btn" bindtap="goShopping">去逛逛</button>
   </view>
 
   <!-- Cart Items -->

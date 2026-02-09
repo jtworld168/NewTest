@@ -179,6 +179,10 @@ Page({
     })
   },
 
+  goShopping() {
+    wx.switchTab({ url: '/pages/index/index' })
+  },
+
   goLogin() {
     wx.navigateTo({ url: '/pages/login/login' })
   },
