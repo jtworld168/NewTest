@@ -65,6 +65,19 @@ CREATE TABLE IF NOT EXISTS `user_coupon` (
     CONSTRAINT `fk_user_coupon_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`)
 );
 
+CREATE TABLE IF NOT EXISTS `cart_item` (
+    `id`          BIGINT    NOT NULL AUTO_INCREMENT,
+    `user_id`     BIGINT    NOT NULL,
+    `product_id`  BIGINT    NOT NULL,
+    `quantity`    INT       NOT NULL DEFAULT 1,
+    `create_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `update_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `deleted`     INT       DEFAULT 0,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+    CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+);
+
 CREATE TABLE IF NOT EXISTS `order` (
     `id`                BIGINT         NOT NULL AUTO_INCREMENT,
     `user_id`           BIGINT         NOT NULL,

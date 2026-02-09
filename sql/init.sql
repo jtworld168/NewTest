@@ -122,6 +122,22 @@ CREATE TABLE IF NOT EXISTS `order_items` (
     CONSTRAINT `fk_order_item_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单商品明细表';
 
+-- 购物车表
+CREATE TABLE IF NOT EXISTS `cart_item` (
+    `id`          BIGINT    NOT NULL AUTO_INCREMENT COMMENT '购物车商品ID',
+    `user_id`     BIGINT    NOT NULL COMMENT '用户ID',
+    `product_id`  BIGINT    NOT NULL COMMENT '商品ID',
+    `quantity`    INT       NOT NULL DEFAULT 1 COMMENT '数量',
+    `create_time` DATETIME  DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted`     INT       DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    PRIMARY KEY (`id`),
+    KEY `idx_cart_user_id` (`user_id`),
+    KEY `idx_cart_product_id` (`product_id`),
+    CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+    CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='购物车表';
+
 -- 订单支付表
 CREATE TABLE IF NOT EXISTS `payment` (
     `id`              BIGINT         NOT NULL AUTO_INCREMENT COMMENT '支付ID',
