@@ -1,0 +1,44 @@
+<view class="container">
+  <!-- User Header -->
+  <view class="user-header">
+    <block wx:if="{{isLoggedIn}}">
+      <image class="avatar" src="{{userInfo.avatar ? getFileUrl(userInfo.avatar) : '/images/default-avatar.png'}}" mode="aspectFill"></image>
+      <view class="user-info">
+        <text class="username">{{userInfo.username}}</text>
+        <text class="user-role">{{roleText}}</text>
+        <text class="user-phone" wx:if="{{userInfo.phone}}">📱 {{userInfo.phone}}</text>
+      </view>
+    </block>
+    <block wx:else>
+      <image class="avatar" src="/images/default-avatar.png" mode="aspectFill"></image>
+      <view class="user-info">
+        <text class="username" bindtap="goLogin">点击登录</text>
+        <text class="user-role">未登录</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- Menu List -->
+  <view class="menu-list" wx:if="{{isLoggedIn}}">
+    <view class="menu-item" bindtap="goOrders">
+      <text class="menu-icon">📋</text>
+      <text class="menu-text">我的订单</text>
+      <text class="menu-arrow">></text>
+    </view>
+    <view class="menu-item" bindtap="goCart">
+      <text class="menu-icon">🛒</text>
+      <text class="menu-text">购物车</text>
+      <text class="menu-arrow">></text>
+    </view>
+  </view>
+
+  <!-- Actions -->
+  <view class="actions" wx:if="{{!isLoggedIn}}">
+    <button class="btn-primary" bindtap="goLogin">登录</button>
+    <button class="btn-register" bindtap="goRegister">注册新账号</button>
+  </view>
+
+  <view class="actions" wx:if="{{isLoggedIn}}">
+    <button class="btn-danger logout-btn" bindtap="doLogout">退出登录</button>
+  </view>
+</view>

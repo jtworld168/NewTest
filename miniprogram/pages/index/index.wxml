@@ -1,0 +1,50 @@
+<view class="container">
+  <!-- Search Bar -->
+  <view class="search-bar" bindtap="goToCategory">
+    <view class="search-input">
+      <text class="search-icon">🔍</text>
+      <text class="search-placeholder">搜索商品</text>
+    </view>
+  </view>
+
+  <!-- Category Quick Links -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">商品分类</text>
+      <text class="section-more" bindtap="goToCategory">查看全部 ></text>
+    </view>
+    <scroll-view class="category-scroll" scroll-x="true">
+      <view class="category-item" wx:for="{{categories}}" wx:key="id" bindtap="goToCategoryDetail" data-id="{{item.id}}">
+        <view class="category-icon">📦</view>
+        <text class="category-name">{{item.name}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- Product List -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">热门商品</text>
+    </view>
+    <view class="product-grid" wx:if="{{!loading}}">
+      <view class="product-card" wx:for="{{products}}" wx:key="id" bindtap="goToProductDetail" data-id="{{item.id}}">
+        <image class="product-image" src="{{item.image ? getFileUrl(item.image) : '/images/product-placeholder.png'}}" mode="aspectFill"></image>
+        <view class="product-info">
+          <text class="product-name">{{item.name}}</text>
+          <text class="product-desc" wx:if="{{item.description}}">{{item.description}}</text>
+          <view class="product-bottom">
+            <text class="price">¥{{item.price}}</text>
+            <text class="product-stock">库存: {{item.stock}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="loading" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+    <view class="empty-state" wx:if="{{!loading && products.length === 0}}">
+      <text class="empty-icon">🛒</text>
+      <text class="empty-text">暂无商品</text>
+    </view>
+  </view>
+</view>

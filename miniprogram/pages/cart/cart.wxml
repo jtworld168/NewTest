@@ -1,0 +1,58 @@
+<view class="container">
+  <!-- Not logged in -->
+  <view class="empty-state" wx:if="{{!loading && !cartItems.length}}">
+    <text class="empty-icon">🛒</text>
+    <text class="empty-text">购物车空空如也</text>
+    <button class="btn-primary go-shop-btn" bindtap="goLogin" wx:if="{{!cartItems.length}}">去逛逛</button>
+  </view>
+
+  <!-- Cart Items -->
+  <view wx:if="{{cartItems.length > 0}}">
+    <!-- Clear button -->
+    <view class="cart-header">
+      <text class="cart-title">购物车 ({{cartItems.length}})</text>
+      <text class="clear-btn" bindtap="clearCart">清空</text>
+    </view>
+
+    <view class="cart-item" wx:for="{{cartItems}}" wx:key="id">
+      <!-- Checkbox -->
+      <view class="checkbox {{selectedIds.indexOf(item.id) > -1 ? 'checked' : ''}}" bindtap="toggleSelect" data-id="{{item.id}}">
+        <text wx:if="{{selectedIds.indexOf(item.id) > -1}}">✓</text>
+      </view>
+
+      <!-- Product image -->
+      <image class="item-image" src="{{productMap[item.productId].image ? getFileUrl(productMap[item.productId].image) : '/images/product-placeholder.png'}}" mode="aspectFill"></image>
+
+      <!-- Info -->
+      <view class="item-info">
+        <text class="item-name">{{productMap[item.productId].name || '商品'}}</text>
+        <text class="price">¥{{productMap[item.productId].price || '0'}}</text>
+        <view class="quantity-control">
+          <view class="qty-btn" bindtap="changeQuantity" data-id="{{item.id}}" data-action="minus">-</view>
+          <text class="qty-num">{{item.quantity}}</text>
+          <view class="qty-btn" bindtap="changeQuantity" data-id="{{item.id}}" data-action="add">+</view>
+          <view class="delete-btn" bindtap="deleteItem" data-id="{{item.id}}">删除</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- Bottom Bar -->
+    <view class="bottom-bar">
+      <view class="select-all" bindtap="toggleSelectAll">
+        <view class="checkbox {{selectedIds.length === cartItems.length ? 'checked' : ''}}">
+          <text wx:if="{{selectedIds.length === cartItems.length}}">✓</text>
+        </view>
+        <text>全选</text>
+      </view>
+      <view class="total">
+        <text>合计: </text>
+        <text class="price">¥{{totalPrice}}</text>
+      </view>
+      <button class="checkout-btn" bindtap="checkout">结算 ({{selectedIds.length}})</button>
+    </view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+</view>

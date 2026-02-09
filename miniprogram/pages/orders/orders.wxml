@@ -1,0 +1,48 @@
+<view class="container">
+  <!-- Tabs -->
+  <view class="tabs">
+    <view class="tab {{currentTab === item.key ? 'active' : ''}}" wx:for="{{tabs}}" wx:key="key" bindtap="switchTab" data-tab="{{item.key}}">
+      <text>{{item.name}}</text>
+    </view>
+  </view>
+
+  <!-- Order List -->
+  <view class="order-list" wx:if="{{!loading}}">
+    <block wx:for="{{orders}}" wx:key="id">
+      <view class="order-card" wx:if="{{currentTab === 'all' || item.status === currentTab}}">
+        <view class="order-header">
+          <text class="order-id">订单号: {{item.id}}</text>
+          <text class="order-status" style="color: {{item.status === 'PENDING' ? '#ff9800' : item.status === 'PAID' ? '#07c160' : item.status === 'CANCELLED' ? '#ee0a24' : '#999'}}">
+            {{item.status === 'PENDING' ? '待支付' : item.status === 'PAID' ? '已支付' : item.status === 'COMPLETED' ? '已完成' : '已取消'}}
+          </text>
+        </view>
+
+        <view class="order-body">
+          <image class="order-product-image" src="{{productMap[item.productId].image ? getFileUrl(productMap[item.productId].image) : '/images/product-placeholder.png'}}" mode="aspectFill"></image>
+          <view class="order-product-info">
+            <text class="order-product-name">{{productMap[item.productId].name || '商品 #' + item.productId}}</text>
+            <text class="order-quantity">x{{item.quantity}}</text>
+            <text class="order-price">单价: ¥{{item.priceAtPurchase}}</text>
+          </view>
+        </view>
+
+        <view class="order-footer">
+          <text class="order-time" wx:if="{{item.createTime}}">{{item.createTime}}</text>
+          <view class="order-total">
+            <text>合计: </text>
+            <text class="price">¥{{item.totalAmount}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <view class="empty-state" wx:if="{{!loading && orders.length === 0}}">
+    <text class="empty-icon">📋</text>
+    <text class="empty-text">暂无订单</text>
+  </view>
+</view>
