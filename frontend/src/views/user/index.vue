@@ -25,6 +25,12 @@
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column label="头像" width="80">
+          <template #default="{ row }">
+            <el-avatar v-if="row.avatar" :src="row.avatar" :size="40" />
+            <el-avatar v-else :size="40">{{ row.username?.charAt(0)?.toUpperCase() }}</el-avatar>
+          </template>
+        </el-table-column>
         <el-table-column prop="username" label="用户名" />
         <el-table-column prop="phone" label="手机号" />
         <el-table-column prop="role" label="角色">
@@ -51,6 +57,20 @@
 
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑用户' : '新增用户'" width="500">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
+        <el-form-item label="头像">
+          <div class="avatar-upload">
+            <el-upload
+              class="avatar-uploader"
+              :show-file-list="false"
+              :http-request="handleAvatarUpload"
+              accept="image/*"
+            >
+              <el-avatar v-if="form.avatar" :src="form.avatar" :size="80" />
+              <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+            </el-upload>
+            <el-button v-if="form.avatar" link type="danger" @click="form.avatar = ''">移除</el-button>
+          </div>
+        </el-form-item>
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" />
         </el-form-item>
@@ -82,8 +102,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { listUsers, addUser, updateUser, deleteUser, deleteBatchUsers, searchUsers, getUsersByRole } from '../../api/user'
+import { uploadImage } from '../../api/upload'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FormInstance } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
+import type { FormInstance, UploadRequestOptions } from 'element-plus'
 import type { User } from '../../types'
 
 const roleMap: Record<string, string> = { ADMIN: '管理员', EMPLOYEE: '员工', CUSTOMER: '顾客' }
@@ -95,13 +117,23 @@ const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 
-const defaultForm = (): User => ({ username: '', password: '', phone: '', role: 'ADMIN' as any, isHotelEmployee: false })
+const defaultForm = (): User => ({ username: '', password: '', phone: '', role: 'ADMIN' as any, isHotelEmployee: false, avatar: '' })
 const form = reactive<User>(defaultForm())
 
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
   role: [{ required: true, message: '请选择角色', trigger: 'change' }]
+}
+
+async function handleAvatarUpload(options: UploadRequestOptions) {
+  try {
+    const res = await uploadImage(options.file as File)
+    form.avatar = res.data
+    ElMessage.success('头像上传成功')
+  } catch {
+    ElMessage.error('头像上传失败')
+  }
 }
 
 async function loadData() {
@@ -171,4 +203,8 @@ onMounted(loadData)
 <style scoped>
 .card-header { display: flex; justify-content: space-between; align-items: center; }
 .search-bar { margin-bottom: 16px; display: flex; gap: 12px; }
+.avatar-upload { display: flex; align-items: center; gap: 12px; }
+.avatar-uploader { border: 1px dashed var(--el-border-color); border-radius: 50%; cursor: pointer; overflow: hidden; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+.avatar-uploader:hover { border-color: var(--el-color-primary); }
+.avatar-uploader-icon { font-size: 28px; color: #8c939d; }
 </style>

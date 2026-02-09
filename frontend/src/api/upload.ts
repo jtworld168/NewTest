@@ -1,16 +1,16 @@
-import request from '../utils/request'
+import request from './request'
 import type { Result } from '../types'
 
 export function uploadImage(file: File): Promise<Result<string>> {
   const formData = new FormData()
   formData.append('file', file)
-  return request.post('/api/file/upload', formData, {
+  return request.post('/file/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
 }
 
 export function listFiles(): Promise<Result<string[]>> {
-  return request.get('/api/file/list')
+  return request.get('/file/list')
 }
 
 export function downloadFile(filename: string): void {
