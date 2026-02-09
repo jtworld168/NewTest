@@ -42,7 +42,7 @@
         <el-table-column prop="stock" label="库存" width="80" />
         <el-table-column prop="categoryId" label="分类" width="100">
           <template #default="{ row }">
-            {{ categoryMap[row.categoryId] || row.categoryId || '-' }}
+            {{ categoryMap[row.categoryId] || '-' }}
           </template>
         </el-table-column>
         <el-table-column prop="employeeDiscountRate" label="员工折扣" width="100">

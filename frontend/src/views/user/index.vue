@@ -28,7 +28,7 @@
         <el-table-column label="头像" width="80">
           <template #default="{ row }">
             <el-avatar v-if="row.avatar" :src="row.avatar" :size="40" />
-            <el-avatar v-else :size="40">{{ row.username?.charAt(0)?.toUpperCase() }}</el-avatar>
+            <el-avatar v-else :size="40">{{ row.username?.charAt(0).toUpperCase() }}</el-avatar>
           </template>
         </el-table-column>
         <el-table-column prop="username" label="用户名" />
