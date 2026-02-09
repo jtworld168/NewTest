@@ -97,11 +97,14 @@ public class CouponController {
         if (coupon.getMinAmount() != null && coupon.getMinAmount().compareTo(BigDecimal.ZERO) < 0) {
             return Result.badRequest("最低使用金额不能为负数");
         }
-        if (coupon.getTotalCount() != null && coupon.getTotalCount() < 0) {
-            return Result.badRequest("发放总数量不能为负数");
+        if (coupon.getTotalCount() != null && coupon.getTotalCount() <= 0) {
+            return Result.badRequest("发放总数量必须大于0");
         }
         if (coupon.getRemainingCount() != null && coupon.getRemainingCount() < 0) {
             return Result.badRequest("剩余数量不能为负数");
+        }
+        if (coupon.getName() != null && coupon.getName().isBlank()) {
+            return Result.badRequest("优惠券名称不能为空字符串");
         }
         return couponService.updateCoupon(coupon) ? Result.success() : Result.error("更新优惠券面额失败");
     }
