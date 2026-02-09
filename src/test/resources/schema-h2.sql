@@ -68,6 +68,21 @@ CREATE TABLE IF NOT EXISTS `order` (
     CONSTRAINT `fk_order_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`)
 );
 
+CREATE TABLE IF NOT EXISTS `order_items` (
+    `id`                BIGINT         NOT NULL AUTO_INCREMENT,
+    `order_id`          BIGINT         NOT NULL,
+    `product_id`        BIGINT         NOT NULL,
+    `quantity`          INT            NOT NULL DEFAULT 1,
+    `price_at_purchase` DECIMAL(10,2)  NOT NULL,
+    `subtotal`          DECIMAL(10,2)  NOT NULL,
+    `create_time`       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `update_time`       TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `deleted`           INT            DEFAULT 0,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_order_item_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
+    CONSTRAINT `fk_order_item_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+);
+
 CREATE TABLE IF NOT EXISTS `payment` (
     `id`              BIGINT         NOT NULL AUTO_INCREMENT,
     `order_id`        BIGINT         NOT NULL,

@@ -86,6 +86,24 @@ CREATE TABLE IF NOT EXISTS `order` (
     CONSTRAINT `fk_order_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单表';
 
+-- 订单商品明细表
+CREATE TABLE IF NOT EXISTS `order_items` (
+    `id`                BIGINT         NOT NULL AUTO_INCREMENT COMMENT '明细ID',
+    `order_id`          BIGINT         NOT NULL COMMENT '订单ID',
+    `product_id`        BIGINT         NOT NULL COMMENT '商品ID',
+    `quantity`          INT            NOT NULL DEFAULT 1 COMMENT '购买数量',
+    `price_at_purchase` DECIMAL(10,2)  NOT NULL COMMENT '下单时单价（已计算员工折扣）',
+    `subtotal`          DECIMAL(10,2)  NOT NULL COMMENT '小计金额（单价×数量）',
+    `create_time`       DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`       DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted`           INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    PRIMARY KEY (`id`),
+    KEY `idx_oi_order_id` (`order_id`),
+    KEY `idx_oi_product_id` (`product_id`),
+    CONSTRAINT `fk_order_item_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
+    CONSTRAINT `fk_order_item_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单商品明细表';
+
 -- 订单支付表
 CREATE TABLE IF NOT EXISTS `payment` (
     `id`              BIGINT         NOT NULL AUTO_INCREMENT COMMENT '支付ID',
