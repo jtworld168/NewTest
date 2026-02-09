@@ -11,11 +11,10 @@
         </div>
       </template>
       <div class="search-bar">
-        <el-input v-model="filterUserId" placeholder="按用户ID筛选" clearable style="width: 200px" @clear="loadData">
-          <template #append>
-            <el-button @click="handleFilterByUser">筛选</el-button>
-          </template>
-        </el-input>
+        <el-input-number v-model="filterUserId" placeholder="按用户ID筛选" :min="1" controls-position="right" style="width: 200px">
+        </el-input-number>
+        <el-button @click="handleFilterByUser">筛选</el-button>
+        <el-button @click="filterUserId = undefined; loadData()">重置</el-button>
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
@@ -63,7 +62,7 @@ import type { CartItem } from '../../types'
 
 const tableData = ref<CartItem[]>([])
 const selectedIds = ref<number[]>([])
-const filterUserId = ref('')
+const filterUserId = ref<number | undefined>(undefined)
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
@@ -84,7 +83,7 @@ async function loadData() {
 
 async function handleFilterByUser() {
   if (filterUserId.value) {
-    const res = await getCartItemsByUserId(Number(filterUserId.value))
+    const res = await getCartItemsByUserId(filterUserId.value)
     tableData.value = res.data || []
   } else {
     loadData()

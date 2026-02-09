@@ -73,7 +73,6 @@ import type { UserCoupon } from '../../types'
 
 const statusMap: Record<string, string> = { AVAILABLE: '可用', USED: '已使用', EXPIRED: '已过期' }
 const tableData = ref<UserCoupon[]>([])
-const allData = ref<UserCoupon[]>([])
 const selectedIds = ref<number[]>([])
 const filterStatus = ref('')
 const dialogVisible = ref(false)
@@ -91,8 +90,7 @@ const rules = {
 
 async function loadData() {
   const res = await listUserCoupons()
-  allData.value = res.data || []
-  tableData.value = allData.value
+  tableData.value = res.data || []
 }
 
 async function handleFilter() {
@@ -100,7 +98,7 @@ async function handleFilter() {
     const res = await getUserCouponsByStatus(filterStatus.value)
     tableData.value = res.data || []
   } else {
-    tableData.value = allData.value
+    loadData()
   }
 }
 
