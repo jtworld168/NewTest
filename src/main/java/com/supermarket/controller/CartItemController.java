@@ -88,7 +88,7 @@ public class CartItemController {
         }
         List<Long> validIds = ids.stream().filter(id -> id != null).toList();
         if (validIds.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.error("ID列表中没有有效ID");
         }
         return cartItemService.deleteBatchCartItems(validIds) ? Result.success() : Result.error("批量删除购物车商品失败");
     }
@@ -96,7 +96,6 @@ public class CartItemController {
     @Operation(summary = "清空用户购物车")
     @DeleteMapping("/clear/{userId}")
     public Result<Void> clearCart(@Parameter(description = "用户ID") @PathVariable Long userId) {
-        cartItemService.clearCart(userId);
-        return Result.success();
+        return cartItemService.clearCart(userId) ? Result.success() : Result.error("清空购物车失败");
     }
 }
