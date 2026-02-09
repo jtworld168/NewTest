@@ -3,26 +3,28 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>分类管理</span>
+          <span>购物车管理</span>
           <div>
             <el-button type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
-            <el-button type="primary" @click="openDialog()">新增分类</el-button>
+            <el-button type="primary" @click="openDialog()">新增</el-button>
           </div>
         </div>
       </template>
       <div class="search-bar">
-        <el-input v-model="searchKeyword" placeholder="搜索分类名称/描述" clearable style="width: 300px" @clear="loadData" @keyup.enter="handleSearch">
+        <el-input v-model="filterUserId" placeholder="按用户ID筛选" clearable style="width: 200px" @clear="loadData">
           <template #append>
-            <el-button @click="handleSearch">搜索</el-button>
+            <el-button @click="handleFilterByUser">筛选</el-button>
           </template>
         </el-input>
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="分类名称" />
-        <el-table-column prop="description" label="描述" />
+        <el-table-column prop="userId" label="用户ID" width="100" />
+        <el-table-column prop="productId" label="商品ID" width="100" />
+        <el-table-column prop="quantity" label="数量" width="100" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column prop="updateTime" label="更新时间" width="180" />
         <el-table-column label="操作" width="180">
           <template #default="{ row }">
             <el-button size="small" @click="openDialog(row)">编辑</el-button>
@@ -32,13 +34,16 @@
       </el-table>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑分类' : '新增分类'" width="500">
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑购物车项' : '新增购物车项'" width="500">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
-        <el-form-item label="分类名称" prop="name">
-          <el-input v-model="form.name" />
+        <el-form-item label="用户ID" prop="userId">
+          <el-input-number v-model="form.userId" :min="1" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="form.description" type="textarea" :rows="3" />
+        <el-form-item label="商品ID" prop="productId">
+          <el-input-number v-model="form.productId" :min="1" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="数量" prop="quantity">
+          <el-input-number v-model="form.quantity" :min="1" style="width: 100%" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -51,44 +56,46 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listCategories, addCategory, updateCategory, deleteCategory, deleteBatchCategories, searchCategories } from '../../api/category'
+import { listCartItems, getCartItemsByUserId, addCartItem, updateCartItem, deleteCartItem, deleteBatchCartItems } from '../../api/cartItem'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import type { Category } from '../../types'
+import type { CartItem } from '../../types'
 
-const tableData = ref<Category[]>([])
+const tableData = ref<CartItem[]>([])
 const selectedIds = ref<number[]>([])
-const searchKeyword = ref('')
+const filterUserId = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 
-const defaultForm = (): Category => ({ name: '', description: '' })
-const form = reactive<Category>(defaultForm())
+const defaultForm = (): CartItem => ({ userId: 1, productId: 1, quantity: 1 })
+const form = reactive<CartItem>(defaultForm())
 
 const rules = {
-  name: [{ required: true, message: '请输入分类名称', trigger: 'blur' }]
+  userId: [{ required: true, message: '请输入用户ID', trigger: 'blur' }],
+  productId: [{ required: true, message: '请输入商品ID', trigger: 'blur' }],
+  quantity: [{ required: true, message: '请输入数量', trigger: 'blur' }]
 }
 
 async function loadData() {
-  const res = await listCategories()
+  const res = await listCartItems()
   tableData.value = res.data || []
 }
 
-async function handleSearch() {
-  if (searchKeyword.value.trim()) {
-    const res = await searchCategories(searchKeyword.value.trim())
+async function handleFilterByUser() {
+  if (filterUserId.value) {
+    const res = await getCartItemsByUserId(Number(filterUserId.value))
     tableData.value = res.data || []
   } else {
     loadData()
   }
 }
 
-function handleSelectionChange(rows: Category[]) {
+function handleSelectionChange(rows: CartItem[]) {
   selectedIds.value = rows.map(r => r.id!)
 }
 
-function openDialog(row?: Category) {
+function openDialog(row?: CartItem) {
   isEdit.value = !!row
   Object.assign(form, row ? { ...row } : defaultForm())
   dialogVisible.value = true
@@ -98,10 +105,10 @@ async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
   if (isEdit.value) {
-    await updateCategory(form)
+    await updateCartItem(form)
     ElMessage.success('更新成功')
   } else {
-    await addCategory(form)
+    await addCartItem(form)
     ElMessage.success('新增成功')
   }
   dialogVisible.value = false
@@ -109,15 +116,15 @@ async function handleSubmit() {
 }
 
 async function handleDelete(id: number) {
-  await ElMessageBox.confirm('确定删除该分类？', '提示', { type: 'warning' })
-  await deleteCategory(id)
+  await ElMessageBox.confirm('确定删除该购物车项？', '提示', { type: 'warning' })
+  await deleteCartItem(id)
   ElMessage.success('删除成功')
   loadData()
 }
 
 async function handleBatchDelete() {
-  await ElMessageBox.confirm(`确定删除选中的 ${selectedIds.value.length} 个分类？`, '提示', { type: 'warning' })
-  await deleteBatchCategories(selectedIds.value)
+  await ElMessageBox.confirm(`确定删除选中的 ${selectedIds.value.length} 个购物车项？`, '提示', { type: 'warning' })
+  await deleteBatchCartItems(selectedIds.value)
   ElMessage.success('批量删除成功')
   loadData()
 }

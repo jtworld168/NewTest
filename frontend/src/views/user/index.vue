@@ -10,6 +10,18 @@
           </div>
         </div>
       </template>
+      <div class="search-bar">
+        <el-input v-model="searchKeyword" placeholder="搜索用户名/手机号" clearable style="width: 300px" @clear="loadData" @keyup.enter="handleSearch">
+          <template #append>
+            <el-button @click="handleSearch">搜索</el-button>
+          </template>
+        </el-input>
+        <el-select v-model="filterRole" placeholder="按角色筛选" clearable style="width: 160px" @change="handleFilter">
+          <el-option label="管理员" value="ADMIN" />
+          <el-option label="员工" value="EMPLOYEE" />
+          <el-option label="顾客" value="CUSTOMER" />
+        </el-select>
+      </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" />
@@ -69,7 +81,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listUsers, addUser, updateUser, deleteUser, deleteBatchUsers } from '../../api/user'
+import { listUsers, addUser, updateUser, deleteUser, deleteBatchUsers, searchUsers, getUsersByRole } from '../../api/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { User } from '../../types'
@@ -77,6 +89,8 @@ import type { User } from '../../types'
 const roleMap: Record<string, string> = { ADMIN: '管理员', EMPLOYEE: '员工', CUSTOMER: '顾客' }
 const tableData = ref<User[]>([])
 const selectedIds = ref<number[]>([])
+const searchKeyword = ref('')
+const filterRole = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
@@ -93,6 +107,24 @@ const rules = {
 async function loadData() {
   const res = await listUsers()
   tableData.value = res.data || []
+}
+
+async function handleSearch() {
+  if (searchKeyword.value.trim()) {
+    const res = await searchUsers(searchKeyword.value.trim())
+    tableData.value = res.data || []
+  } else {
+    loadData()
+  }
+}
+
+async function handleFilter() {
+  if (filterRole.value) {
+    const res = await getUsersByRole(filterRole.value)
+    tableData.value = res.data || []
+  } else {
+    loadData()
+  }
 }
 
 function handleSelectionChange(rows: User[]) {
@@ -138,4 +170,5 @@ onMounted(loadData)
 
 <style scoped>
 .card-header { display: flex; justify-content: space-between; align-items: center; }
+.search-bar { margin-bottom: 16px; display: flex; gap: 12px; }
 </style>

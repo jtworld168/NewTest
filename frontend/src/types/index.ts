@@ -63,7 +63,7 @@ export interface Order {
   quantity: number
   priceAtPurchase?: number
   totalAmount?: number
-  couponId?: number
+  userCouponId?: number
   status: OrderStatus
   createTime?: string
   updateTime?: string
@@ -100,9 +100,31 @@ export interface Coupon {
   name: string
   discount: number
   minAmount: number
+  totalCount: number
+  remainingCount: number
   startTime: string
   endTime: string
+  createTime?: string
+  updateTime?: string
+  deleted?: number
+}
+
+export interface UserCoupon {
+  id?: number
+  userId: number
+  couponId: number
   status: CouponStatus
+  useTime?: string
+  createTime?: string
+  updateTime?: string
+  deleted?: number
+}
+
+export interface CartItem {
+  id?: number
+  userId: number
+  productId: number
+  quantity: number
   createTime?: string
   updateTime?: string
   deleted?: number

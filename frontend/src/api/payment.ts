@@ -21,6 +21,10 @@ export function getPaymentByTransactionNo(transactionNo: string): Promise<Result
   return request.get(`/payments/getByTransactionNo/${transactionNo}`)
 }
 
+export function searchPayments(keyword: string): Promise<Result<Payment[]>> {
+  return request.get('/payments/search', { params: { keyword } })
+}
+
 export function addPayment(data: Payment): Promise<Result<void>> {
   return request.post('/payments/add', data)
 }

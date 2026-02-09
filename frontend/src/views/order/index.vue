@@ -10,6 +10,14 @@
           </div>
         </div>
       </template>
+      <div class="search-bar">
+        <el-select v-model="filterStatus" placeholder="按状态筛选" clearable style="width: 160px" @change="handleFilter">
+          <el-option label="待支付" value="PENDING" />
+          <el-option label="已支付" value="PAID" />
+          <el-option label="已完成" value="COMPLETED" />
+          <el-option label="已取消" value="CANCELLED" />
+        </el-select>
+      </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" />
@@ -22,7 +30,7 @@
         <el-table-column prop="totalAmount" label="总金额" width="100">
           <template #default="{ row }">¥{{ row.totalAmount }}</template>
         </el-table-column>
-        <el-table-column prop="couponId" label="优惠券ID" width="90" />
+        <el-table-column prop="userCouponId" label="用户优惠券ID" width="120" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="statusType[row.status]">{{ statusMap[row.status] }}</el-tag>
@@ -51,7 +59,7 @@
             <el-input-number v-model="form.quantity" :min="1" style="width: 100%" />
           </el-form-item>
           <el-form-item label="优惠券ID">
-            <el-input-number v-model="form.couponId" :min="0" style="width: 100%" />
+            <el-input-number v-model="form.userCouponId" :min="0" style="width: 100%" />
           </el-form-item>
         </template>
         <template v-else>
@@ -75,7 +83,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listOrders, addOrder, updateOrder, deleteOrder, deleteBatchOrders } from '../../api/order'
+import { listOrders, addOrder, updateOrder, deleteOrder, deleteBatchOrders, getOrdersByStatus } from '../../api/order'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { Order } from '../../types'
@@ -85,11 +93,12 @@ const statusType: Record<string, string> = { PENDING: 'warning', PAID: 'success'
 
 const tableData = ref<Order[]>([])
 const selectedIds = ref<number[]>([])
+const filterStatus = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
 
-const defaultForm = () => ({ userId: 1, productId: 1, quantity: 1, couponId: undefined as number | undefined, status: 'PENDING' as any })
+const defaultForm = () => ({ userId: 1, productId: 1, quantity: 1, userCouponId: undefined as number | undefined, status: 'PENDING' as any })
 const form = reactive<any>(defaultForm())
 
 const rules = {
@@ -101,6 +110,15 @@ const rules = {
 async function loadData() {
   const res = await listOrders()
   tableData.value = res.data || []
+}
+
+async function handleFilter() {
+  if (filterStatus.value) {
+    const res = await getOrdersByStatus(filterStatus.value)
+    tableData.value = res.data || []
+  } else {
+    loadData()
+  }
 }
 
 function handleSelectionChange(rows: Order[]) {
@@ -121,7 +139,7 @@ async function handleSubmit() {
     ElMessage.success('更新成功')
   } else {
     const params: any = { userId: form.userId, productId: form.productId, quantity: form.quantity }
-    if (form.couponId) params.couponId = form.couponId
+    if (form.userCouponId) params.userCouponId = form.userCouponId
     await addOrder(params)
     ElMessage.success('新增成功')
   }
@@ -148,4 +166,5 @@ onMounted(loadData)
 
 <style scoped>
 .card-header { display: flex; justify-content: space-between; align-items: center; }
+.search-bar { margin-bottom: 16px; display: flex; gap: 12px; }
 </style>

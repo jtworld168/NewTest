@@ -10,6 +10,16 @@
           </div>
         </div>
       </template>
+      <div class="search-bar">
+        <el-input v-model="searchKeyword" placeholder="搜索商品名称/描述" clearable style="width: 300px" @clear="loadData" @keyup.enter="handleSearch">
+          <template #append>
+            <el-button @click="handleSearch">搜索</el-button>
+          </template>
+        </el-input>
+        <el-select v-model="filterCategoryId" placeholder="按分类筛选" clearable style="width: 160px" @change="handleFilter">
+          <el-option v-for="cat in categories" :key="cat.id" :label="cat.name" :value="cat.id" />
+        </el-select>
+      </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" />
@@ -66,7 +76,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listProducts, addProduct, updateProduct, deleteProduct, deleteBatchProducts } from '../../api/product'
+import { listProducts, addProduct, updateProduct, deleteProduct, deleteBatchProducts, searchProducts, getProductsByCategoryId } from '../../api/product'
 import { listCategories } from '../../api/category'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
@@ -75,6 +85,8 @@ import type { Product, Category } from '../../types'
 const tableData = ref<Product[]>([])
 const categories = ref<Category[]>([])
 const selectedIds = ref<number[]>([])
+const searchKeyword = ref('')
+const filterCategoryId = ref<number | undefined>(undefined)
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
@@ -92,6 +104,24 @@ async function loadData() {
   const [res, catRes] = await Promise.all([listProducts(), listCategories()])
   tableData.value = res.data || []
   categories.value = catRes.data || []
+}
+
+async function handleSearch() {
+  if (searchKeyword.value.trim()) {
+    const res = await searchProducts(searchKeyword.value.trim())
+    tableData.value = res.data || []
+  } else {
+    loadData()
+  }
+}
+
+async function handleFilter() {
+  if (filterCategoryId.value) {
+    const res = await getProductsByCategoryId(filterCategoryId.value)
+    tableData.value = res.data || []
+  } else {
+    loadData()
+  }
 }
 
 function handleSelectionChange(rows: Product[]) {
@@ -137,4 +167,5 @@ onMounted(loadData)
 
 <style scoped>
 .card-header { display: flex; justify-content: space-between; align-items: center; }
+.search-bar { margin-bottom: 16px; display: flex; gap: 12px; }
 </style>

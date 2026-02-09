@@ -37,11 +37,19 @@
         </el-menu-item>
         <el-menu-item index="/coupons">
           <el-icon><Ticket /></el-icon>
-          <span>优惠券管理</span>
+          <span>优惠券模板</span>
+        </el-menu-item>
+        <el-menu-item index="/user-coupons">
+          <el-icon><Present /></el-icon>
+          <span>用户优惠券</span>
         </el-menu-item>
         <el-menu-item index="/payments">
           <el-icon><CreditCard /></el-icon>
           <span>支付管理</span>
+        </el-menu-item>
+        <el-menu-item index="/cart-items">
+          <el-icon><ShoppingCart /></el-icon>
+          <span>购物车管理</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -67,7 +75,7 @@ import { useUserStore } from '../stores/user'
 import { logout } from '../api/auth'
 import { ElMessage } from 'element-plus'
 import {
-  HomeFilled, User, Menu, Goods, Document, List, Ticket, CreditCard
+  HomeFilled, User, Menu, Goods, Document, List, Ticket, CreditCard, Present, ShoppingCart
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

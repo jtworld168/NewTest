@@ -10,6 +10,19 @@
           </div>
         </div>
       </template>
+      <div class="search-bar">
+        <el-input v-model="searchKeyword" placeholder="搜索交易号" clearable style="width: 300px" @clear="loadData" @keyup.enter="handleSearch">
+          <template #append>
+            <el-button @click="handleSearch">搜索</el-button>
+          </template>
+        </el-input>
+        <el-select v-model="filterStatus" placeholder="按状态筛选" clearable style="width: 160px" @change="handleFilter">
+          <el-option label="待支付" value="PENDING" />
+          <el-option label="成功" value="SUCCESS" />
+          <el-option label="失败" value="FAILED" />
+          <el-option label="已退款" value="REFUNDED" />
+        </el-select>
+      </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" />
@@ -75,7 +88,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listPayments, addPayment, updatePayment, deletePayment, deleteBatchPayments } from '../../api/payment'
+import { listPayments, addPayment, updatePayment, deletePayment, deleteBatchPayments, searchPayments, getPaymentsByStatus } from '../../api/payment'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { Payment } from '../../types'
@@ -86,6 +99,8 @@ const payStatusType: Record<string, string> = { PENDING: 'warning', SUCCESS: 'su
 
 const tableData = ref<Payment[]>([])
 const selectedIds = ref<number[]>([])
+const searchKeyword = ref('')
+const filterStatus = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
@@ -103,6 +118,24 @@ const rules = {
 async function loadData() {
   const res = await listPayments()
   tableData.value = res.data || []
+}
+
+async function handleSearch() {
+  if (searchKeyword.value.trim()) {
+    const res = await searchPayments(searchKeyword.value.trim())
+    tableData.value = res.data || []
+  } else {
+    loadData()
+  }
+}
+
+async function handleFilter() {
+  if (filterStatus.value) {
+    const res = await getPaymentsByStatus(filterStatus.value)
+    tableData.value = res.data || []
+  } else {
+    loadData()
+  }
 }
 
 function handleSelectionChange(rows: Payment[]) {
@@ -148,4 +181,5 @@ onMounted(loadData)
 
 <style scoped>
 .card-header { display: flex; justify-content: space-between; align-items: center; }
+.search-bar { margin-bottom: 16px; display: flex; gap: 12px; }
 </style>

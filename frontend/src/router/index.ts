@@ -53,13 +53,25 @@ const router = createRouter({
           path: 'coupons',
           name: 'Coupons',
           component: () => import('../views/coupon/index.vue'),
-          meta: { title: '优惠券管理' }
+          meta: { title: '优惠券模板' }
+        },
+        {
+          path: 'user-coupons',
+          name: 'UserCoupons',
+          component: () => import('../views/user-coupon/index.vue'),
+          meta: { title: '用户优惠券' }
         },
         {
           path: 'payments',
           name: 'Payments',
           component: () => import('../views/payment/index.vue'),
           meta: { title: '支付管理' }
+        },
+        {
+          path: 'cart-items',
+          name: 'CartItems',
+          component: () => import('../views/cart-item/index.vue'),
+          meta: { title: '购物车管理' }
         }
       ]
     }

@@ -9,12 +9,12 @@ export function listCoupons(): Promise<Result<Coupon[]>> {
   return request.get('/coupons/list')
 }
 
-export function getCouponsByStatus(status: string): Promise<Result<Coupon[]>> {
-  return request.get(`/coupons/getByStatus/${status}`)
-}
-
 export function getCouponByName(name: string): Promise<Result<Coupon>> {
   return request.get(`/coupons/getByName/${name}`)
+}
+
+export function searchCoupons(keyword: string): Promise<Result<Coupon[]>> {
+  return request.get('/coupons/search', { params: { keyword } })
 }
 
 export function addCoupon(data: Coupon): Promise<Result<void>> {

@@ -21,8 +21,34 @@
       </el-col>
       <el-col :span="6">
         <el-card shadow="hover">
-          <template #header>优惠券总数</template>
+          <template #header>优惠券模板</template>
           <div class="stat-value">{{ stats.coupons }}</div>
+        </el-card>
+      </el-col>
+    </el-row>
+    <el-row :gutter="20" style="margin-top: 20px">
+      <el-col :span="6">
+        <el-card shadow="hover">
+          <template #header>分类总数</template>
+          <div class="stat-value">{{ stats.categories }}</div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover">
+          <template #header>支付记录</template>
+          <div class="stat-value">{{ stats.payments }}</div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover">
+          <template #header>购物车项</template>
+          <div class="stat-value">{{ stats.cartItems }}</div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover">
+          <template #header>用户优惠券</template>
+          <div class="stat-value">{{ stats.userCoupons }}</div>
         </el-card>
       </el-col>
     </el-row>
@@ -35,16 +61,27 @@ import { listUsers } from '../../api/user'
 import { listProducts } from '../../api/product'
 import { listOrders } from '../../api/order'
 import { listCoupons } from '../../api/coupon'
+import { listCategories } from '../../api/category'
+import { listPayments } from '../../api/payment'
+import { listCartItems } from '../../api/cartItem'
+import { listUserCoupons } from '../../api/userCoupon'
 
-const stats = reactive({ users: 0, products: 0, orders: 0, coupons: 0 })
+const stats = reactive({ users: 0, products: 0, orders: 0, coupons: 0, categories: 0, payments: 0, cartItems: 0, userCoupons: 0 })
 
 onMounted(async () => {
   try {
-    const [u, p, o, c] = await Promise.all([listUsers(), listProducts(), listOrders(), listCoupons()])
+    const [u, p, o, c, cat, pay, cart, uc] = await Promise.all([
+      listUsers(), listProducts(), listOrders(), listCoupons(),
+      listCategories(), listPayments(), listCartItems(), listUserCoupons()
+    ])
     stats.users = u.data?.length || 0
     stats.products = p.data?.length || 0
     stats.orders = o.data?.length || 0
     stats.coupons = c.data?.length || 0
+    stats.categories = cat.data?.length || 0
+    stats.payments = pay.data?.length || 0
+    stats.cartItems = cart.data?.length || 0
+    stats.userCoupons = uc.data?.length || 0
   } catch {
     // ignore
   }

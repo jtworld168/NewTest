@@ -17,6 +17,10 @@ export function getUserByUsername(username: string): Promise<Result<User>> {
   return request.get(`/users/getByUsername/${username}`)
 }
 
+export function searchUsers(keyword: string): Promise<Result<User[]>> {
+  return request.get('/users/search', { params: { keyword } })
+}
+
 export function addUser(data: User): Promise<Result<void>> {
   return request.post('/users/add', data)
 }

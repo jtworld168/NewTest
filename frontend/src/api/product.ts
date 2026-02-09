@@ -9,8 +9,8 @@ export function listProducts(): Promise<Result<Product[]>> {
   return request.get('/products/list')
 }
 
-export function searchProducts(name: string): Promise<Result<Product[]>> {
-  return request.get('/products/search', { params: { name } })
+export function searchProducts(keyword: string): Promise<Result<Product[]>> {
+  return request.get('/products/searchAll', { params: { keyword } })
 }
 
 export function getProductByName(name: string): Promise<Result<Product>> {

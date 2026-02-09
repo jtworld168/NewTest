@@ -21,11 +21,11 @@ export function getOrdersByProductId(productId: number): Promise<Result<Order[]>
   return request.get(`/orders/getByProductId/${productId}`)
 }
 
-export function getOrdersByCouponId(couponId: number): Promise<Result<Order[]>> {
-  return request.get(`/orders/getByCouponId/${couponId}`)
+export function getOrdersByUserCouponId(userCouponId: number): Promise<Result<Order[]>> {
+  return request.get(`/orders/getByUserCouponId/${userCouponId}`)
 }
 
-export function addOrder(params: { userId: number; productId: number; quantity: number; couponId?: number }): Promise<Result<void>> {
+export function addOrder(params: { userId: number; productId: number; quantity: number; userCouponId?: number }): Promise<Result<void>> {
   return request.post('/orders/add', null, { params })
 }
 

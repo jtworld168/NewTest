@@ -13,6 +13,10 @@ export function getCategoryByName(name: string): Promise<Result<Category>> {
   return request.get(`/categories/getByName/${name}`)
 }
 
+export function searchCategories(keyword: string): Promise<Result<Category[]>> {
+  return request.get('/categories/search', { params: { keyword } })
+}
+
 export function addCategory(data: Category): Promise<Result<void>> {
   return request.post('/categories/add', data)
 }
