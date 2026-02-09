@@ -3,6 +3,7 @@ package com.supermarket.controller;
 import com.supermarket.common.Result;
 import com.supermarket.entity.CartItem;
 import com.supermarket.service.CartItemService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,6 +43,14 @@ public class CartItemController {
     @GetMapping("/getByProductId/{productId}")
     public Result<List<CartItem>> getCartItemsByProductId(@Parameter(description = "商品ID") @PathVariable Long productId) {
         return Result.success(cartItemService.getCartItemsByProductId(productId));
+    }
+
+    @Operation(summary = "分页查询购物车商品列表")
+    @GetMapping("/listPage")
+    public Result<IPage<CartItem>> listPage(
+            @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(cartItemService.listPage(pageNum, pageSize));
     }
 
     @Operation(summary = "添加商品到购物车")

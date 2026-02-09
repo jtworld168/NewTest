@@ -1,6 +1,8 @@
 package com.supermarket.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.supermarket.entity.Product;
 import com.supermarket.mapper.ProductMapper;
@@ -29,14 +31,32 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Override
     public List<Product> searchProductsByName(String name) {
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(Product::getName, name);
+        wrapper.like(Product::getName, name)
+               .orderByDesc(Product::getCreateTime);
         return list(wrapper);
+    }
+
+    @Override
+    public List<Product> searchProducts(String keyword) {
+        LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
+        wrapper.and(w -> w.like(Product::getName, keyword)
+                .or().like(Product::getDescription, keyword))
+               .orderByDesc(Product::getCreateTime);
+        return list(wrapper);
+    }
+
+    @Override
+    public IPage<Product> listPage(int pageNum, int pageSize) {
+        LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(Product::getCreateTime);
+        return page(new Page<>(pageNum, pageSize), wrapper);
     }
 
     @Override
     public List<Product> getProductsByCategoryId(Long categoryId) {
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Product::getCategoryId, categoryId);
+        wrapper.eq(Product::getCategoryId, categoryId)
+               .orderByDesc(Product::getCreateTime);
         return list(wrapper);
     }
 

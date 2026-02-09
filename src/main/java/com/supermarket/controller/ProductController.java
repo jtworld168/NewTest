@@ -3,6 +3,7 @@ package com.supermarket.controller;
 import com.supermarket.common.Result;
 import com.supermarket.entity.Product;
 import com.supermarket.service.ProductService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,10 +34,24 @@ public class ProductController {
         return Result.success(productService.list());
     }
 
-    @Operation(summary = "根据名称搜索商品")
+    @Operation(summary = "根据名称搜索商品（模糊匹配名称）")
     @GetMapping("/search")
     public Result<List<Product>> searchProducts(@Parameter(description = "商品名称关键词") @RequestParam String name) {
         return Result.success(productService.searchProductsByName(name));
+    }
+
+    @Operation(summary = "综合搜索商品（模糊匹配名称和描述）")
+    @GetMapping("/searchAll")
+    public Result<List<Product>> searchAllProducts(@Parameter(description = "搜索关键词") @RequestParam String keyword) {
+        return Result.success(productService.searchProducts(keyword));
+    }
+
+    @Operation(summary = "分页查询商品列表")
+    @GetMapping("/listPage")
+    public Result<IPage<Product>> listPage(
+            @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(productService.listPage(pageNum, pageSize));
     }
 
     @Operation(summary = "根据名称精确查询商品")

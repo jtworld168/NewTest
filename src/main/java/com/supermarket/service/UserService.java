@@ -1,5 +1,6 @@
 package com.supermarket.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.supermarket.entity.User;
 import com.supermarket.enums.UserRole;
@@ -13,6 +14,10 @@ public interface UserService extends IService<User> {
     List<User> getUsersByRole(UserRole role);
 
     User getUserByUsername(String username);
+
+    List<User> searchUsers(String keyword);
+
+    IPage<User> listPage(int pageNum, int pageSize);
 
     boolean addUser(User user);
 

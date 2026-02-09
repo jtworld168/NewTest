@@ -1,5 +1,6 @@
 package com.supermarket.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.supermarket.entity.CartItem;
 
@@ -12,6 +13,8 @@ public interface CartItemService extends IService<CartItem> {
     List<CartItem> getCartItemsByUserId(Long userId);
 
     List<CartItem> getCartItemsByProductId(Long productId);
+
+    IPage<CartItem> listPage(int pageNum, int pageSize);
 
     boolean addCartItem(CartItem cartItem);
 

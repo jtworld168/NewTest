@@ -4,6 +4,7 @@ import com.supermarket.common.Result;
 import com.supermarket.entity.User;
 import com.supermarket.enums.UserRole;
 import com.supermarket.service.UserService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,6 +45,20 @@ public class UserController {
     public Result<User> getUserByUsername(@Parameter(description = "用户名") @PathVariable String username) {
         User user = userService.getUserByUsername(username);
         return user != null ? Result.success(user) : Result.error("用户不存在");
+    }
+
+    @Operation(summary = "模糊搜索用户（按用户名或手机号）")
+    @GetMapping("/search")
+    public Result<List<User>> searchUsers(@Parameter(description = "搜索关键词") @RequestParam String keyword) {
+        return Result.success(userService.searchUsers(keyword));
+    }
+
+    @Operation(summary = "分页查询用户列表")
+    @GetMapping("/listPage")
+    public Result<IPage<User>> listPage(
+            @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(userService.listPage(pageNum, pageSize));
     }
 
     @Operation(summary = "添加用户")

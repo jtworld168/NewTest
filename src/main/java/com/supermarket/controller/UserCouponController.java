@@ -4,6 +4,7 @@ import com.supermarket.common.Result;
 import com.supermarket.entity.UserCoupon;
 import com.supermarket.enums.CouponStatus;
 import com.supermarket.service.UserCouponService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -57,6 +58,14 @@ public class UserCouponController {
             @Parameter(description = "用户ID") @RequestParam Long userId,
             @Parameter(description = "状态：AVAILABLE/USED/EXPIRED") @RequestParam CouponStatus status) {
         return Result.success(userCouponService.getUserCouponsByUserIdAndStatus(userId, status));
+    }
+
+    @Operation(summary = "分页查询用户优惠券列表")
+    @GetMapping("/listPage")
+    public Result<IPage<UserCoupon>> listPage(
+            @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(userCouponService.listPage(pageNum, pageSize));
     }
 
     @Operation(summary = "添加用户优惠券（发放优惠券给用户）")

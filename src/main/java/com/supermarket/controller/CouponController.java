@@ -3,6 +3,7 @@ package com.supermarket.controller;
 import com.supermarket.common.Result;
 import com.supermarket.entity.Coupon;
 import com.supermarket.service.CouponService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,6 +39,20 @@ public class CouponController {
     public Result<Coupon> getCouponByName(@Parameter(description = "优惠券名称") @PathVariable String name) {
         Coupon coupon = couponService.getCouponByName(name);
         return coupon != null ? Result.success(coupon) : Result.error("优惠券面额不存在");
+    }
+
+    @Operation(summary = "模糊搜索优惠券（按名称）")
+    @GetMapping("/search")
+    public Result<List<Coupon>> searchCoupons(@Parameter(description = "搜索关键词") @RequestParam String keyword) {
+        return Result.success(couponService.searchCoupons(keyword));
+    }
+
+    @Operation(summary = "分页查询优惠券面额列表")
+    @GetMapping("/listPage")
+    public Result<IPage<Coupon>> listPage(
+            @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(couponService.listPage(pageNum, pageSize));
     }
 
     @Operation(summary = "添加优惠券面额")

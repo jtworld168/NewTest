@@ -1,5 +1,6 @@
 package com.supermarket.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.supermarket.entity.UserCoupon;
 import com.supermarket.enums.CouponStatus;
@@ -17,6 +18,8 @@ public interface UserCouponService extends IService<UserCoupon> {
     List<UserCoupon> getUserCouponsByStatus(CouponStatus status);
 
     List<UserCoupon> getUserCouponsByUserIdAndStatus(Long userId, CouponStatus status);
+
+    IPage<UserCoupon> listPage(int pageNum, int pageSize);
 
     boolean addUserCoupon(UserCoupon userCoupon);
 

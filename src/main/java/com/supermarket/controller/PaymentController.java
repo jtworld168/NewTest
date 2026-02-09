@@ -4,6 +4,7 @@ import com.supermarket.common.Result;
 import com.supermarket.entity.Payment;
 import com.supermarket.enums.PaymentStatus;
 import com.supermarket.service.PaymentService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,6 +52,20 @@ public class PaymentController {
     public Result<Payment> getPaymentByTransactionNo(@Parameter(description = "交易流水号") @PathVariable String transactionNo) {
         Payment payment = paymentService.getPaymentByTransactionNo(transactionNo);
         return payment != null ? Result.success(payment) : Result.error("交易流水号不存在");
+    }
+
+    @Operation(summary = "模糊搜索支付记录（按交易流水号）")
+    @GetMapping("/search")
+    public Result<List<Payment>> searchPayments(@Parameter(description = "搜索关键词") @RequestParam String keyword) {
+        return Result.success(paymentService.searchPayments(keyword));
+    }
+
+    @Operation(summary = "分页查询支付记录列表")
+    @GetMapping("/listPage")
+    public Result<IPage<Payment>> listPage(
+            @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(paymentService.listPage(pageNum, pageSize));
     }
 
     @Operation(summary = "添加支付记录")

@@ -1,5 +1,6 @@
 package com.supermarket.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.supermarket.entity.Payment;
 import com.supermarket.enums.PaymentStatus;
@@ -15,6 +16,10 @@ public interface PaymentService extends IService<Payment> {
     List<Payment> getPaymentsByStatus(PaymentStatus paymentStatus);
 
     Payment getPaymentByTransactionNo(String transactionNo);
+
+    List<Payment> searchPayments(String keyword);
+
+    IPage<Payment> listPage(int pageNum, int pageSize);
 
     boolean addPayment(Payment payment);
 

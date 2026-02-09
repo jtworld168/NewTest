@@ -4,6 +4,7 @@ import com.supermarket.common.Result;
 import com.supermarket.entity.Order;
 import com.supermarket.enums.OrderStatus;
 import com.supermarket.service.OrderService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,6 +56,14 @@ public class OrderController {
     @GetMapping("/getByUserCouponId/{userCouponId}")
     public Result<List<Order>> getOrdersByUserCouponId(@Parameter(description = "用户优惠券ID") @PathVariable Long userCouponId) {
         return Result.success(orderService.getOrdersByUserCouponId(userCouponId));
+    }
+
+    @Operation(summary = "分页查询订单列表")
+    @GetMapping("/listPage")
+    public Result<IPage<Order>> listPage(
+            @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(orderService.listPage(pageNum, pageSize));
     }
 
     @Operation(summary = "添加订单（自动计算员工折扣价和总金额）")

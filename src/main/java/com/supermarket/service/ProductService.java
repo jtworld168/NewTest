@@ -1,5 +1,6 @@
 package com.supermarket.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.supermarket.entity.Product;
 
@@ -12,6 +13,10 @@ public interface ProductService extends IService<Product> {
     Product getProductByName(String name);
 
     List<Product> searchProductsByName(String name);
+
+    List<Product> searchProducts(String keyword);
+
+    IPage<Product> listPage(int pageNum, int pageSize);
 
     List<Product> getProductsByCategoryId(Long categoryId);
 

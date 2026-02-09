@@ -3,6 +3,7 @@ package com.supermarket.controller;
 import com.supermarket.common.Result;
 import com.supermarket.entity.Category;
 import com.supermarket.service.CategoryService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,6 +38,20 @@ public class CategoryController {
     public Result<Category> getCategoryByName(@Parameter(description = "分类名称") @PathVariable String name) {
         Category category = categoryService.getCategoryByName(name);
         return category != null ? Result.success(category) : Result.error("分类不存在");
+    }
+
+    @Operation(summary = "模糊搜索分类（按名称或描述）")
+    @GetMapping("/search")
+    public Result<List<Category>> searchCategories(@Parameter(description = "搜索关键词") @RequestParam String keyword) {
+        return Result.success(categoryService.searchCategories(keyword));
+    }
+
+    @Operation(summary = "分页查询分类列表")
+    @GetMapping("/listPage")
+    public Result<IPage<Category>> listPage(
+            @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(categoryService.listPage(pageNum, pageSize));
     }
 
     @Operation(summary = "添加分类")

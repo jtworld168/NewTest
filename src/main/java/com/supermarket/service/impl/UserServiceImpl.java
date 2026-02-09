@@ -1,6 +1,8 @@
 package com.supermarket.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.supermarket.entity.User;
 import com.supermarket.enums.UserRole;
@@ -23,7 +25,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public List<User> getUsersByRole(UserRole role) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getRole, role);
+        wrapper.eq(User::getRole, role)
+               .orderByDesc(User::getCreateTime);
         return list(wrapper);
     }
 
@@ -32,6 +35,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, username);
         return getOne(wrapper);
+    }
+
+    @Override
+    public List<User> searchUsers(String keyword) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.and(w -> w.like(User::getUsername, keyword)
+                .or().like(User::getPhone, keyword))
+               .orderByDesc(User::getCreateTime);
+        return list(wrapper);
+    }
+
+    @Override
+    public IPage<User> listPage(int pageNum, int pageSize) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(User::getCreateTime);
+        return page(new Page<>(pageNum, pageSize), wrapper);
     }
 
     @Override

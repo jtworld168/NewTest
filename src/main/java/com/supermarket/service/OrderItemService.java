@@ -1,5 +1,6 @@
 package com.supermarket.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.supermarket.entity.OrderItem;
 
@@ -12,6 +13,8 @@ public interface OrderItemService extends IService<OrderItem> {
     List<OrderItem> getOrderItemsByOrderId(Long orderId);
 
     List<OrderItem> getOrderItemsByProductId(Long productId);
+
+    IPage<OrderItem> listPage(int pageNum, int pageSize);
 
     boolean addOrderItem(OrderItem orderItem);
 

@@ -3,6 +3,7 @@ package com.supermarket;
 import com.supermarket.entity.User;
 import com.supermarket.enums.UserRole;
 import com.supermarket.service.UserService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -137,5 +138,46 @@ class UserServiceTest {
 
         assertNull(userService.getUserById(u1.getId()));
         assertNull(userService.getUserById(u2.getId()));
+    }
+
+    @Test
+    void testSearchUsers() {
+        User u1 = new User();
+        u1.setUsername("search_user_zhang");
+        u1.setPassword("pass");
+        u1.setPhone("13811112222");
+        u1.setRole(UserRole.CUSTOMER);
+        userService.addUser(u1);
+
+        User u2 = new User();
+        u2.setUsername("other_user");
+        u2.setPassword("pass");
+        u2.setPhone("13822223333");
+        u2.setRole(UserRole.CUSTOMER);
+        userService.addUser(u2);
+
+        List<User> results = userService.searchUsers("zhang");
+        assertTrue(results.size() >= 1);
+        assertTrue(results.stream().anyMatch(u -> u.getUsername().contains("zhang")));
+
+        List<User> phoneResults = userService.searchUsers("138111");
+        assertTrue(phoneResults.size() >= 1);
+    }
+
+    @Test
+    void testListPage() {
+        for (int i = 0; i < 3; i++) {
+            User u = new User();
+            u.setUsername("page_user_" + i);
+            u.setPassword("pass");
+            u.setRole(UserRole.CUSTOMER);
+            userService.addUser(u);
+        }
+
+        IPage<User> page = userService.listPage(1, 2);
+        assertNotNull(page);
+        assertEquals(2, page.getSize());
+        assertTrue(page.getTotal() >= 3);
+        assertTrue(page.getRecords().size() <= 2);
     }
 }

@@ -1,6 +1,8 @@
 package com.supermarket.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.supermarket.entity.Category;
 import com.supermarket.mapper.CategoryMapper;
@@ -24,6 +26,22 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Category::getName, name);
         return getOne(wrapper);
+    }
+
+    @Override
+    public List<Category> searchCategories(String keyword) {
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
+        wrapper.and(w -> w.like(Category::getName, keyword)
+                .or().like(Category::getDescription, keyword))
+               .orderByDesc(Category::getCreateTime);
+        return list(wrapper);
+    }
+
+    @Override
+    public IPage<Category> listPage(int pageNum, int pageSize) {
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(Category::getCreateTime);
+        return page(new Page<>(pageNum, pageSize), wrapper);
     }
 
     @Override

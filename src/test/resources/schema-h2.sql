@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS `category` (
     `create_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     `update_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     `deleted`     INT          DEFAULT 0,
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    CONSTRAINT `uk_category_name` UNIQUE (`name`)
 );
 
 CREATE TABLE IF NOT EXISTS `product` (
@@ -33,7 +34,9 @@ CREATE TABLE IF NOT EXISTS `product` (
     `update_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `deleted`     INT            DEFAULT 0,
     PRIMARY KEY (`id`),
-    CONSTRAINT `fk_product_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`)
+    CONSTRAINT `fk_product_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`),
+    CONSTRAINT `chk_product_price` CHECK (`price` > 0),
+    CONSTRAINT `chk_product_stock` CHECK (`stock` >= 0)
 );
 
 CREATE TABLE IF NOT EXISTS `coupon` (
@@ -48,7 +51,11 @@ CREATE TABLE IF NOT EXISTS `coupon` (
     `create_time`     TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `update_time`     TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `deleted`         INT            DEFAULT 0,
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    CONSTRAINT `chk_coupon_discount` CHECK (`discount` > 0),
+    CONSTRAINT `chk_coupon_min_amount` CHECK (`min_amount` >= 0),
+    CONSTRAINT `chk_coupon_total` CHECK (`total_count` >= 0),
+    CONSTRAINT `chk_coupon_remaining` CHECK (`remaining_count` >= 0)
 );
 
 CREATE TABLE IF NOT EXISTS `user_coupon` (
@@ -75,7 +82,8 @@ CREATE TABLE IF NOT EXISTS `cart_item` (
     `deleted`     INT       DEFAULT 0,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-    CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+    CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
+    CONSTRAINT `chk_cart_quantity` CHECK (`quantity` > 0)
 );
 
 CREATE TABLE IF NOT EXISTS `order` (
@@ -93,7 +101,10 @@ CREATE TABLE IF NOT EXISTS `order` (
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
     CONSTRAINT `fk_order_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
-    CONSTRAINT `fk_order_user_coupon` FOREIGN KEY (`user_coupon_id`) REFERENCES `user_coupon` (`id`)
+    CONSTRAINT `fk_order_user_coupon` FOREIGN KEY (`user_coupon_id`) REFERENCES `user_coupon` (`id`),
+    CONSTRAINT `chk_order_quantity` CHECK (`quantity` > 0),
+    CONSTRAINT `chk_order_price` CHECK (`price_at_purchase` > 0),
+    CONSTRAINT `chk_order_total` CHECK (`total_amount` > 0)
 );
 
 CREATE TABLE IF NOT EXISTS `order_items` (
@@ -108,7 +119,10 @@ CREATE TABLE IF NOT EXISTS `order_items` (
     `deleted`           INT            DEFAULT 0,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_order_item_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
-    CONSTRAINT `fk_order_item_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+    CONSTRAINT `fk_order_item_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
+    CONSTRAINT `chk_oi_quantity` CHECK (`quantity` > 0),
+    CONSTRAINT `chk_oi_price` CHECK (`price_at_purchase` > 0),
+    CONSTRAINT `chk_oi_subtotal` CHECK (`subtotal` > 0)
 );
 
 CREATE TABLE IF NOT EXISTS `payment` (
@@ -123,5 +137,7 @@ CREATE TABLE IF NOT EXISTS `payment` (
     `update_time`     TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `deleted`         INT            DEFAULT 0,
     PRIMARY KEY (`id`),
-    CONSTRAINT `fk_payment_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`)
+    CONSTRAINT `fk_payment_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
+    CONSTRAINT `uk_transaction_no` UNIQUE (`transaction_no`),
+    CONSTRAINT `chk_payment_amount` CHECK (`amount` > 0)
 );

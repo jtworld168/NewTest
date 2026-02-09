@@ -2,6 +2,7 @@ package com.supermarket;
 
 import com.supermarket.entity.Product;
 import com.supermarket.service.ProductService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -113,5 +114,37 @@ class ProductServiceTest {
 
         assertNull(productService.getProductById(p1.getId()));
         assertNull(productService.getProductById(p2.getId()));
+    }
+
+    @Test
+    void testSearchProducts() {
+        Product p1 = new Product();
+        p1.setName("有机苹果");
+        p1.setPrice(new BigDecimal("12.00"));
+        p1.setStock(50);
+        p1.setDescription("新鲜有机水果");
+        productService.addProduct(p1);
+
+        List<Product> nameResults = productService.searchProducts("苹果");
+        assertTrue(nameResults.size() >= 1);
+
+        List<Product> descResults = productService.searchProducts("有机水果");
+        assertTrue(descResults.size() >= 1);
+    }
+
+    @Test
+    void testListPage() {
+        for (int i = 0; i < 3; i++) {
+            Product p = new Product();
+            p.setName("分页商品" + i);
+            p.setPrice(new BigDecimal("1.00"));
+            p.setStock(10);
+            productService.addProduct(p);
+        }
+
+        IPage<Product> page = productService.listPage(1, 2);
+        assertNotNull(page);
+        assertEquals(2, page.getSize());
+        assertTrue(page.getTotal() >= 3);
     }
 }

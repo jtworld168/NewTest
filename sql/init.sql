@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS `category` (
     `create_time` DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted`     INT          DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_category_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='商品分类表';
 
 -- 商品表
@@ -46,7 +47,11 @@ CREATE TABLE IF NOT EXISTS `product` (
     `deleted`     INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
     PRIMARY KEY (`id`),
     KEY `idx_category_id` (`category_id`),
-    CONSTRAINT `fk_product_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`)
+    KEY `idx_product_name` (`name`),
+    CONSTRAINT `fk_product_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`),
+    CONSTRAINT `chk_product_price` CHECK (`price` > 0),
+    CONSTRAINT `chk_product_stock` CHECK (`stock` >= 0),
+    CONSTRAINT `chk_product_discount` CHECK (`employee_discount_rate` IS NULL OR (`employee_discount_rate` > 0 AND `employee_discount_rate` <= 1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='商品表';
 
 -- 优惠券面额表
@@ -62,7 +67,12 @@ CREATE TABLE IF NOT EXISTS `coupon` (
     `create_time`     DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time`     DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted`         INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    KEY `idx_coupon_name` (`name`),
+    CONSTRAINT `chk_coupon_discount` CHECK (`discount` > 0),
+    CONSTRAINT `chk_coupon_min_amount` CHECK (`min_amount` >= 0),
+    CONSTRAINT `chk_coupon_total_count` CHECK (`total_count` >= 0),
+    CONSTRAINT `chk_coupon_remaining` CHECK (`remaining_count` >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='优惠券面额表';
 
 -- 用户优惠券表
@@ -99,9 +109,13 @@ CREATE TABLE IF NOT EXISTS `order` (
     KEY `idx_user_id` (`user_id`),
     KEY `idx_product_id` (`product_id`),
     KEY `idx_user_coupon_id` (`user_coupon_id`),
+    KEY `idx_order_status` (`status`),
     CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
     CONSTRAINT `fk_order_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
-    CONSTRAINT `fk_order_user_coupon` FOREIGN KEY (`user_coupon_id`) REFERENCES `user_coupon` (`id`)
+    CONSTRAINT `fk_order_user_coupon` FOREIGN KEY (`user_coupon_id`) REFERENCES `user_coupon` (`id`),
+    CONSTRAINT `chk_order_quantity` CHECK (`quantity` > 0),
+    CONSTRAINT `chk_order_price` CHECK (`price_at_purchase` > 0),
+    CONSTRAINT `chk_order_total` CHECK (`total_amount` > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单表';
 
 -- 订单商品明细表
@@ -119,7 +133,10 @@ CREATE TABLE IF NOT EXISTS `order_items` (
     KEY `idx_oi_order_id` (`order_id`),
     KEY `idx_oi_product_id` (`product_id`),
     CONSTRAINT `fk_order_item_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
-    CONSTRAINT `fk_order_item_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+    CONSTRAINT `fk_order_item_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
+    CONSTRAINT `chk_oi_quantity` CHECK (`quantity` > 0),
+    CONSTRAINT `chk_oi_price` CHECK (`price_at_purchase` > 0),
+    CONSTRAINT `chk_oi_subtotal` CHECK (`subtotal` > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单商品明细表';
 
 -- 购物车表
@@ -134,8 +151,10 @@ CREATE TABLE IF NOT EXISTS `cart_item` (
     PRIMARY KEY (`id`),
     KEY `idx_cart_user_id` (`user_id`),
     KEY `idx_cart_product_id` (`product_id`),
+    KEY `idx_cart_user_product` (`user_id`, `product_id`),
     CONSTRAINT `fk_cart_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-    CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+    CONSTRAINT `fk_cart_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
+    CONSTRAINT `chk_cart_quantity` CHECK (`quantity` > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='购物车表';
 
 -- 订单支付表
@@ -152,6 +171,7 @@ CREATE TABLE IF NOT EXISTS `payment` (
     `deleted`         INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
     PRIMARY KEY (`id`),
     KEY `idx_order_id` (`order_id`),
-    KEY `idx_transaction_no` (`transaction_no`),
-    CONSTRAINT `fk_payment_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`)
+    UNIQUE KEY `uk_transaction_no` (`transaction_no`),
+    CONSTRAINT `fk_payment_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
+    CONSTRAINT `chk_payment_amount` CHECK (`amount` > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单支付表';
