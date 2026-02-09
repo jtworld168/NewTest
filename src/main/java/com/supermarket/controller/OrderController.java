@@ -51,10 +51,10 @@ public class OrderController {
         return Result.success(orderService.getOrdersByProductId(productId));
     }
 
-    @Operation(summary = "根据优惠券ID查询订单")
-    @GetMapping("/getByCouponId/{couponId}")
-    public Result<List<Order>> getOrdersByCouponId(@Parameter(description = "优惠券ID") @PathVariable Long couponId) {
-        return Result.success(orderService.getOrdersByCouponId(couponId));
+    @Operation(summary = "根据用户优惠券ID查询订单")
+    @GetMapping("/getByUserCouponId/{userCouponId}")
+    public Result<List<Order>> getOrdersByUserCouponId(@Parameter(description = "用户优惠券ID") @PathVariable Long userCouponId) {
+        return Result.success(orderService.getOrdersByUserCouponId(userCouponId));
     }
 
     @Operation(summary = "添加订单（自动计算员工折扣价和总金额）")
@@ -63,7 +63,7 @@ public class OrderController {
             @Parameter(description = "用户ID") @RequestParam Long userId,
             @Parameter(description = "商品ID") @RequestParam Long productId,
             @Parameter(description = "购买数量") @RequestParam Integer quantity,
-            @Parameter(description = "优惠券ID（可选）") @RequestParam(required = false) Long couponId) {
+            @Parameter(description = "用户优惠券ID（可选）") @RequestParam(required = false) Long userCouponId) {
         if (userId == null) {
             return Result.error("用户ID不能为空");
         }
@@ -73,7 +73,7 @@ public class OrderController {
         if (quantity == null || quantity <= 0) {
             return Result.error("购买数量必须大于0");
         }
-        return orderService.addOrder(userId, productId, quantity, couponId)
+        return orderService.addOrder(userId, productId, quantity, userCouponId)
                 ? Result.success() : Result.error("添加订单失败");
     }
 

@@ -53,14 +53,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public List<Order> getOrdersByCouponId(Long couponId) {
+    public List<Order> getOrdersByUserCouponId(Long userCouponId) {
         LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Order::getCouponId, couponId);
+        wrapper.eq(Order::getUserCouponId, userCouponId);
         return list(wrapper);
     }
 
     @Override
-    public boolean addOrder(Long userId, Long productId, Integer quantity, Long couponId) {
+    public boolean addOrder(Long userId, Long productId, Integer quantity, Long userCouponId) {
         User user = userService.getUserById(userId);
         if (user == null) {
             return false;
@@ -86,7 +86,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         order.setQuantity(quantity);
         order.setPriceAtPurchase(unitPrice);
         order.setTotalAmount(totalAmount);
-        order.setCouponId(couponId);
+        order.setUserCouponId(userCouponId);
         order.setStatus(OrderStatus.PENDING);
 
         return save(order);

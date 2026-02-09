@@ -1,7 +1,6 @@
 package com.supermarket;
 
 import com.supermarket.entity.Coupon;
-import com.supermarket.enums.CouponStatus;
 import com.supermarket.service.CouponService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +24,10 @@ class CouponServiceTest {
         coupon.setName("满100减10");
         coupon.setDiscount(new BigDecimal("10.00"));
         coupon.setMinAmount(new BigDecimal("100.00"));
+        coupon.setTotalCount(100);
+        coupon.setRemainingCount(100);
         coupon.setStartTime(LocalDateTime.now());
         coupon.setEndTime(LocalDateTime.now().plusDays(30));
-        coupon.setStatus(CouponStatus.AVAILABLE);
 
         assertTrue(couponService.addCoupon(coupon));
         assertNotNull(coupon.getId());
@@ -36,7 +36,8 @@ class CouponServiceTest {
         assertNotNull(found);
         assertEquals("满100减10", found.getName());
         assertEquals(0, new BigDecimal("10.00").compareTo(found.getDiscount()));
-        assertEquals(CouponStatus.AVAILABLE, found.getStatus());
+        assertEquals(100, found.getTotalCount());
+        assertEquals(100, found.getRemainingCount());
     }
 
     @Test
@@ -45,7 +46,8 @@ class CouponServiceTest {
         coupon.setName("满200减30");
         coupon.setDiscount(new BigDecimal("30.00"));
         coupon.setMinAmount(new BigDecimal("200.00"));
-        coupon.setStatus(CouponStatus.AVAILABLE);
+        coupon.setTotalCount(50);
+        coupon.setRemainingCount(50);
         couponService.addCoupon(coupon);
 
         Coupon found = couponService.getCouponByName("满200减30");
@@ -54,32 +56,20 @@ class CouponServiceTest {
     }
 
     @Test
-    void testGetCouponsByStatus() {
-        Coupon c1 = new Coupon();
-        c1.setName("新人券1");
-        c1.setDiscount(new BigDecimal("5.00"));
-        c1.setMinAmount(new BigDecimal("50.00"));
-        c1.setStatus(CouponStatus.USED);
-        couponService.addCoupon(c1);
-
-        List<Coupon> usedCoupons = couponService.getCouponsByStatus(CouponStatus.USED);
-        assertTrue(usedCoupons.size() >= 1);
-    }
-
-    @Test
     void testUpdateCoupon() {
         Coupon coupon = new Coupon();
         coupon.setName("折扣券");
         coupon.setDiscount(new BigDecimal("15.00"));
         coupon.setMinAmount(new BigDecimal("150.00"));
-        coupon.setStatus(CouponStatus.AVAILABLE);
+        coupon.setTotalCount(200);
+        coupon.setRemainingCount(200);
         couponService.addCoupon(coupon);
 
-        coupon.setStatus(CouponStatus.EXPIRED);
+        coupon.setRemainingCount(150);
         assertTrue(couponService.updateCoupon(coupon));
 
         Coupon updated = couponService.getCouponById(coupon.getId());
-        assertEquals(CouponStatus.EXPIRED, updated.getStatus());
+        assertEquals(150, updated.getRemainingCount());
     }
 
     @Test
@@ -88,7 +78,8 @@ class CouponServiceTest {
         coupon.setName("临时券");
         coupon.setDiscount(new BigDecimal("3.00"));
         coupon.setMinAmount(new BigDecimal("30.00"));
-        coupon.setStatus(CouponStatus.AVAILABLE);
+        coupon.setTotalCount(10);
+        coupon.setRemainingCount(10);
         couponService.addCoupon(coupon);
 
         assertTrue(couponService.deleteCoupon(coupon.getId()));
@@ -103,14 +94,16 @@ class CouponServiceTest {
         c1.setName("批量删除券1");
         c1.setDiscount(new BigDecimal("5.00"));
         c1.setMinAmount(new BigDecimal("50.00"));
-        c1.setStatus(CouponStatus.AVAILABLE);
+        c1.setTotalCount(10);
+        c1.setRemainingCount(10);
         couponService.addCoupon(c1);
 
         Coupon c2 = new Coupon();
         c2.setName("批量删除券2");
         c2.setDiscount(new BigDecimal("10.00"));
         c2.setMinAmount(new BigDecimal("100.00"));
-        c2.setStatus(CouponStatus.AVAILABLE);
+        c2.setTotalCount(20);
+        c2.setRemainingCount(20);
         couponService.addCoupon(c2);
 
         assertTrue(couponService.deleteBatchCoupons(List.of(c1.getId(), c2.getId())));

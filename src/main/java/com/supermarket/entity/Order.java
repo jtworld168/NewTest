@@ -35,8 +35,8 @@ public class Order {
     @Schema(description = "订单总金额")
     private BigDecimal totalAmount;
 
-    @Schema(description = "优惠券ID")
-    private Long couponId;
+    @Schema(description = "用户优惠券ID（关联用户优惠券表）")
+    private Long userCouponId;
 
     @Schema(description = "订单状态：PENDING-待支付，PAID-已支付，COMPLETED-已完成，CANCELLED-已取消")
     private OrderStatus status;

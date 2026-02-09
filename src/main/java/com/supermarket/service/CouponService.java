@@ -2,15 +2,12 @@ package com.supermarket.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.supermarket.entity.Coupon;
-import com.supermarket.enums.CouponStatus;
 
 import java.util.List;
 
 public interface CouponService extends IService<Coupon> {
 
     Coupon getCouponById(Long id);
-
-    List<Coupon> getCouponsByStatus(CouponStatus status);
 
     Coupon getCouponByName(String name);
 

@@ -16,9 +16,9 @@ public interface OrderService extends IService<Order> {
 
     List<Order> getOrdersByProductId(Long productId);
 
-    List<Order> getOrdersByCouponId(Long couponId);
+    List<Order> getOrdersByUserCouponId(Long userCouponId);
 
-    boolean addOrder(Long userId, Long productId, Integer quantity, Long couponId);
+    boolean addOrder(Long userId, Long productId, Integer quantity, Long userCouponId);
 
     boolean updateOrder(Order order);
 

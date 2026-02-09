@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.supermarket.enums.CouponStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -13,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Data
 @TableName("coupon")
-@Schema(description = "优惠券实体")
+@Schema(description = "优惠券面额实体（优惠券模板）")
 public class Coupon {
 
     @Schema(description = "优惠券ID")
@@ -29,14 +28,17 @@ public class Coupon {
     @Schema(description = "最低使用金额")
     private BigDecimal minAmount;
 
+    @Schema(description = "发放总数量")
+    private Integer totalCount;
+
+    @Schema(description = "剩余可领取数量")
+    private Integer remainingCount;
+
     @Schema(description = "生效时间")
     private LocalDateTime startTime;
 
     @Schema(description = "过期时间")
     private LocalDateTime endTime;
-
-    @Schema(description = "优惠券状态：AVAILABLE-可用，USED-已使用，EXPIRED-已过期")
-    private CouponStatus status;
 
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
