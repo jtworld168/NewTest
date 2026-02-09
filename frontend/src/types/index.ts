@@ -29,6 +29,7 @@ export interface User {
   phone?: string
   role: UserRole
   isHotelEmployee?: boolean
+  avatar?: string
   createTime?: string
   updateTime?: string
   deleted?: number
@@ -51,6 +52,8 @@ export interface Product {
   description?: string
   categoryId?: number
   employeeDiscountRate?: number
+  barcode?: string
+  image?: string
   createTime?: string
   updateTime?: string
   deleted?: number

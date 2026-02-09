@@ -34,6 +34,9 @@ public class User {
     @Schema(description = "是否酒店员工")
     private Boolean isHotelEmployee;
 
+    @Schema(description = "用户头像URL")
+    private String avatar;
+
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
 

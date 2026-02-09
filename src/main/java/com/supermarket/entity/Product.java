@@ -37,6 +37,12 @@ public class Product {
     @Schema(description = "员工折扣率，如0.8表示八折")
     private BigDecimal employeeDiscountRate;
 
+    @Schema(description = "商品条形码")
+    private String barcode;
+
+    @Schema(description = "商品图片URL")
+    private String image;
+
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
 

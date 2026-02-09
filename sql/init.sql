@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     `phone`       VARCHAR(20)  DEFAULT NULL COMMENT '手机号',
     `role`        INT          NOT NULL DEFAULT 2 COMMENT '角色：0-管理员，1-员工，2-顾客',
     `is_hotel_employee` TINYINT(1) DEFAULT 0 COMMENT '是否酒店员工：0-否，1-是',
+    `avatar`      VARCHAR(500) DEFAULT NULL COMMENT '用户头像URL',
     `create_time` DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted`     INT          DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
@@ -18,8 +19,69 @@ CREATE TABLE IF NOT EXISTS `user` (
     UNIQUE KEY `uk_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户表';
 
--- 插入默认管理员（部署后请立即修改密码）
-INSERT INTO `user` (`username`, `password`, `phone`, `role`) VALUES ('admin', 'CHANGE_ME_ON_FIRST_LOGIN', '13800000000', 0);
+-- 插入测试数据
+
+-- 用户（管理员、员工、顾客）
+INSERT INTO `user` (`username`, `password`, `phone`, `role`, `is_hotel_employee`, `avatar`) VALUES
+('admin', 'CHANGE_ME_ON_FIRST_LOGIN', '13800000000', 0, 0, NULL),
+('emp_zhang', '123456', '13900001111', 1, 1, NULL),
+('emp_li', '123456', '13900002222', 1, 1, NULL),
+('cust_wang', '123456', '13700001111', 2, 0, NULL),
+('cust_zhao', '123456', '13700002222', 2, 0, NULL);
+
+-- 商品分类
+INSERT INTO `category` (`name`, `description`) VALUES
+('饮料', '各类饮品'),
+('零食', '各类休闲零食'),
+('日用品', '日常生活用品'),
+('速食', '方便食品');
+
+-- 商品
+INSERT INTO `product` (`name`, `price`, `stock`, `description`, `category_id`, `employee_discount_rate`, `barcode`, `image`) VALUES
+('可口可乐 330ml', 3.00, 200, '经典碳酸饮料', 1, 0.80, '6901939621035', NULL),
+('百事可乐 330ml', 3.00, 150, '百事碳酸饮料', 1, 0.80, '6922255451427', NULL),
+('农夫山泉 550ml', 2.00, 300, '天然矿泉水', 1, 0.90, '6921168593088', NULL),
+('乐事薯片 原味 70g', 6.50, 100, '经典原味薯片', 2, 0.85, '6924743921023', NULL),
+('奥利奥饼干 97g', 7.90, 80, '夹心巧克力饼干', 2, 0.85, '6901668044457', NULL),
+('抽纸 3包装', 12.90, 60, '柔软面巾纸', 3, 0.75, '6920174751581', NULL),
+('洗手液 500ml', 15.00, 40, '抑菌洗手液', 3, 0.70, '6902083890193', NULL),
+('康师傅红烧牛肉面', 4.50, 120, '经典方便面', 4, 0.80, '6920152430132', NULL);
+
+-- 优惠券面额
+INSERT INTO `coupon` (`name`, `discount`, `min_amount`, `total_count`, `remaining_count`, `start_time`, `end_time`) VALUES
+('满20减5', 5.00, 20.00, 100, 80, '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
+('满50减10', 10.00, 50.00, 50, 40, '2026-01-01 00:00:00', '2026-12-31 23:59:59'),
+('新人券 满10减3', 3.00, 10.00, 200, 190, '2026-01-01 00:00:00', '2026-06-30 23:59:59');
+
+-- 用户优惠券
+INSERT INTO `user_coupon` (`user_id`, `coupon_id`, `status`) VALUES
+(4, 1, 0),
+(4, 3, 0),
+(5, 2, 0);
+
+-- 购物车
+INSERT INTO `cart_item` (`user_id`, `product_id`, `quantity`) VALUES
+(4, 1, 2),
+(4, 4, 1),
+(5, 3, 3);
+
+-- 订单
+INSERT INTO `order` (`user_id`, `product_id`, `quantity`, `price_at_purchase`, `total_amount`, `user_coupon_id`, `status`) VALUES
+(4, 1, 2, 3.00, 6.00, NULL, 2),
+(5, 3, 1, 2.00, 2.00, NULL, 1),
+(2, 4, 1, 5.53, 5.53, NULL, 2);
+
+-- 订单商品明细
+INSERT INTO `order_items` (`order_id`, `product_id`, `quantity`, `price_at_purchase`, `subtotal`) VALUES
+(1, 1, 2, 3.00, 6.00),
+(2, 3, 1, 2.00, 2.00),
+(3, 4, 1, 5.53, 5.53);
+
+-- 支付记录
+INSERT INTO `payment` (`order_id`, `amount`, `payment_method`, `payment_status`, `payment_time`, `transaction_no`) VALUES
+(1, 6.00, 0, 1, '2026-02-01 10:30:00', 'WX20260201103000001'),
+(2, 2.00, 1, 1, '2026-02-02 14:20:00', 'ZFB20260202142000001'),
+(3, 5.53, 2, 1, '2026-02-03 09:15:00', 'CASH20260203091500001');
 
 -- 商品分类表
 CREATE TABLE IF NOT EXISTS `category` (
@@ -42,12 +104,15 @@ CREATE TABLE IF NOT EXISTS `product` (
     `description` VARCHAR(500)   DEFAULT NULL COMMENT '商品描述',
     `category_id` BIGINT         DEFAULT NULL COMMENT '分类ID',
     `employee_discount_rate` DECIMAL(3,2) DEFAULT NULL COMMENT '员工折扣率，如0.80表示八折',
+    `barcode`     VARCHAR(100) DEFAULT NULL COMMENT '商品条形码',
+    `image`       VARCHAR(500) DEFAULT NULL COMMENT '商品图片URL',
     `create_time` DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted`     INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
     PRIMARY KEY (`id`),
     KEY `idx_category_id` (`category_id`),
     KEY `idx_product_name` (`name`),
+    UNIQUE KEY `uk_product_barcode` (`barcode`),
     CONSTRAINT `fk_product_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`),
     CONSTRAINT `chk_product_price` CHECK (`price` > 0),
     CONSTRAINT `chk_product_stock` CHECK (`stock` >= 0),
