@@ -54,14 +54,18 @@
       <text class="section-title">热门商品</text>
     </view>
     <view class="product-list" wx:if="{{!loading}}">
-      <view class="product-row" wx:for="{{products}}" wx:key="id" bindtap="goToProductDetail" data-id="{{item.id}}">
-        <image class="product-row-image" src="{{item.image ? getFileUrl(item.image) : '/images/product-placeholder.png'}}" mode="aspectFill"></image>
+      <view class="product-row" wx:for="{{products}}" wx:key="id">
+        <image class="product-row-image" src="{{item._imageUrl || '/images/product-placeholder.png'}}" mode="aspectFill" bindtap="goToProductDetail" data-id="{{item.id}}"></image>
         <view class="product-row-info">
-          <text class="product-name">{{item.name}}</text>
+          <text class="product-name" bindtap="goToProductDetail" data-id="{{item.id}}">{{item.name}}</text>
           <text class="product-desc" wx:if="{{item.description}}">{{item.description}}</text>
           <view class="product-bottom">
             <text class="price">¥{{item.price}}</text>
-            <text class="product-stock">库存: {{item.stock}}</text>
+            <view class="product-qty-control">
+              <view class="product-qty-btn" bindtap="decreaseQty" data-id="{{item.id}}">-</view>
+              <text class="product-qty-num">{{item._cartQty || 0}}</text>
+              <view class="product-qty-btn" bindtap="increaseQty" data-id="{{item.id}}">+</view>
+            </view>
           </view>
         </view>
       </view>

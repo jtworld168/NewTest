@@ -84,12 +84,20 @@ function getOrdersByUserId(userId) {
   return request({ url: '/orders/getByUserId/' + userId })
 }
 
+function getOrderById(id) {
+  return request({ url: '/orders/get/' + id })
+}
+
 function addOrder(userId, productId, quantity, userCouponId) {
   let url = '/orders/add?userId=' + userId + '&productId=' + productId + '&quantity=' + quantity
   if (userCouponId) {
     url += '&userCouponId=' + userCouponId
   }
   return request({ url: url, method: 'POST' })
+}
+
+function updateOrder(order) {
+  return request({ url: '/orders/update', method: 'PUT', data: order })
 }
 
 // ==================== Cart ====================
@@ -130,6 +138,20 @@ function getUserCouponsByUserIdAndStatus(userId, status) {
   return request({ url: '/user-coupons/getByUserIdAndStatus?userId=' + userId + '&status=' + status })
 }
 
+function updateUserCoupon(userCoupon) {
+  return request({ url: '/user-coupons/update', method: 'PUT', data: userCoupon })
+}
+
+// ==================== Payment ====================
+
+function addPayment(payment) {
+  return request({ url: '/payments/add', method: 'POST', data: payment })
+}
+
+function getPaymentsByOrderId(orderId) {
+  return request({ url: '/payments/getByOrderId/' + orderId })
+}
+
 // ==================== File ====================
 
 function getFileUrl(filename) {
@@ -149,7 +171,9 @@ module.exports = {
   searchProducts,
   getCategoryList,
   getOrdersByUserId,
+  getOrderById,
   addOrder,
+  updateOrder,
   getCartByUserId,
   addCartItem,
   updateCartItem,
@@ -158,5 +182,8 @@ module.exports = {
   getCouponById,
   getUserCouponsByUserId,
   getUserCouponsByUserIdAndStatus,
+  updateUserCoupon,
+  addPayment,
+  getPaymentsByOrderId,
   getFileUrl
 }

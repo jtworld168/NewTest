@@ -7,7 +7,9 @@
     "pages/profile/profile",
     "pages/login/login",
     "pages/register/register",
-    "pages/coupons/coupons"
+    "pages/coupons/coupons",
+    "pages/payment/payment",
+    "pages/order-detail/order-detail"
   ],
   "window": {
     "navigationBarBackgroundColor": "#07c160",

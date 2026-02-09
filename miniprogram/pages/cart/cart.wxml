@@ -1,3 +1,4 @@
+<wxs module="f" src="../../utils/filter.wxs"></wxs>
 <view class="container">
   <!-- Not logged in / Empty -->
   <view class="empty-state" wx:if="{{!loading && !cartItems.length}}">
@@ -21,16 +22,20 @@
       </view>
 
       <!-- Product image -->
-      <image class="item-image" src="{{productMap[item.productId].image ? getFileUrl(productMap[item.productId].image) : '/images/product-placeholder.png'}}" mode="aspectFill"></image>
+      <image class="item-image" src="{{item._imageUrl || '/images/product-placeholder.png'}}" mode="aspectFill"></image>
 
       <!-- Info -->
       <view class="item-info">
-        <text class="item-name">{{productMap[item.productId].name || '商品'}}</text>
+        <text class="item-name">{{item._productName || '商品'}}</text>
         <view class="item-price-row">
-          <text class="price">¥{{productMap[item.productId].price || '0'}}</text>
-          <text class="employee-price" wx:if="{{isEmployee && productMap[item.productId].employeeDiscountRate}}">
-            员工价 ¥{{(productMap[item.productId].price * productMap[item.productId].employeeDiscountRate).toFixed(2)}}
+          <text class="price">¥{{item._price || '0'}}</text>
+          <text class="employee-price" wx:if="{{isEmployee && item._employeePrice}}">
+            员工价 ¥{{item._employeePrice}}
           </text>
+        </view>
+        <view class="item-subtotal-row">
+          <text class="subtotal-label">小计: </text>
+          <text class="subtotal-price">¥{{item._subtotal}}</text>
         </view>
         <view class="quantity-control">
           <view class="qty-btn" bindtap="changeQuantity" data-id="{{item.id}}" data-action="minus">-</view>

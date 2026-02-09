@@ -36,16 +36,32 @@ Page({
       const isEmployee = Boolean(userInfo.isHotelEmployee)
 
       const res = await api.getCartByUserId(userInfo.id)
-      const cartItems = res.data || []
+      const rawCartItems = res.data || []
 
       // Load product details for each cart item
       const productMap = {}
-      const productPromises = cartItems.map(item =>
+      const productPromises = rawCartItems.map(item =>
         api.getProductById(item.productId).then(pRes => {
           if (pRes.data) productMap[item.productId] = pRes.data
         }).catch(() => {})
       )
       await Promise.all(productPromises)
+
+      // Pre-calculate display values for each cart item (avoid WXML expressions)
+      const cartItems = rawCartItems.map(item => {
+        const product = productMap[item.productId]
+        const price = product ? product.price : 0
+        const hasDiscount = isEmployee && product && product.employeeDiscountRate
+        const effectivePrice = hasDiscount ? (price * product.employeeDiscountRate) : price
+        return {
+          ...item,
+          _productName: product ? product.name : '商品',
+          _price: price.toFixed(2),
+          _employeePrice: hasDiscount ? (price * product.employeeDiscountRate).toFixed(2) : '',
+          _subtotal: (effectivePrice * item.quantity).toFixed(2),
+          _imageUrl: product && product.image ? api.getFileUrl(product.image) : ''
+        }
+      })
 
       // Select all by default
       const selectedIds = cartItems.map(item => item.id)
@@ -55,7 +71,6 @@ Page({
       try {
         const couponRes = await api.getUserCouponsByUserIdAndStatus(userInfo.id, 'AVAILABLE')
         const userCoupons = couponRes.data || []
-        // Load coupon template details
         const couponIds = [...new Set(userCoupons.map(uc => uc.couponId).filter(Boolean))]
         const couponMap = {}
         await Promise.all(couponIds.map(id =>
@@ -121,7 +136,6 @@ Page({
           const itemOriginal = product.price * item.quantity
           originalTotal += itemOriginal
 
-          // Calculate employee discount price
           if (isEmployee && product.employeeDiscountRate) {
             const discountedPrice = product.price * product.employeeDiscountRate
             employeeTotal += discountedPrice * item.quantity
@@ -133,10 +147,9 @@ Page({
       }
     })
 
-    // If employee, use employee total; otherwise use original
     let basePrice = isEmployee && hasEmployeeDiscount ? employeeTotal : originalTotal
 
-    // Apply coupon (only if NOT employee — they can't stack)
+    // Apply coupon (only if NOT employee)
     let couponDiscount = 0
     if (!isEmployee && selectedCouponId) {
       const coupon = availableCoupons.find(c => c.id === selectedCouponId)
@@ -196,9 +209,9 @@ Page({
     }
 
     try {
-      await api.updateCartItem({ ...item, quantity: newQuantity })
+      await api.updateCartItem({ id: item.id, userId: item.userId, productId: item.productId, quantity: newQuantity })
       this.loadCart()
-    } catch (e) {
+    } catch (err) {
       wx.showToast({ title: '更新失败', icon: 'error' })
     }
   },
@@ -214,7 +227,7 @@ Page({
             await api.deleteCartItem(id)
             wx.showToast({ title: '已移除', icon: 'success' })
             this.loadCart()
-          } catch (e) {
+          } catch (err) {
             wx.showToast({ title: '移除失败', icon: 'error' })
           }
         }
@@ -234,7 +247,7 @@ Page({
             await api.clearCart(app.globalData.userInfo.id)
             wx.showToast({ title: '已清空', icon: 'success' })
             this.loadCart()
-          } catch (e) {
+          } catch (err) {
             wx.showToast({ title: '清空失败', icon: 'error' })
           }
         }
@@ -242,50 +255,89 @@ Page({
     })
   },
 
-  async checkout() {
+  checkout() {
     const app = getApp()
     if (!app.globalData.userInfo) {
       wx.navigateTo({ url: '/pages/login/login' })
       return
     }
-    const { cartItems, selectedIds, selectedCouponId, finalPrice, isEmployee } = this.data
+    const { cartItems, productMap, selectedIds, selectedCouponId, finalPrice, isEmployee, availableCoupons } = this.data
     const selectedItems = cartItems.filter(item => selectedIds.includes(item.id))
     if (selectedItems.length === 0) {
       wx.showToast({ title: '请选择商品', icon: 'none' })
       return
     }
 
-    let confirmMsg = '共 ' + selectedItems.length + ' 件商品，合计 ¥' + finalPrice
-    if (isEmployee && this.data.hasEmployeeDiscount) {
-      confirmMsg += '\n（已享受员工折扣）'
-    }
-    if (selectedCouponId && !isEmployee) {
-      confirmMsg += '\n（已使用优惠券 -¥' + this.data.selectedCouponDiscount + '）'
+    // Check if any coupon meets minimum spend but none selected
+    const totalForCoupon = parseFloat(this.data.totalPrice)
+    if (!isEmployee && !selectedCouponId && availableCoupons.length > 0) {
+      const usable = availableCoupons.filter(c => totalForCoupon >= c.minAmount)
+      if (usable.length > 0) {
+        wx.showModal({
+          title: '提示',
+          content: '您有' + usable.length + '张可用优惠券，是否使用？',
+          confirmText: '去选券',
+          cancelText: '不使用',
+          success: (res) => {
+            if (res.confirm) {
+              this.setData({ showCouponPicker: true })
+            } else {
+              this.doCheckout(selectedItems, null)
+            }
+          }
+        })
+        return
+      }
     }
 
-    wx.showModal({
-      title: '确认下单',
-      content: confirmMsg,
-      success: async (res) => {
-        if (res.confirm) {
-          try {
-            // Only pass coupon for non-employee users
-            const couponToUse = (!isEmployee && selectedCouponId) ? selectedCouponId : null
-            for (const item of selectedItems) {
-              await api.addOrder(app.globalData.userInfo.id, item.productId, item.quantity, couponToUse)
-              await api.deleteCartItem(item.id)
-            }
-            wx.showToast({ title: '下单成功', icon: 'success' })
-            setTimeout(() => {
-              this.loadCart()
-              wx.switchTab({ url: '/pages/orders/orders' })
-            }, 1500)
-          } catch (e) {
-            wx.showToast({ title: '下单失败', icon: 'error' })
-          }
+    this.doCheckout(selectedItems, (!isEmployee && selectedCouponId) ? selectedCouponId : null)
+  },
+
+  async doCheckout(selectedItems, couponId) {
+    const app = getApp()
+    try {
+      wx.showLoading({ title: '创建订单中...' })
+      const orderIds = []
+      for (const item of selectedItems) {
+        const res = await api.addOrder(app.globalData.userInfo.id, item.productId, item.quantity, couponId)
+        if (res.data && res.data.id) {
+          orderIds.push(res.data.id)
+        }
+        await api.deleteCartItem(item.id)
+        // Only apply coupon to first order
+        couponId = null
+      }
+      wx.hideLoading()
+
+      // Mark the coupon as used
+      if (this.data.selectedCouponId) {
+        try {
+          await api.updateUserCoupon({
+            id: this.data.selectedCouponId,
+            status: 'USED',
+            useTime: new Date().toISOString().replace('T', ' ').substring(0, 19)
+          })
+        } catch (err) {
+          console.error('Failed to mark coupon as used:', err)
         }
       }
-    })
+
+      // Navigate to payment page with the first order
+      if (orderIds.length > 0) {
+        wx.navigateTo({
+          url: '/pages/payment/payment?orderId=' + orderIds[0] + '&amount=' + this.data.finalPrice
+        })
+      } else {
+        wx.showToast({ title: '下单成功', icon: 'success' })
+        setTimeout(() => {
+          this.loadCart()
+          wx.switchTab({ url: '/pages/orders/orders' })
+        }, 1500)
+      }
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: '下单失败', icon: 'error' })
+    }
   },
 
   goShopping() {
@@ -294,9 +346,5 @@ Page({
 
   goLogin() {
     wx.navigateTo({ url: '/pages/login/login' })
-  },
-
-  getFileUrl(filename) {
-    return api.getFileUrl(filename)
   }
 })

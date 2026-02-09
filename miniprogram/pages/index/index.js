@@ -4,10 +4,11 @@ Page({
   data: {
     products: [],
     categories: [],
-    loading: true
+    loading: true,
+    cartMap: {} // productId -> cartItem
   },
 
-  onLoad() {
+  onShow() {
     this.loadData()
   },
 
@@ -22,10 +23,39 @@ Page({
         api.getProductList(),
         api.getCategoryList()
       ])
+
+      const products = (productRes.data || []).slice(0, 8)
+
+      // Pre-calculate image URLs
+      products.forEach(p => {
+        p._imageUrl = p.image ? api.getFileUrl(p.image) : ''
+      })
+
+      // Load cart items to show quantities
+      const app = getApp()
+      let cartMap = {}
+      if (app.globalData.userInfo) {
+        try {
+          const cartRes = await api.getCartByUserId(app.globalData.userInfo.id)
+          const cartItems = cartRes.data || []
+          cartItems.forEach(item => {
+            cartMap[item.productId] = item
+          })
+        } catch (e) {
+          console.error('Failed to load cart:', e)
+        }
+      }
+
+      // Set cart quantity on products
+      products.forEach(p => {
+        p._cartQty = cartMap[p.id] ? cartMap[p.id].quantity : 0
+      })
+
       this.setData({
-        products: (productRes.data || []).slice(0, 8),
+        products,
         categories: categoryRes.data || [],
-        loading: false
+        loading: false,
+        cartMap
       })
     } catch (e) {
       console.error('Failed to load data:', e)
@@ -39,10 +69,9 @@ Page({
 
   onScan() {
     wx.scanCode({
-      onlyFromCamera: false,
+      onlyFromCamera: true,
       success: (res) => {
         const code = res.result
-        // Search for product by barcode
         wx.showLoading({ title: '查找商品...' })
         api.searchProducts(code).then(searchRes => {
           wx.hideLoading()
@@ -67,9 +96,7 @@ Page({
           wx.showToast({ title: '查找失败', icon: 'error' })
         })
       },
-      fail: () => {
-        // User cancelled or scan failed
-      }
+      fail: () => {}
     })
   },
 
@@ -88,10 +115,8 @@ Page({
     const id = e.currentTarget.dataset.id
     const product = this.data.products.find(p => p.id === id)
     if (!product) return
-    // Add to cart directly
     const app = getApp()
-    const userInfo = app.globalData.userInfo
-    if (!userInfo) {
+    if (!app.globalData.userInfo) {
       wx.navigateTo({ url: '/pages/login/login' })
       return
     }
@@ -107,6 +132,51 @@ Page({
     })
   },
 
+  async increaseQty(e) {
+    const productId = e.currentTarget.dataset.id
+    const app = getApp()
+    if (!app.globalData.userInfo) {
+      wx.navigateTo({ url: '/pages/login/login' })
+      return
+    }
+
+    const cartItem = this.data.cartMap[productId]
+    try {
+      if (cartItem) {
+        await api.updateCartItem({ id: cartItem.id, userId: cartItem.userId, productId: cartItem.productId, quantity: cartItem.quantity + 1 })
+      } else {
+        await api.addCartItem({ userId: app.globalData.userInfo.id, productId, quantity: 1 })
+      }
+      wx.showToast({ title: '已添加', icon: 'success', duration: 800 })
+      this.loadData()
+    } catch (err) {
+      wx.showToast({ title: '操作失败', icon: 'error' })
+    }
+  },
+
+  async decreaseQty(e) {
+    const productId = e.currentTarget.dataset.id
+    const app = getApp()
+    if (!app.globalData.userInfo) {
+      wx.navigateTo({ url: '/pages/login/login' })
+      return
+    }
+
+    const cartItem = this.data.cartMap[productId]
+    if (!cartItem || cartItem.quantity <= 0) return
+
+    try {
+      if (cartItem.quantity <= 1) {
+        await api.deleteCartItem(cartItem.id)
+      } else {
+        await api.updateCartItem({ id: cartItem.id, userId: cartItem.userId, productId: cartItem.productId, quantity: cartItem.quantity - 1 })
+      }
+      this.loadData()
+    } catch (err) {
+      wx.showToast({ title: '操作失败', icon: 'error' })
+    }
+  },
+
   async addToCart(product) {
     const app = getApp()
     try {
@@ -116,7 +186,8 @@ Page({
         quantity: 1
       })
       wx.showToast({ title: '已加入购物车', icon: 'success' })
-    } catch (e) {
+      this.loadData()
+    } catch (err) {
       wx.showToast({ title: '添加失败', icon: 'error' })
     }
   },
@@ -124,15 +195,17 @@ Page({
   async buyNow(product) {
     const app = getApp()
     try {
-      await api.addOrder(app.globalData.userInfo.id, product.id, 1)
-      wx.showToast({ title: '下单成功', icon: 'success' })
-      setTimeout(() => wx.switchTab({ url: '/pages/orders/orders' }), 1500)
-    } catch (e) {
+      const res = await api.addOrder(app.globalData.userInfo.id, product.id, 1)
+      if (res.data && res.data.id) {
+        wx.navigateTo({
+          url: '/pages/payment/payment?orderId=' + res.data.id + '&amount=' + res.data.totalAmount
+        })
+      } else {
+        wx.showToast({ title: '下单成功', icon: 'success' })
+        setTimeout(() => wx.switchTab({ url: '/pages/orders/orders' }), 1500)
+      }
+    } catch (err) {
       wx.showToast({ title: '下单失败', icon: 'error' })
     }
-  },
-
-  getFileUrl(filename) {
-    return api.getFileUrl(filename)
   }
 })

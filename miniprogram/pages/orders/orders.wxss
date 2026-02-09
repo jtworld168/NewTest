@@ -141,3 +141,42 @@
   margin-right: 8rpx;
   border: 1rpx solid #ffccc7;
 }
+
+/* Status colors */
+.status-PENDING { color: #ff9800; }
+.status-PAID { color: #07c160; }
+.status-COMPLETED { color: #999; }
+.status-CANCELLED { color: #ee0a24; }
+
+/* Order action buttons */
+.order-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16rpx 24rpx;
+  border-top: 1rpx solid #f5f5f5;
+  gap: 16rpx;
+}
+
+.btn-cancel {
+  font-size: 24rpx;
+  padding: 12rpx 32rpx;
+  background-color: #fff;
+  color: #999;
+  border: 1rpx solid #ddd;
+  border-radius: 32rpx;
+  line-height: 1.4;
+}
+
+.btn-cancel::after { border: none; }
+
+.btn-pay {
+  font-size: 24rpx;
+  padding: 12rpx 32rpx;
+  background-color: #07c160;
+  color: #fff;
+  border: none;
+  border-radius: 32rpx;
+  line-height: 1.4;
+}
+
+.btn-pay::after { border: none; }

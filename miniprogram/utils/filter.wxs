@@ -1,0 +1,34 @@
+/**
+ * WXS filter functions for WXML template use
+ * WXS runs in the view layer and supports .toFixed() etc.
+ */
+
+/**
+ * Format number to 2 decimal places
+ */
+function toFixed2(num) {
+  if (num === undefined || num === null || isNaN(num)) return '0.00'
+  return Number(num).toFixed(2)
+}
+
+/**
+ * Calculate employee price: price * discountRate, formatted to 2 decimal places
+ */
+function employeePrice(price, discountRate) {
+  if (!price || !discountRate) return '0.00'
+  return (price * discountRate).toFixed(2)
+}
+
+/**
+ * Calculate subtotal: price * quantity, formatted to 2 decimal places
+ */
+function subtotal(price, quantity) {
+  if (!price || !quantity) return '0.00'
+  return (price * quantity).toFixed(2)
+}
+
+module.exports = {
+  toFixed2: toFixed2,
+  employeePrice: employeePrice,
+  subtotal: subtotal
+}

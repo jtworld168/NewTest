@@ -1,0 +1,37 @@
+<view class="container">
+  <view class="pay-card">
+    <view class="pay-icon">💳</view>
+    <text class="pay-title">订单支付</text>
+    <text class="pay-order-id">订单号: {{orderId}}</text>
+    <text class="pay-amount">¥{{amount}}</text>
+
+    <!-- Payment method selection -->
+    <view class="pay-methods">
+      <text class="pay-methods-title">选择支付方式</text>
+      <view class="pay-method {{paymentMethod === 'WECHAT' ? 'selected' : ''}}" bindtap="selectMethod" data-method="WECHAT">
+        <text class="method-icon">💚</text>
+        <text class="method-name">微信支付</text>
+        <text class="method-check" wx:if="{{paymentMethod === 'WECHAT'}}">✓</text>
+      </view>
+      <view class="pay-method {{paymentMethod === 'ALIPAY' ? 'selected' : ''}}" bindtap="selectMethod" data-method="ALIPAY">
+        <text class="method-icon">💙</text>
+        <text class="method-name">支付宝</text>
+        <text class="method-check" wx:if="{{paymentMethod === 'ALIPAY'}}">✓</text>
+      </view>
+      <view class="pay-method {{paymentMethod === 'CARD' ? 'selected' : ''}}" bindtap="selectMethod" data-method="CARD">
+        <text class="method-icon">💳</text>
+        <text class="method-name">银行卡</text>
+        <text class="method-check" wx:if="{{paymentMethod === 'CARD'}}">✓</text>
+      </view>
+      <view class="pay-method {{paymentMethod === 'CASH' ? 'selected' : ''}}" bindtap="selectMethod" data-method="CASH">
+        <text class="method-icon">💰</text>
+        <text class="method-name">现金</text>
+        <text class="method-check" wx:if="{{paymentMethod === 'CASH'}}">✓</text>
+      </view>
+    </view>
+  </view>
+
+  <button class="confirm-btn" bindtap="confirmPay" disabled="{{paying}}">
+    {{paying ? '支付中...' : '确认支付 ¥' + amount}}
+  </button>
+</view>

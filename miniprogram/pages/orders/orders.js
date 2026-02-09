@@ -3,7 +3,6 @@ const api = require('../../utils/api')
 Page({
   data: {
     orders: [],
-    productMap: {},
     loading: true,
     currentTab: 'all',
     tabs: [
@@ -34,7 +33,7 @@ Page({
       const res = await api.getOrdersByUserId(app.globalData.userInfo.id)
       const orders = res.data || []
 
-      // Load product names
+      // Load product details
       const productIds = [...new Set(orders.map(o => o.productId).filter(Boolean))]
       const productMap = {}
       await Promise.all(productIds.map(id =>
@@ -43,7 +42,15 @@ Page({
         }).catch(() => {})
       ))
 
-      this.setData({ orders, productMap, loading: false })
+      // Pre-calculate display values to avoid WXML expression issues
+      orders.forEach(order => {
+        const product = productMap[order.productId]
+        order._productName = product ? product.name : '商品 #' + order.productId
+        order._imageUrl = product && product.image ? api.getFileUrl(product.image) : ''
+        order._hasEmployeeDiscount = product && order.priceAtPurchase && order.priceAtPurchase < product.price
+      })
+
+      this.setData({ orders, loading: false })
     } catch (e) {
       console.error('Failed to load orders:', e)
       this.setData({ loading: false })
@@ -54,11 +61,33 @@ Page({
     this.setData({ currentTab: e.currentTarget.dataset.tab })
   },
 
-  goLogin() {
-    wx.navigateTo({ url: '/pages/login/login' })
+  goToOrderDetail(e) {
+    const id = e.currentTarget.dataset.id
+    wx.navigateTo({ url: '/pages/order-detail/order-detail?id=' + id })
   },
 
-  getFileUrl(filename) {
-    return api.getFileUrl(filename)
+  goToPay(e) {
+    const id = e.currentTarget.dataset.id
+    const amount = e.currentTarget.dataset.amount
+    wx.navigateTo({ url: '/pages/payment/payment?orderId=' + id + '&amount=' + amount })
+  },
+
+  cancelOrder(e) {
+    const id = e.currentTarget.dataset.id
+    wx.showModal({
+      title: '提示',
+      content: '确定要取消该订单吗？',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            await api.updateOrder({ id, status: 'CANCELLED' })
+            wx.showToast({ title: '已取消', icon: 'success' })
+            this.loadOrders()
+          } catch (err) {
+            wx.showToast({ title: '取消失败', icon: 'error' })
+          }
+        }
+      }
+    })
   }
 })
