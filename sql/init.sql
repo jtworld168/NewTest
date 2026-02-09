@@ -85,3 +85,21 @@ CREATE TABLE IF NOT EXISTS `order` (
     CONSTRAINT `fk_order_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
     CONSTRAINT `fk_order_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单表';
+
+-- 订单支付表
+CREATE TABLE IF NOT EXISTS `payment` (
+    `id`              BIGINT         NOT NULL AUTO_INCREMENT COMMENT '支付ID',
+    `order_id`        BIGINT         NOT NULL COMMENT '订单ID',
+    `amount`          DECIMAL(10,2)  NOT NULL COMMENT '支付金额',
+    `payment_method`  INT            NOT NULL COMMENT '支付方式：0-微信支付，1-支付宝，2-现金，3-银行卡',
+    `payment_status`  INT            NOT NULL DEFAULT 0 COMMENT '支付状态：0-待支付，1-支付成功，2-支付失败，3-已退款',
+    `payment_time`    DATETIME       DEFAULT NULL COMMENT '支付时间',
+    `transaction_no`  VARCHAR(100)   DEFAULT NULL COMMENT '交易流水号',
+    `create_time`     DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`     DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted`         INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    PRIMARY KEY (`id`),
+    KEY `idx_order_id` (`order_id`),
+    KEY `idx_transaction_no` (`transaction_no`),
+    CONSTRAINT `fk_payment_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单支付表';

@@ -67,3 +67,17 @@ CREATE TABLE IF NOT EXISTS `order` (
     CONSTRAINT `fk_order_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
     CONSTRAINT `fk_order_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`)
 );
+
+CREATE TABLE IF NOT EXISTS `payment` (
+    `id`              BIGINT         NOT NULL AUTO_INCREMENT,
+    `order_id`        BIGINT         NOT NULL,
+    `amount`          DECIMAL(10,2)  NOT NULL,
+    `payment_method`  INT            NOT NULL,
+    `payment_status`  INT            NOT NULL DEFAULT 0,
+    `payment_time`    TIMESTAMP      DEFAULT NULL,
+    `transaction_no`  VARCHAR(100)   DEFAULT NULL,
+    `create_time`     TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `update_time`     TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `deleted`         INT            DEFAULT 0,
+    PRIMARY KEY (`id`)
+);
