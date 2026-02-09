@@ -12,16 +12,16 @@
     "pages/order-detail/order-detail"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#07c160",
+    "navigationBarBackgroundColor": "#C9A96E",
     "navigationBarTitleText": "无人超市",
     "navigationBarTextStyle": "white",
-    "backgroundColor": "#f5f5f5"
+    "backgroundColor": "#F5EDE0"
   },
   "tabBar": {
     "color": "#999999",
-    "selectedColor": "#07c160",
+    "selectedColor": "#C9A96E",
     "backgroundColor": "#ffffff",
-    "borderStyle": "black",
+    "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/index/index",

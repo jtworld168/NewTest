@@ -158,6 +158,15 @@ Page({
         await api.addCartItem({ userId: app.globalData.userInfo.id, productId, quantity: 1 })
       }
       wx.showToast({ title: '已添加', icon: 'success', duration: 800 })
+      // Trigger bounce animation
+      const products = this.data.products
+      const idx = products.findIndex(p => p.id === productId)
+      if (idx !== -1) {
+        this.setData({ ['products[' + idx + ']._bouncing']: true })
+        setTimeout(() => {
+          this.setData({ ['products[' + idx + ']._bouncing']: false })
+        }, 500)
+      }
       this.loadData()
     } catch (err) {
       wx.showToast({ title: '操作失败', icon: 'error' })

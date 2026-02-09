@@ -68,7 +68,7 @@
             <view class="product-qty-control">
               <view class="product-qty-btn" bindtap="decreaseQty" data-id="{{item.id}}">-</view>
               <text class="product-qty-num">{{item._cartQty || 0}}</text>
-              <view class="product-qty-btn" bindtap="increaseQty" data-id="{{item.id}}">+</view>
+              <view class="product-qty-btn {{item._bouncing ? 'cart-bounce' : ''}}" bindtap="increaseQty" data-id="{{item.id}}">+</view>
             </view>
           </view>
         </view>

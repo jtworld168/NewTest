@@ -2,7 +2,7 @@
   display: flex;
   background-color: #fff;
   padding: 0 10rpx;
-  border-bottom: 1rpx solid #eee;
+  border-bottom: 1rpx solid var(--color-border);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -13,12 +13,13 @@
   text-align: center;
   padding: 24rpx 0;
   font-size: 28rpx;
-  color: #666;
+  color: var(--color-text-secondary);
   position: relative;
+  transition: color 0.2s;
 }
 
 .tab.active {
-  color: #07c160;
+  color: var(--color-primary);
   font-weight: bold;
 }
 
@@ -30,7 +31,7 @@
   transform: translateX(-50%);
   width: 60rpx;
   height: 4rpx;
-  background-color: #07c160;
+  background-color: var(--color-primary);
   border-radius: 2rpx;
 }
 
@@ -45,8 +46,13 @@
   border-radius: 16rpx;
   margin-bottom: 20rpx;
   overflow: hidden;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4rpx 16rpx rgba(60, 50, 38, 0.06);
+  animation: slideUp 0.35s ease-out backwards;
 }
+
+.coupon-card:nth-child(1) { animation-delay: 0s; }
+.coupon-card:nth-child(2) { animation-delay: 0.05s; }
+.coupon-card:nth-child(3) { animation-delay: 0.1s; }
 
 .coupon-card.disabled {
   opacity: 0.5;
@@ -59,7 +65,7 @@
   align-items: center;
   justify-content: center;
   padding: 30rpx 0;
-  background: linear-gradient(135deg, #07c160, #06ad56);
+  background: linear-gradient(135deg, #C9A96E, #B8956A);
   color: #fff;
 }
 
@@ -75,7 +81,7 @@
 .coupon-divider {
   width: 2rpx;
   height: 80rpx;
-  background: repeating-linear-gradient(to bottom, #ddd 0, #ddd 8rpx, transparent 8rpx, transparent 16rpx);
+  background: repeating-linear-gradient(to bottom, var(--color-border) 0, var(--color-border) 8rpx, transparent 8rpx, transparent 16rpx);
 }
 
 .coupon-right {
@@ -88,13 +94,13 @@
 .coupon-name {
   font-size: 28rpx;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text);
   margin-bottom: 8rpx;
 }
 
 .coupon-condition {
   font-size: 22rpx;
-  color: #999;
+  color: var(--color-text-secondary);
   margin-bottom: 4rpx;
 }
 
@@ -105,7 +111,7 @@
 
 .coupon-status-tag {
   font-size: 20rpx;
-  color: #999;
+  color: var(--color-text-secondary);
   margin-top: 6rpx;
 }
 
@@ -127,11 +133,11 @@
 
 .empty-text {
   font-size: 28rpx;
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .loading {
   text-align: center;
   padding: 60rpx 0;
-  color: #999;
+  color: var(--color-text-secondary);
 }

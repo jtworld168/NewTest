@@ -1,7 +1,7 @@
 .user-header {
   display: flex;
   align-items: center;
-  background: linear-gradient(135deg, #07c160, #06ad56);
+  background: linear-gradient(135deg, #C9A96E, #B8956A);
   padding: 60rpx 40rpx;
   color: #fff;
 }
@@ -111,7 +111,12 @@
   display: flex;
   align-items: center;
   padding: 30rpx 24rpx;
-  border-bottom: 1rpx solid #f5f5f5;
+  border-bottom: 1rpx solid var(--color-border);
+  transition: background-color 0.15s;
+}
+
+.menu-item:active {
+  background-color: var(--color-surface);
 }
 
 .menu-item:last-child {
@@ -126,7 +131,7 @@
 .menu-text {
   flex: 1;
   font-size: 30rpx;
-  color: #333;
+  color: var(--color-text);
 }
 
 .menu-arrow {
@@ -142,11 +147,17 @@
 .btn-register {
   margin-top: 20rpx;
   background-color: #fff;
-  color: #07c160;
-  border: 2rpx solid #07c160;
+  color: var(--color-primary);
+  border: 2rpx solid var(--color-primary);
   border-radius: 12rpx;
   padding: 20rpx 0;
   font-size: 32rpx;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.btn-register:active {
+  opacity: 0.85;
+  transform: scale(0.97);
 }
 
 .btn-register::after {
