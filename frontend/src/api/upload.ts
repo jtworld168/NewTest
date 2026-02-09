@@ -14,10 +14,12 @@ export function listFiles(): Promise<Result<string[]>> {
 }
 
 export function downloadFile(filename: string): void {
-  const url = `/api/file/download/${encodeURIComponent(filename)}`
+  const safeName = filename.replace(/[/\\]/g, '').replace(/\.\./g, '')
+  if (!safeName) return
+  const url = `/api/file/download/${encodeURIComponent(safeName)}`
   const link = document.createElement('a')
   link.href = url
-  link.download = filename
+  link.download = safeName
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
