@@ -1,7 +1,6 @@
 package com.supermarket.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 @Getter
@@ -14,7 +13,6 @@ public enum UserRole {
     @EnumValue
     private final int code;
 
-    @JsonValue
     private final String description;
 
     UserRole(int code, String description) {

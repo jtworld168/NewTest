@@ -1,7 +1,6 @@
 package com.supermarket.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 @Getter
@@ -15,7 +14,6 @@ public enum OrderStatus {
     @EnumValue
     private final int code;
 
-    @JsonValue
     private final String description;
 
     OrderStatus(int code, String description) {
