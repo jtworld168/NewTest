@@ -79,5 +79,6 @@ CREATE TABLE IF NOT EXISTS `payment` (
     `create_time`     TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `update_time`     TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `deleted`         INT            DEFAULT 0,
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_payment_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`)
 );

@@ -59,8 +59,8 @@ public class PaymentController {
         if (payment.getOrderId() == null) {
             return Result.error("订单ID不能为空");
         }
-        if (payment.getAmount() == null || payment.getAmount().signum() < 0) {
-            return Result.error("支付金额不能为空或负数");
+        if (payment.getAmount() == null || payment.getAmount().signum() <= 0) {
+            return Result.error("支付金额必须大于零");
         }
         if (payment.getPaymentMethod() == null) {
             return Result.error("支付方式不能为空");
@@ -95,10 +95,10 @@ public class PaymentController {
         if (ids == null || ids.isEmpty()) {
             return Result.error("ID列表不能为空");
         }
-        ids.removeIf(id -> id == null);
-        if (ids.isEmpty()) {
+        List<Long> filteredIds = ids.stream().filter(id -> id != null).toList();
+        if (filteredIds.isEmpty()) {
             return Result.error("ID列表不能为空");
         }
-        return paymentService.deleteBatchPayments(ids) ? Result.success() : Result.error("批量删除支付记录失败");
+        return paymentService.deleteBatchPayments(filteredIds) ? Result.success() : Result.error("批量删除支付记录失败");
     }
 }
