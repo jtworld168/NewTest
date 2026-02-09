@@ -31,7 +31,7 @@ public class UserCouponController {
     @Operation(summary = "查询所有用户优惠券")
     @GetMapping("/list")
     public Result<List<UserCoupon>> getAllUserCoupons() {
-        return Result.success(userCouponService.list());
+        return Result.success(userCouponService.listAll());
     }
 
     @Operation(summary = "根据用户ID查询用户优惠券")
@@ -72,10 +72,10 @@ public class UserCouponController {
     @PostMapping("/add")
     public Result<Void> addUserCoupon(@RequestBody UserCoupon userCoupon) {
         if (userCoupon.getUserId() == null) {
-            return Result.error("用户ID不能为空");
+            return Result.badRequest("用户ID不能为空");
         }
         if (userCoupon.getCouponId() == null) {
-            return Result.error("优惠券面额ID不能为空");
+            return Result.badRequest("优惠券面额ID不能为空");
         }
         if (userCoupon.getStatus() == null) {
             userCoupon.setStatus(CouponStatus.AVAILABLE);
@@ -87,10 +87,10 @@ public class UserCouponController {
     @PutMapping("/update")
     public Result<Void> updateUserCoupon(@RequestBody UserCoupon userCoupon) {
         if (userCoupon.getId() == null) {
-            return Result.error("用户优惠券ID不能为空");
+            return Result.badRequest("用户优惠券ID不能为空");
         }
         if (userCouponService.getUserCouponById(userCoupon.getId()) == null) {
-            return Result.error("用户优惠券不存在");
+            return Result.badRequest("用户优惠券不存在");
         }
         return userCouponService.updateUserCoupon(userCoupon) ? Result.success() : Result.error("更新用户优惠券失败");
     }
@@ -99,7 +99,7 @@ public class UserCouponController {
     @DeleteMapping("/delete/{id}")
     public Result<Void> deleteUserCoupon(@Parameter(description = "用户优惠券ID") @PathVariable Long id) {
         if (userCouponService.getUserCouponById(id) == null) {
-            return Result.error("用户优惠券不存在");
+            return Result.badRequest("用户优惠券不存在");
         }
         return userCouponService.deleteUserCoupon(id) ? Result.success() : Result.error("删除用户优惠券失败");
     }
@@ -108,11 +108,11 @@ public class UserCouponController {
     @DeleteMapping("/deleteBatch")
     public Result<Void> deleteBatchUserCoupons(@RequestBody List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         ids.removeIf(id -> id == null);
         if (ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         return userCouponService.deleteBatchUserCoupons(ids) ? Result.success() : Result.error("批量删除用户优惠券失败");
     }

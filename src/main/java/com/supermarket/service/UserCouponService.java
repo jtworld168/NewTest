@@ -28,4 +28,6 @@ public interface UserCouponService extends IService<UserCoupon> {
     boolean deleteUserCoupon(Long id);
 
     boolean deleteBatchUserCoupons(List<Long> ids);
+
+    List<UserCoupon> listAll();
 }

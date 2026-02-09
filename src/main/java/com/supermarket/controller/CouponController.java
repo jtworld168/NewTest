@@ -31,7 +31,7 @@ public class CouponController {
     @Operation(summary = "查询所有优惠券面额")
     @GetMapping("/list")
     public Result<List<Coupon>> getAllCoupons() {
-        return Result.success(couponService.list());
+        return Result.success(couponService.listAll());
     }
 
     @Operation(summary = "根据名称查询优惠券面额")
@@ -59,22 +59,22 @@ public class CouponController {
     @PostMapping("/add")
     public Result<Void> addCoupon(@RequestBody Coupon coupon) {
         if (coupon.getName() == null || coupon.getName().isBlank()) {
-            return Result.error("优惠券名称不能为空");
+            return Result.badRequest("优惠券名称不能为空");
         }
         if (coupon.getDiscount() == null) {
-            return Result.error("折扣金额不能为空");
+            return Result.badRequest("折扣金额不能为空");
         }
-        if (coupon.getDiscount().compareTo(BigDecimal.ZERO) < 0) {
-            return Result.error("折扣金额不能为负数");
+        if (coupon.getDiscount().compareTo(BigDecimal.ZERO) <= 0) {
+            return Result.badRequest("折扣金额必须大于0");
         }
         if (coupon.getMinAmount() == null) {
-            return Result.error("最低使用金额不能为空");
+            return Result.badRequest("最低使用金额不能为空");
         }
         if (coupon.getMinAmount().compareTo(BigDecimal.ZERO) < 0) {
-            return Result.error("最低使用金额不能为负数");
+            return Result.badRequest("最低使用金额不能为负数");
         }
         if (coupon.getTotalCount() == null || coupon.getTotalCount() <= 0) {
-            return Result.error("发放总数量必须大于0");
+            return Result.badRequest("发放总数量必须大于0");
         }
         if (coupon.getRemainingCount() == null) {
             coupon.setRemainingCount(coupon.getTotalCount());
@@ -86,10 +86,22 @@ public class CouponController {
     @PutMapping("/update")
     public Result<Void> updateCoupon(@RequestBody Coupon coupon) {
         if (coupon.getId() == null) {
-            return Result.error("优惠券面额ID不能为空");
+            return Result.badRequest("优惠券面额ID不能为空");
         }
         if (couponService.getCouponById(coupon.getId()) == null) {
-            return Result.error("优惠券面额不存在");
+            return Result.badRequest("优惠券面额不存在");
+        }
+        if (coupon.getDiscount() != null && coupon.getDiscount().compareTo(BigDecimal.ZERO) <= 0) {
+            return Result.badRequest("折扣金额必须大于0");
+        }
+        if (coupon.getMinAmount() != null && coupon.getMinAmount().compareTo(BigDecimal.ZERO) < 0) {
+            return Result.badRequest("最低使用金额不能为负数");
+        }
+        if (coupon.getTotalCount() != null && coupon.getTotalCount() < 0) {
+            return Result.badRequest("发放总数量不能为负数");
+        }
+        if (coupon.getRemainingCount() != null && coupon.getRemainingCount() < 0) {
+            return Result.badRequest("剩余数量不能为负数");
         }
         return couponService.updateCoupon(coupon) ? Result.success() : Result.error("更新优惠券面额失败");
     }
@@ -98,7 +110,7 @@ public class CouponController {
     @DeleteMapping("/delete/{id}")
     public Result<Void> deleteCoupon(@Parameter(description = "优惠券面额ID") @PathVariable Long id) {
         if (couponService.getCouponById(id) == null) {
-            return Result.error("优惠券面额不存在");
+            return Result.badRequest("优惠券面额不存在");
         }
         return couponService.deleteCoupon(id) ? Result.success() : Result.error("删除优惠券面额失败");
     }
@@ -107,11 +119,11 @@ public class CouponController {
     @DeleteMapping("/deleteBatch")
     public Result<Void> deleteBatchCoupons(@RequestBody List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         ids.removeIf(id -> id == null);
         if (ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         return couponService.deleteBatchCoupons(ids) ? Result.success() : Result.error("批量删除优惠券面额失败");
     }

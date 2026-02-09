@@ -68,4 +68,11 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
         wrapper.eq(CartItem::getUserId, userId);
         return remove(wrapper);
     }
+
+    @Override
+    public List<CartItem> listAll() {
+        LambdaQueryWrapper<CartItem> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(CartItem::getCreateTime);
+        return list(wrapper);
+    }
 }

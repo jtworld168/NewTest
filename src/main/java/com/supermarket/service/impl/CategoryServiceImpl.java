@@ -63,4 +63,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     public boolean deleteBatchCategories(List<Long> ids) {
         return removeByIds(ids);
     }
+
+    @Override
+    public List<Category> listAll() {
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(Category::getCreateTime);
+        return list(wrapper);
+    }
 }

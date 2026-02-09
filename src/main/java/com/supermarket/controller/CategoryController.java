@@ -30,7 +30,7 @@ public class CategoryController {
     @Operation(summary = "查询所有分类")
     @GetMapping("/list")
     public Result<List<Category>> getAllCategories() {
-        return Result.success(categoryService.list());
+        return Result.success(categoryService.listAll());
     }
 
     @Operation(summary = "根据名称查询分类")
@@ -58,7 +58,7 @@ public class CategoryController {
     @PostMapping("/add")
     public Result<Void> addCategory(@RequestBody Category category) {
         if (category.getName() == null || category.getName().isBlank()) {
-            return Result.error("分类名称不能为空");
+            return Result.badRequest("分类名称不能为空");
         }
         return categoryService.addCategory(category) ? Result.success() : Result.error("添加分类失败");
     }
@@ -67,10 +67,13 @@ public class CategoryController {
     @PutMapping("/update")
     public Result<Void> updateCategory(@RequestBody Category category) {
         if (category.getId() == null) {
-            return Result.error("分类ID不能为空");
+            return Result.badRequest("分类ID不能为空");
         }
         if (categoryService.getCategoryById(category.getId()) == null) {
-            return Result.error("分类不存在");
+            return Result.badRequest("分类不存在");
+        }
+        if (category.getName() != null && category.getName().isBlank()) {
+            return Result.badRequest("分类名称不能为空字符串");
         }
         return categoryService.updateCategory(category) ? Result.success() : Result.error("更新分类失败");
     }
@@ -79,7 +82,7 @@ public class CategoryController {
     @DeleteMapping("/delete/{id}")
     public Result<Void> deleteCategory(@Parameter(description = "分类ID") @PathVariable Long id) {
         if (categoryService.getCategoryById(id) == null) {
-            return Result.error("分类不存在");
+            return Result.badRequest("分类不存在");
         }
         return categoryService.deleteCategory(id) ? Result.success() : Result.error("删除分类失败");
     }
@@ -88,11 +91,11 @@ public class CategoryController {
     @DeleteMapping("/deleteBatch")
     public Result<Void> deleteBatchCategories(@RequestBody List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         ids.removeIf(id -> id == null);
         if (ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         return categoryService.deleteBatchCategories(ids) ? Result.success() : Result.error("批量删除分类失败");
     }

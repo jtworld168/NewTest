@@ -31,7 +31,7 @@ public class UserController {
     @Operation(summary = "查询所有用户")
     @GetMapping("/list")
     public Result<List<User>> getAllUsers() {
-        return Result.success(userService.list());
+        return Result.success(userService.listAll());
     }
 
     @Operation(summary = "根据角色查询用户")
@@ -65,13 +65,13 @@ public class UserController {
     @PostMapping("/add")
     public Result<Void> addUser(@RequestBody User user) {
         if (user.getUsername() == null || user.getUsername().isBlank()) {
-            return Result.error("用户名不能为空");
+            return Result.badRequest("用户名不能为空");
         }
         if (user.getPassword() == null || user.getPassword().isBlank()) {
-            return Result.error("密码不能为空");
+            return Result.badRequest("密码不能为空");
         }
         if (user.getRole() == null) {
-            return Result.error("角色不能为空");
+            return Result.badRequest("角色不能为空");
         }
         return userService.addUser(user) ? Result.success() : Result.error("添加用户失败");
     }
@@ -80,10 +80,16 @@ public class UserController {
     @PutMapping("/update")
     public Result<Void> updateUser(@RequestBody User user) {
         if (user.getId() == null) {
-            return Result.error("用户ID不能为空");
+            return Result.badRequest("用户ID不能为空");
         }
         if (userService.getUserById(user.getId()) == null) {
-            return Result.error("用户不存在");
+            return Result.badRequest("用户不存在");
+        }
+        if (user.getUsername() != null && user.getUsername().isBlank()) {
+            return Result.badRequest("用户名不能为空字符串");
+        }
+        if (user.getPassword() != null && user.getPassword().isBlank()) {
+            return Result.badRequest("密码不能为空字符串");
         }
         return userService.updateUser(user) ? Result.success() : Result.error("更新用户失败");
     }
@@ -92,7 +98,7 @@ public class UserController {
     @DeleteMapping("/delete/{id}")
     public Result<Void> deleteUser(@Parameter(description = "用户ID") @PathVariable Long id) {
         if (userService.getUserById(id) == null) {
-            return Result.error("用户不存在");
+            return Result.badRequest("用户不存在");
         }
         return userService.deleteUser(id) ? Result.success() : Result.error("删除用户失败");
     }
@@ -101,11 +107,11 @@ public class UserController {
     @DeleteMapping("/deleteBatch")
     public Result<Void> deleteBatchUsers(@RequestBody List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         ids.removeIf(id -> id == null);
         if (ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         return userService.deleteBatchUsers(ids) ? Result.success() : Result.error("批量删除用户失败");
     }

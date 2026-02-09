@@ -62,4 +62,11 @@ public class CouponServiceImpl extends ServiceImpl<CouponMapper, Coupon> impleme
     public boolean deleteBatchCoupons(List<Long> ids) {
         return removeByIds(ids);
     }
+
+    @Override
+    public List<Coupon> listAll() {
+        LambdaQueryWrapper<Coupon> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(Coupon::getCreateTime);
+        return list(wrapper);
+    }
 }

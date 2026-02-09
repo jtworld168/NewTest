@@ -79,4 +79,11 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     public boolean deleteBatchProducts(List<Long> ids) {
         return removeByIds(ids);
     }
+
+    @Override
+    public List<Product> listAll() {
+        LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(Product::getCreateTime);
+        return list(wrapper);
+    }
 }

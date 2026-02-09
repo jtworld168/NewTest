@@ -28,4 +28,6 @@ public interface OrderService extends IService<Order> {
     boolean deleteOrder(Long id);
 
     boolean deleteBatchOrders(List<Long> ids);
+
+    List<Order> listAll();
 }

@@ -30,7 +30,7 @@ public class OrderItemController {
     @Operation(summary = "查询所有订单商品明细")
     @GetMapping("/list")
     public Result<List<OrderItem>> getAllOrderItems() {
-        return Result.success(orderItemService.list());
+        return Result.success(orderItemService.listAll());
     }
 
     @Operation(summary = "根据订单ID查询商品明细")
@@ -57,13 +57,13 @@ public class OrderItemController {
     @PostMapping("/add")
     public Result<Void> addOrderItem(@RequestBody OrderItem orderItem) {
         if (orderItem.getOrderId() == null) {
-            return Result.error("订单ID不能为空");
+            return Result.badRequest("订单ID不能为空");
         }
         if (orderItem.getProductId() == null) {
-            return Result.error("商品ID不能为空");
+            return Result.badRequest("商品ID不能为空");
         }
         if (orderItem.getQuantity() == null || orderItem.getQuantity() <= 0) {
-            return Result.error("购买数量必须大于0");
+            return Result.badRequest("购买数量必须大于0");
         }
         return orderItemService.addOrderItem(orderItem) ? Result.success() : Result.error("添加订单商品明细失败");
     }
@@ -72,10 +72,13 @@ public class OrderItemController {
     @PutMapping("/update")
     public Result<Void> updateOrderItem(@RequestBody OrderItem orderItem) {
         if (orderItem.getId() == null) {
-            return Result.error("明细ID不能为空");
+            return Result.badRequest("明细ID不能为空");
         }
         if (orderItemService.getOrderItemById(orderItem.getId()) == null) {
-            return Result.error("订单商品明细不存在");
+            return Result.badRequest("订单商品明细不存在");
+        }
+        if (orderItem.getQuantity() != null && orderItem.getQuantity() <= 0) {
+            return Result.badRequest("购买数量必须大于0");
         }
         return orderItemService.updateOrderItem(orderItem) ? Result.success() : Result.error("更新订单商品明细失败");
     }
@@ -84,7 +87,7 @@ public class OrderItemController {
     @DeleteMapping("/delete/{id}")
     public Result<Void> deleteOrderItem(@Parameter(description = "明细ID") @PathVariable Long id) {
         if (orderItemService.getOrderItemById(id) == null) {
-            return Result.error("订单商品明细不存在");
+            return Result.badRequest("订单商品明细不存在");
         }
         return orderItemService.deleteOrderItem(id) ? Result.success() : Result.error("删除订单商品明细失败");
     }
@@ -93,11 +96,11 @@ public class OrderItemController {
     @DeleteMapping("/deleteBatch")
     public Result<Void> deleteBatchOrderItems(@RequestBody List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         List<Long> validIds = ids.stream().filter(id -> id != null).toList();
         if (validIds.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         return orderItemService.deleteBatchOrderItems(validIds) ? Result.success() : Result.error("批量删除订单商品明细失败");
     }

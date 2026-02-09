@@ -31,7 +31,7 @@ public class OrderController {
     @Operation(summary = "查询所有订单")
     @GetMapping("/list")
     public Result<List<Order>> getAllOrders() {
-        return Result.success(orderService.list());
+        return Result.success(orderService.listAll());
     }
 
     @Operation(summary = "根据用户ID查询订单")
@@ -74,13 +74,13 @@ public class OrderController {
             @Parameter(description = "购买数量") @RequestParam Integer quantity,
             @Parameter(description = "用户优惠券ID（可选）") @RequestParam(required = false) Long userCouponId) {
         if (userId == null) {
-            return Result.error("用户ID不能为空");
+            return Result.badRequest("用户ID不能为空");
         }
         if (productId == null) {
-            return Result.error("商品ID不能为空");
+            return Result.badRequest("商品ID不能为空");
         }
         if (quantity == null || quantity <= 0) {
-            return Result.error("购买数量必须大于0");
+            return Result.badRequest("购买数量必须大于0");
         }
         return orderService.addOrder(userId, productId, quantity, userCouponId)
                 ? Result.success() : Result.error("添加订单失败");
@@ -90,10 +90,13 @@ public class OrderController {
     @PutMapping("/update")
     public Result<Void> updateOrder(@RequestBody Order order) {
         if (order.getId() == null) {
-            return Result.error("订单ID不能为空");
+            return Result.badRequest("订单ID不能为空");
         }
         if (orderService.getOrderById(order.getId()) == null) {
-            return Result.error("订单不存在");
+            return Result.badRequest("订单不存在");
+        }
+        if (order.getQuantity() != null && order.getQuantity() <= 0) {
+            return Result.badRequest("购买数量必须大于0");
         }
         return orderService.updateOrder(order) ? Result.success() : Result.error("更新订单失败");
     }
@@ -102,7 +105,7 @@ public class OrderController {
     @DeleteMapping("/delete/{id}")
     public Result<Void> deleteOrder(@Parameter(description = "订单ID") @PathVariable Long id) {
         if (orderService.getOrderById(id) == null) {
-            return Result.error("订单不存在");
+            return Result.badRequest("订单不存在");
         }
         return orderService.deleteOrder(id) ? Result.success() : Result.error("删除订单失败");
     }
@@ -111,11 +114,11 @@ public class OrderController {
     @DeleteMapping("/deleteBatch")
     public Result<Void> deleteBatchOrders(@RequestBody List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         ids.removeIf(id -> id == null);
         if (ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         return orderService.deleteBatchOrders(ids) ? Result.success() : Result.error("批量删除订单失败");
     }

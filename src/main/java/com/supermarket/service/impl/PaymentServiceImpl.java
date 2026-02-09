@@ -78,4 +78,11 @@ public class PaymentServiceImpl extends ServiceImpl<PaymentMapper, Payment> impl
     public boolean deleteBatchPayments(List<Long> ids) {
         return removeByIds(ids);
     }
+
+    @Override
+    public List<Payment> listAll() {
+        LambdaQueryWrapper<Payment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(Payment::getCreateTime);
+        return list(wrapper);
+    }
 }

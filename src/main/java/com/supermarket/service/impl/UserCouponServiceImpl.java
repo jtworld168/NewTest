@@ -81,4 +81,11 @@ public class UserCouponServiceImpl extends ServiceImpl<UserCouponMapper, UserCou
     public boolean deleteBatchUserCoupons(List<Long> ids) {
         return removeByIds(ids);
     }
+
+    @Override
+    public List<UserCoupon> listAll() {
+        LambdaQueryWrapper<UserCoupon> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(UserCoupon::getCreateTime);
+        return list(wrapper);
+    }
 }

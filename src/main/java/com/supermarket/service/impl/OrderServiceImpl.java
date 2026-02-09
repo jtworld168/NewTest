@@ -119,4 +119,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     public boolean deleteBatchOrders(List<Long> ids) {
         return removeByIds(ids);
     }
+
+    @Override
+    public List<Order> listAll() {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(Order::getCreateTime);
+        return list(wrapper);
+    }
 }

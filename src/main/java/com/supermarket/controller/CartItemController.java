@@ -30,7 +30,7 @@ public class CartItemController {
     @Operation(summary = "查询所有购物车商品")
     @GetMapping("/list")
     public Result<List<CartItem>> getAllCartItems() {
-        return Result.success(cartItemService.list());
+        return Result.success(cartItemService.listAll());
     }
 
     @Operation(summary = "根据用户ID查询购物车")
@@ -57,13 +57,13 @@ public class CartItemController {
     @PostMapping("/add")
     public Result<Void> addCartItem(@RequestBody CartItem cartItem) {
         if (cartItem.getUserId() == null) {
-            return Result.error("用户ID不能为空");
+            return Result.badRequest("用户ID不能为空");
         }
         if (cartItem.getProductId() == null) {
-            return Result.error("商品ID不能为空");
+            return Result.badRequest("商品ID不能为空");
         }
         if (cartItem.getQuantity() == null || cartItem.getQuantity() <= 0) {
-            return Result.error("数量必须大于0");
+            return Result.badRequest("数量必须大于0");
         }
         return cartItemService.addCartItem(cartItem) ? Result.success() : Result.error("添加购物车失败");
     }
@@ -72,10 +72,13 @@ public class CartItemController {
     @PutMapping("/update")
     public Result<Void> updateCartItem(@RequestBody CartItem cartItem) {
         if (cartItem.getId() == null) {
-            return Result.error("购物车商品ID不能为空");
+            return Result.badRequest("购物车商品ID不能为空");
         }
         if (cartItemService.getCartItemById(cartItem.getId()) == null) {
-            return Result.error("购物车商品不存在");
+            return Result.badRequest("购物车商品不存在");
+        }
+        if (cartItem.getQuantity() != null && cartItem.getQuantity() <= 0) {
+            return Result.badRequest("数量必须大于0");
         }
         return cartItemService.updateCartItem(cartItem) ? Result.success() : Result.error("更新购物车失败");
     }
@@ -84,7 +87,7 @@ public class CartItemController {
     @DeleteMapping("/delete/{id}")
     public Result<Void> deleteCartItem(@Parameter(description = "购物车商品ID") @PathVariable Long id) {
         if (cartItemService.getCartItemById(id) == null) {
-            return Result.error("购物车商品不存在");
+            return Result.badRequest("购物车商品不存在");
         }
         return cartItemService.deleteCartItem(id) ? Result.success() : Result.error("删除购物车商品失败");
     }
@@ -93,11 +96,11 @@ public class CartItemController {
     @DeleteMapping("/deleteBatch")
     public Result<Void> deleteBatchCartItems(@RequestBody List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         List<Long> validIds = ids.stream().filter(id -> id != null).toList();
         if (validIds.isEmpty()) {
-            return Result.error("ID列表中没有有效ID");
+            return Result.badRequest("ID列表中没有有效ID");
         }
         return cartItemService.deleteBatchCartItems(validIds) ? Result.success() : Result.error("批量删除购物车商品失败");
     }

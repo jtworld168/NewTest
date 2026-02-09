@@ -25,4 +25,6 @@ public interface CartItemService extends IService<CartItem> {
     boolean deleteBatchCartItems(List<Long> ids);
 
     boolean clearCart(Long userId);
+
+    List<CartItem> listAll();
 }

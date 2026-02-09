@@ -31,7 +31,7 @@ public class ProductController {
     @Operation(summary = "查询所有商品")
     @GetMapping("/list")
     public Result<List<Product>> getAllProducts() {
-        return Result.success(productService.list());
+        return Result.success(productService.listAll());
     }
 
     @Operation(summary = "根据名称搜索商品（模糊匹配名称）")
@@ -71,19 +71,19 @@ public class ProductController {
     @PostMapping("/add")
     public Result<Void> addProduct(@RequestBody Product product) {
         if (product.getName() == null || product.getName().isBlank()) {
-            return Result.error("商品名称不能为空");
+            return Result.badRequest("商品名称不能为空");
         }
         if (product.getPrice() == null) {
-            return Result.error("商品价格不能为空");
+            return Result.badRequest("商品价格不能为空");
         }
-        if (product.getPrice().compareTo(BigDecimal.ZERO) < 0) {
-            return Result.error("商品价格不能为负数");
+        if (product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            return Result.badRequest("商品价格必须大于0");
         }
         if (product.getStock() == null) {
-            return Result.error("库存数量不能为空");
+            return Result.badRequest("库存数量不能为空");
         }
         if (product.getStock() < 0) {
-            return Result.error("库存数量不能为负数");
+            return Result.badRequest("库存数量不能为负数");
         }
         return productService.addProduct(product) ? Result.success() : Result.error("添加商品失败");
     }
@@ -92,10 +92,19 @@ public class ProductController {
     @PutMapping("/update")
     public Result<Void> updateProduct(@RequestBody Product product) {
         if (product.getId() == null) {
-            return Result.error("商品ID不能为空");
+            return Result.badRequest("商品ID不能为空");
         }
         if (productService.getProductById(product.getId()) == null) {
-            return Result.error("商品不存在");
+            return Result.badRequest("商品不存在");
+        }
+        if (product.getPrice() != null && product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            return Result.badRequest("商品价格必须大于0");
+        }
+        if (product.getStock() != null && product.getStock() < 0) {
+            return Result.badRequest("库存数量不能为负数");
+        }
+        if (product.getName() != null && product.getName().isBlank()) {
+            return Result.badRequest("商品名称不能为空字符串");
         }
         return productService.updateProduct(product) ? Result.success() : Result.error("更新商品失败");
     }
@@ -104,7 +113,7 @@ public class ProductController {
     @DeleteMapping("/delete/{id}")
     public Result<Void> deleteProduct(@Parameter(description = "商品ID") @PathVariable Long id) {
         if (productService.getProductById(id) == null) {
-            return Result.error("商品不存在");
+            return Result.badRequest("商品不存在");
         }
         return productService.deleteProduct(id) ? Result.success() : Result.error("删除商品失败");
     }
@@ -113,11 +122,11 @@ public class ProductController {
     @DeleteMapping("/deleteBatch")
     public Result<Void> deleteBatchProducts(@RequestBody List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         ids.removeIf(id -> id == null);
         if (ids.isEmpty()) {
-            return Result.error("ID列表不能为空");
+            return Result.badRequest("ID列表不能为空");
         }
         return productService.deleteBatchProducts(ids) ? Result.success() : Result.error("批量删除商品失败");
     }

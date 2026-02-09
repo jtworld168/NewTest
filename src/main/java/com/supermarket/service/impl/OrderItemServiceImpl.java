@@ -61,4 +61,11 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemMapper, OrderItem
     public boolean deleteBatchOrderItems(List<Long> ids) {
         return removeByIds(ids);
     }
+
+    @Override
+    public List<OrderItem> listAll() {
+        LambdaQueryWrapper<OrderItem> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(OrderItem::getCreateTime);
+        return list(wrapper);
+    }
 }

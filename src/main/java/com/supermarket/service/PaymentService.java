@@ -28,4 +28,6 @@ public interface PaymentService extends IService<Payment> {
     boolean deletePayment(Long id);
 
     boolean deleteBatchPayments(List<Long> ids);
+
+    List<Payment> listAll();
 }

@@ -28,4 +28,6 @@ public interface UserService extends IService<User> {
     boolean deleteBatchUsers(List<Long> ids);
 
     User login(String username, String password);
+
+    List<User> listAll();
 }

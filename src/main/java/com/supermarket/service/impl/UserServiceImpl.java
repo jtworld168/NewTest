@@ -80,4 +80,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                .eq(User::getPassword, password);
         return getOne(wrapper);
     }
+
+    @Override
+    public List<User> listAll() {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(User::getCreateTime);
+        return list(wrapper);
+    }
 }

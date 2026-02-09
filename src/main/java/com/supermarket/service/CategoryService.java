@@ -23,4 +23,6 @@ public interface CategoryService extends IService<Category> {
     boolean deleteCategory(Long id);
 
     boolean deleteBatchCategories(List<Long> ids);
+
+    List<Category> listAll();
 }
