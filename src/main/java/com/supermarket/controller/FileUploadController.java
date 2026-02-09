@@ -2,23 +2,34 @@ package com.supermarket.controller;
 
 import com.supermarket.common.Result;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
-@RequestMapping("/api/upload")
-@Tag(name = "文件上传", description = "图片上传接口")
+@RequestMapping("/api/file")
+@Tag(name = "文件管理", description = "文件上传与下载接口")
 public class FileUploadController {
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
@@ -33,7 +44,7 @@ public class FileUploadController {
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
-    @PostMapping("/image")
+    @PostMapping("/upload")
     @Operation(summary = "上传图片", description = "上传图片文件，返回图片访问URL")
     public Result<String> uploadImage(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
@@ -73,6 +84,61 @@ public class FileUploadController {
             return Result.success(imageUrl);
         } catch (IOException e) {
             return Result.error("文件上传失败：" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/download/{filename}")
+    @Operation(summary = "下载文件", description = "根据文件名下载已上传的文件")
+    public ResponseEntity<Resource> downloadFile(
+            @Parameter(description = "文件名") @PathVariable String filename) {
+        try {
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            Path filePath = uploadPath.resolve(filename).normalize();
+
+            if (!filePath.startsWith(uploadPath)) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Resource resource = new UrlResource(filePath.toUri());
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + encodedFilename + "\"; filename*=UTF-8''" + encodedFilename)
+                    .body(resource);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/list")
+    @Operation(summary = "获取文件列表", description = "获取已上传的所有文件名列表")
+    public Result<List<String>> listFiles() {
+        try {
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            if (!Files.exists(uploadPath)) {
+                return Result.success(List.of());
+            }
+            try (Stream<Path> paths = Files.list(uploadPath)) {
+                List<String> filenames = paths
+                        .filter(Files::isRegularFile)
+                        .map(p -> p.getFileName().toString())
+                        .sorted()
+                        .collect(Collectors.toList());
+                return Result.success(filenames);
+            }
+        } catch (IOException e) {
+            return Result.error("获取文件列表失败：" + e.getMessage());
         }
     }
 
