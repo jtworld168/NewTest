@@ -14,6 +14,8 @@ import java.util.List;
 @Service
 public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> implements ProductService {
 
+    private static final int DEFAULT_STOCK_ALERT_THRESHOLD = 10;
+
     @Override
     public Product getProductById(Long id) {
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
@@ -98,7 +100,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Override
     public List<Product> getLowStockProducts() {
         return list(new LambdaQueryWrapper<Product>()
-            .apply("stock <= COALESCE(stock_alert_threshold, 10)")
+            .apply("stock <= COALESCE(stock_alert_threshold, " + DEFAULT_STOCK_ALERT_THRESHOLD + ")")
             .eq(Product::getStatus, 1)
             .orderByAsc(Product::getStock));
     }
