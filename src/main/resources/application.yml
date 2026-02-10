@@ -49,4 +49,4 @@ management:
         include: health,info,metrics,env
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: always

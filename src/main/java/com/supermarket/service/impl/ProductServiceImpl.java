@@ -100,7 +100,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Override
     public List<Product> getLowStockProducts() {
         return list(new LambdaQueryWrapper<Product>()
-            .apply("stock <= COALESCE(stock_alert_threshold, " + DEFAULT_STOCK_ALERT_THRESHOLD + ")")
+            .apply("stock <= COALESCE(stock_alert_threshold, {0})", DEFAULT_STOCK_ALERT_THRESHOLD)
             .eq(Product::getStatus, 1)
             .orderByAsc(Product::getStock));
     }

@@ -115,7 +115,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { listUsers, addUser, updateUser, deleteUser, deleteBatchUsers, searchUsers, getUsersByRole, listUsersPage } from '../../api/user'
 import { uploadImage } from '../../api/upload'
 import { BASE_URL } from '../../api/request'
-import { getExportUsersUrl } from '../../api/excel'
+import { exportUsers } from '../../api/excel'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, UploadRequestOptions } from 'element-plus'
@@ -215,9 +215,7 @@ async function handleBatchDelete() {
 }
 
 function handleExport() {
-  const token = localStorage.getItem('satoken')
-  const url = getExportUsersUrl() + (token ? '?satoken=' + token : '')
-  window.open(url, '_blank')
+  exportUsers()
 }
 
 onMounted(loadData)

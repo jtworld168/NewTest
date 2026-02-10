@@ -134,7 +134,7 @@ import { listProducts, addProduct, updateProduct, deleteProduct, deleteBatchProd
 import { listCategories } from '../../api/category'
 import { uploadImage } from '../../api/upload'
 import { BASE_URL } from '../../api/request'
-import { getExportProductsUrl } from '../../api/excel'
+import { exportProducts } from '../../api/excel'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, UploadRequestOptions } from 'element-plus'
@@ -241,9 +241,7 @@ async function handleBatchDelete() {
 }
 
 function handleExport() {
-  const token = localStorage.getItem('satoken')
-  const url = getExportProductsUrl() + (token ? '?satoken=' + token : '')
-  window.open(url, '_blank')
+  exportProducts()
 }
 
 onMounted(loadData)
