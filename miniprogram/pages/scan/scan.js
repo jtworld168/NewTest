@@ -1,9 +1,10 @@
+const api = require('../../utils/api')
+
 Page({
   onShow() {
     wx.scanCode({
       onlyFromCamera: true,
       success: (res) => {
-        const api = require('../../utils/api')
         const code = res.result
         wx.showLoading({ title: '查找商品...' })
         api.searchProducts(code).then(searchRes => {

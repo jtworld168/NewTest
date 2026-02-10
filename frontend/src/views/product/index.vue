@@ -25,7 +25,7 @@
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column label="商品图片" width="100">
           <template #default="{ row }">
-            <el-image v-if="row.image" :src="'http://localhost:8080' + row.image" :preview-src-list="['http://localhost:8080' + row.image]" fit="cover" style="width: 60px; height: 60px; border-radius: 4px;" />
+            <el-image v-if="row.image" :src="BASE_URL + row.image" :preview-src-list="[BASE_URL + row.image]" fit="cover" style="width: 60px; height: 60px; border-radius: 4px;" />
             <span v-else style="color: #ccc;">无图片</span>
           </template>
         </el-table-column>
@@ -78,7 +78,7 @@
               :http-request="handleImageUpload"
               accept="image/*"
             >
-              <el-image v-if="form.image" :src="'http://localhost:8080' + form.image" fit="cover" style="width: 120px; height: 120px;" />
+              <el-image v-if="form.image" :src="BASE_URL + form.image" fit="cover" style="width: 120px; height: 120px;" />
               <el-icon v-else class="image-uploader-icon"><Plus /></el-icon>
             </el-upload>
             <el-button v-if="form.image" link type="danger" @click="form.image = ''">移除图片</el-button>
@@ -121,6 +121,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { listProducts, addProduct, updateProduct, deleteProduct, deleteBatchProducts, searchProducts, getProductsByCategoryId, listProductsPage } from '../../api/product'
 import { listCategories } from '../../api/category'
 import { uploadImage } from '../../api/upload'
+import { BASE_URL } from '../../api/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, UploadRequestOptions } from 'element-plus'

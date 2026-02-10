@@ -2,6 +2,8 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '../router'
 
+export const BASE_URL = 'http://localhost:8080'
+
 const request = axios.create({
   baseURL: '/api',
   timeout: 10000,
