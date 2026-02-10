@@ -40,3 +40,11 @@ export function deleteBatchProducts(ids: number[]): Promise<Result<void>> {
 export function listProductsPage(pageNum: number, pageSize: number): Promise<Result<any>> {
   return request.get('/products/listPage', { params: { pageNum, pageSize } })
 }
+
+export function getOnShelfProducts(): Promise<Result<Product[]>> {
+  return request.get('/products/onShelf')
+}
+
+export function getLowStockProducts(): Promise<Result<Product[]>> {
+  return request.get('/products/lowStock')
+}

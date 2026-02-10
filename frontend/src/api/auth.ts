@@ -1,7 +1,7 @@
 import request from './request'
 import type { Result, LoginParam, User } from '../types'
 
-export function login(data: LoginParam): Promise<Result<User>> {
+export function login(data: LoginParam): Promise<Result<{user: User, token: string}>> {
   return request.post('/auth/login', data)
 }
 

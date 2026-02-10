@@ -6,6 +6,7 @@
           <span>商品管理</span>
           <div>
             <el-button type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
+            <el-button type="success" @click="handleExport">导出Excel</el-button>
             <el-button type="primary" @click="openDialog()">新增商品</el-button>
           </div>
         </div>
@@ -49,7 +50,12 @@
           <template #default="{ row }">{{ row.employeeDiscountRate ? (row.employeeDiscountRate * 100).toFixed(0) + '%' : '-' }}</template>
         </el-table-column>
         <el-table-column prop="description" label="描述" show-overflow-tooltip />
-        <el-table-column label="操作" width="180">
+        <el-table-column label="状态" prop="status" width="80">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'danger'">{{ row.status === 1 ? '上架' : '下架' }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" fixed="right" align="right" width="180">
           <template #default="{ row }">
             <el-button size="small" @click="openDialog(row)">编辑</el-button>
             <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>
@@ -107,6 +113,12 @@
         <el-form-item label="描述">
           <el-input v-model="form.description" type="textarea" :rows="3" />
         </el-form-item>
+        <el-form-item label="上架状态">
+          <el-switch v-model="form.status" :active-value="1" :inactive-value="0" active-text="上架" inactive-text="下架" />
+        </el-form-item>
+        <el-form-item label="库存预警阈值">
+          <el-input-number v-model="form.stockAlertThreshold" :min="1" :max="9999" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -122,6 +134,7 @@ import { listProducts, addProduct, updateProduct, deleteProduct, deleteBatchProd
 import { listCategories } from '../../api/category'
 import { uploadImage } from '../../api/upload'
 import { BASE_URL } from '../../api/request'
+import { getExportProductsUrl } from '../../api/excel'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, UploadRequestOptions } from 'element-plus'
@@ -145,7 +158,7 @@ const categoryMap = computed(() => {
   return map
 })
 
-const defaultForm = (): Product => ({ name: '', price: 0, stock: 0, description: '', categoryId: undefined, employeeDiscountRate: undefined, barcode: '', image: '' })
+const defaultForm = (): Product => ({ name: '', price: 0, stock: 0, description: '', categoryId: undefined, employeeDiscountRate: undefined, barcode: '', image: '', status: 1, stockAlertThreshold: 10 })
 const form = reactive<Product>(defaultForm())
 
 const rules = {
@@ -225,6 +238,12 @@ async function handleBatchDelete() {
   await deleteBatchProducts(selectedIds.value)
   ElMessage.success('批量删除成功')
   loadData()
+}
+
+function handleExport() {
+  const token = localStorage.getItem('satoken')
+  const url = getExportProductsUrl() + (token ? '?satoken=' + token : '')
+  window.open(url, '_blank')
 }
 
 onMounted(loadData)

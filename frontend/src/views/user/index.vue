@@ -6,6 +6,7 @@
           <span>用户管理</span>
           <div>
             <el-button type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
+            <el-button type="success" @click="handleExport">导出Excel</el-button>
             <el-button type="primary" @click="openDialog()">新增用户</el-button>
           </div>
         </div>
@@ -46,7 +47,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column label="操作" width="180">
+        <el-table-column label="操作" fixed="right" align="right" width="180">
           <template #default="{ row }">
             <el-button size="small" @click="openDialog(row)">编辑</el-button>
             <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>
@@ -114,6 +115,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { listUsers, addUser, updateUser, deleteUser, deleteBatchUsers, searchUsers, getUsersByRole, listUsersPage } from '../../api/user'
 import { uploadImage } from '../../api/upload'
 import { BASE_URL } from '../../api/request'
+import { getExportUsersUrl } from '../../api/excel'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, UploadRequestOptions } from 'element-plus'
@@ -210,6 +212,12 @@ async function handleBatchDelete() {
   await deleteBatchUsers(selectedIds.value)
   ElMessage.success('批量删除成功')
   loadData()
+}
+
+function handleExport() {
+  const token = localStorage.getItem('satoken')
+  const url = getExportUsersUrl() + (token ? '?satoken=' + token : '')
+  window.open(url, '_blank')
 }
 
 onMounted(loadData)

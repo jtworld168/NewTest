@@ -54,6 +54,8 @@ export interface Product {
   employeeDiscountRate?: number
   barcode?: string
   image?: string
+  status?: number
+  stockAlertThreshold?: number
   createTime?: string
   updateTime?: string
   deleted?: number

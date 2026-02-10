@@ -43,7 +43,9 @@ async function handleLogin() {
   loading.value = true
   try {
     const res = await login(form)
-    userStore.setUser(res.data)
+    const { user, token } = res.data
+    localStorage.setItem('satoken', token)
+    userStore.setUser(user)
     ElMessage.success('登录成功')
     router.push('/')
   } catch {
