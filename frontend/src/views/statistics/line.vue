@@ -23,29 +23,33 @@ const lineChartRef = ref<HTMLDivElement>()
 let chart: echarts.ECharts | null = null
 
 onMounted(async () => {
-  const [u, p, o, c, cat, pay, cart, uc] = await Promise.all([
-    listUsers(), listProducts(), listOrders(), listCoupons(),
-    listCategories(), listPayments(), listCartItems(), listUserCoupons()
-  ])
-  const names = ['用户', '商品', '订单', '优惠券', '分类', '支付', '购物车', '用户券']
-  const values = [
-    u.data?.length || 0, p.data?.length || 0, o.data?.length || 0, c.data?.length || 0,
-    cat.data?.length || 0, pay.data?.length || 0, cart.data?.length || 0, uc.data?.length || 0
-  ]
-  if (lineChartRef.value) {
-    chart = echarts.init(lineChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'axis' },
-      xAxis: { type: 'category', data: names },
-      yAxis: { type: 'value' },
-      series: [{
-        type: 'line',
-        data: values,
-        smooth: true,
-        areaStyle: { opacity: 0.3 },
-        itemStyle: { color: '#67C23A' }
-      }]
-    })
+  try {
+    const [u, p, o, c, cat, pay, cart, uc] = await Promise.all([
+      listUsers(), listProducts(), listOrders(), listCoupons(),
+      listCategories(), listPayments(), listCartItems(), listUserCoupons()
+    ])
+    const names = ['用户', '商品', '订单', '优惠券', '分类', '支付', '购物车', '用户券']
+    const values = [
+      u.data?.length || 0, p.data?.length || 0, o.data?.length || 0, c.data?.length || 0,
+      cat.data?.length || 0, pay.data?.length || 0, cart.data?.length || 0, uc.data?.length || 0
+    ]
+    if (lineChartRef.value) {
+      chart = echarts.init(lineChartRef.value)
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: names },
+        yAxis: { type: 'value' },
+        series: [{
+          type: 'line',
+          data: values,
+          smooth: true,
+          areaStyle: { opacity: 0.3 },
+          itemStyle: { color: '#67C23A' }
+        }]
+      })
+    }
+  } catch {
+    // Data loading failed, chart will remain empty
   }
 })
 

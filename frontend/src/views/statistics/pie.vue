@@ -23,34 +23,38 @@ const pieChartRef = ref<HTMLDivElement>()
 let chart: echarts.ECharts | null = null
 
 onMounted(async () => {
-  const [u, p, o, c, cat, pay, cart, uc] = await Promise.all([
-    listUsers(), listProducts(), listOrders(), listCoupons(),
-    listCategories(), listPayments(), listCartItems(), listUserCoupons()
-  ])
-  const data = [
-    { name: '用户', value: u.data?.length || 0 },
-    { name: '商品', value: p.data?.length || 0 },
-    { name: '订单', value: o.data?.length || 0 },
-    { name: '优惠券', value: c.data?.length || 0 },
-    { name: '分类', value: cat.data?.length || 0 },
-    { name: '支付', value: pay.data?.length || 0 },
-    { name: '购物车', value: cart.data?.length || 0 },
-    { name: '用户券', value: uc.data?.length || 0 }
-  ]
-  if (pieChartRef.value) {
-    chart = echarts.init(pieChartRef.value)
-    chart.setOption({
-      tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-      legend: { orient: 'vertical', left: 'left' },
-      series: [{
-        type: 'pie',
-        radius: ['40%', '70%'],
-        avoidLabelOverlap: true,
-        itemStyle: { borderRadius: 8, borderColor: '#fff', borderWidth: 2 },
-        label: { show: true, formatter: '{b}: {c}' },
-        data
-      }]
-    })
+  try {
+    const [u, p, o, c, cat, pay, cart, uc] = await Promise.all([
+      listUsers(), listProducts(), listOrders(), listCoupons(),
+      listCategories(), listPayments(), listCartItems(), listUserCoupons()
+    ])
+    const data = [
+      { name: '用户', value: u.data?.length || 0 },
+      { name: '商品', value: p.data?.length || 0 },
+      { name: '订单', value: o.data?.length || 0 },
+      { name: '优惠券', value: c.data?.length || 0 },
+      { name: '分类', value: cat.data?.length || 0 },
+      { name: '支付', value: pay.data?.length || 0 },
+      { name: '购物车', value: cart.data?.length || 0 },
+      { name: '用户券', value: uc.data?.length || 0 }
+    ]
+    if (pieChartRef.value) {
+      chart = echarts.init(pieChartRef.value)
+      chart.setOption({
+        tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+        legend: { orient: 'vertical', left: 'left' },
+        series: [{
+          type: 'pie',
+          radius: ['40%', '70%'],
+          avoidLabelOverlap: true,
+          itemStyle: { borderRadius: 8, borderColor: '#fff', borderWidth: 2 },
+          label: { show: true, formatter: '{b}: {c}' },
+          data
+        }]
+      })
+    }
+  } catch {
+    // Data loading failed, chart will remain empty
   }
 })
 

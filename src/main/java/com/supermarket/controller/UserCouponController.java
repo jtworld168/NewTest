@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -88,6 +89,7 @@ public class UserCouponController {
 
     @Operation(summary = "更新用户优惠券")
     @PutMapping("/update")
+    @Transactional
     public Result<Void> updateUserCoupon(@RequestBody UserCoupon userCoupon) {
         if (userCoupon.getId() == null) {
             return Result.badRequest("用户优惠券ID不能为空");
