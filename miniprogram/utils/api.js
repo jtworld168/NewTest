@@ -59,7 +59,7 @@ function updateUser(user) {
 // ==================== Product ====================
 
 function getProductList() {
-  return request({ url: '/products/list' })
+  return request({ url: '/products/onShelf' })
 }
 
 function getProductById(id) {

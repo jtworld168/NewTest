@@ -15,6 +15,24 @@
           <el-icon><HomeFilled /></el-icon>
           <span>首页</span>
         </el-menu-item>
+        <el-sub-menu index="statistics">
+          <template #title>
+            <el-icon><DataLine /></el-icon>
+            <span>数据统计</span>
+          </template>
+          <el-menu-item index="/statistics/bar">
+            <el-icon><Histogram /></el-icon>
+            <span>柱状图</span>
+          </el-menu-item>
+          <el-menu-item index="/statistics/pie">
+            <el-icon><PieChart /></el-icon>
+            <span>饼图</span>
+          </el-menu-item>
+          <el-menu-item index="/statistics/line">
+            <el-icon><TrendCharts /></el-icon>
+            <span>折线图</span>
+          </el-menu-item>
+        </el-sub-menu>
         <el-menu-item index="/users">
           <el-icon><User /></el-icon>
           <span>用户管理</span>
@@ -80,7 +98,8 @@ import { logout } from '../api/auth'
 import { BASE_URL } from '../api/request'
 import { ElMessage } from 'element-plus'
 import {
-  HomeFilled, User, Menu, Goods, Document, List, Ticket, CreditCard, Present, ShoppingCart
+  HomeFilled, User, Menu, Goods, Document, List, Ticket, CreditCard, Present, ShoppingCart,
+  DataLine, PieChart, TrendCharts, Histogram
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

@@ -9,7 +9,10 @@ Page({
     searchKeyword: ''
   },
 
-  onLoad() {
+  onLoad(options) {
+    if (options && options.categoryId) {
+      this.setData({ selectedCategoryId: parseInt(options.categoryId) })
+    }
     this.loadCategories()
   },
 

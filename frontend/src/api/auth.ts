@@ -5,6 +5,10 @@ export function login(data: LoginParam): Promise<Result<{user: User, token: stri
   return request.post('/auth/login', data)
 }
 
+export function register(data: { username: string; password: string; phone?: string }): Promise<Result<void>> {
+  return request.post('/auth/register', data)
+}
+
 export function logout(): Promise<Result<void>> {
   return request.post('/auth/logout')
 }

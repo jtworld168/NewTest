@@ -9,6 +9,11 @@ const router = createRouter({
       component: () => import('../views/login/index.vue')
     },
     {
+      path: '/register',
+      name: 'Register',
+      component: () => import('../views/register/index.vue')
+    },
+    {
       path: '/',
       component: () => import('../layout/index.vue'),
       redirect: '/dashboard',
@@ -18,6 +23,24 @@ const router = createRouter({
           name: 'Dashboard',
           component: () => import('../views/dashboard/index.vue'),
           meta: { title: '首页' }
+        },
+        {
+          path: 'statistics/bar',
+          name: 'StatisticsBar',
+          component: () => import('../views/statistics/bar.vue'),
+          meta: { title: '柱状图统计' }
+        },
+        {
+          path: 'statistics/pie',
+          name: 'StatisticsPie',
+          component: () => import('../views/statistics/pie.vue'),
+          meta: { title: '饼图统计' }
+        },
+        {
+          path: 'statistics/line',
+          name: 'StatisticsLine',
+          component: () => import('../views/statistics/line.vue'),
+          meta: { title: '折线图统计' }
         },
         {
           path: 'users',
@@ -79,7 +102,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, _from, next) => {
-  if (to.path === '/login') {
+  if (to.path === '/login' || to.path === '/register') {
     next()
   } else {
     const token = localStorage.getItem('satoken')

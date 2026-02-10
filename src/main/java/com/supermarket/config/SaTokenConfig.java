@@ -15,6 +15,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
                 .addPathPatterns("/api/**")
                 .excludePathPatterns(
                         "/api/auth/login",
+                        "/api/auth/register",
                         "/api/auth/logout",
                         "/api/file/**",
                         // Public read endpoints (anonymous browsing)

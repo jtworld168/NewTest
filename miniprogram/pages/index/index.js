@@ -70,7 +70,7 @@ Page({
   },
 
   goToCategory() {
-    wx.switchTab({ url: '/pages/category/category' })
+    wx.navigateTo({ url: '/pages/category/category' })
   },
 
   onScan() {
@@ -108,12 +108,8 @@ Page({
 
   goToCategoryDetail(e) {
     const id = e.currentTarget.dataset.id
-    wx.switchTab({
-      url: '/pages/category/category',
-      success() {
-        const page = getCurrentPages().pop()
-        if (page) page.setData({ selectedCategoryId: id })
-      }
+    wx.navigateTo({
+      url: '/pages/category/category?categoryId=' + id
     })
   },
 

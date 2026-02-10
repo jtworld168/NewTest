@@ -1,8 +1,10 @@
 package com.supermarket.controller;
 
 import com.supermarket.common.Result;
+import com.supermarket.entity.Coupon;
 import com.supermarket.entity.UserCoupon;
 import com.supermarket.enums.CouponStatus;
+import com.supermarket.service.CouponService;
 import com.supermarket.service.UserCouponService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +22,7 @@ import java.util.List;
 public class UserCouponController {
 
     private final UserCouponService userCouponService;
+    private final CouponService couponService;
 
     @Operation(summary = "根据ID查询用户优惠券")
     @GetMapping("/get/{id}")
@@ -89,8 +92,19 @@ public class UserCouponController {
         if (userCoupon.getId() == null) {
             return Result.badRequest("用户优惠券ID不能为空");
         }
-        if (userCouponService.getUserCouponById(userCoupon.getId()) == null) {
+        UserCoupon existing = userCouponService.getUserCouponById(userCoupon.getId());
+        if (existing == null) {
             return Result.badRequest("用户优惠券不存在");
+        }
+        // When marking coupon as USED, decrement coupon template remainingCount
+        if (userCoupon.getStatus() == CouponStatus.USED && existing.getStatus() != CouponStatus.USED) {
+            Coupon coupon = couponService.getCouponById(existing.getCouponId());
+            if (coupon != null && coupon.getRemainingCount() != null && coupon.getRemainingCount() > 0) {
+                Coupon update = new Coupon();
+                update.setId(coupon.getId());
+                update.setRemainingCount(coupon.getRemainingCount() - 1);
+                couponService.updateCoupon(update);
+            }
         }
         return userCouponService.updateUserCoupon(userCoupon) ? Result.success() : Result.error("更新用户优惠券失败");
     }
