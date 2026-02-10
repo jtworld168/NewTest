@@ -36,3 +36,7 @@ export function deleteBatchCartItems(ids: number[]): Promise<Result<void>> {
 export function clearCart(userId: number): Promise<Result<void>> {
   return request.delete(`/cart-items/clear/${userId}`)
 }
+
+export function listCartItemsPage(pageNum: number, pageSize: number): Promise<Result<any>> {
+  return request.get('/cart-items/listPage', { params: { pageNum, pageSize } })
+}

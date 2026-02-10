@@ -25,7 +25,7 @@
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column label="商品图片" width="100">
           <template #default="{ row }">
-            <el-image v-if="row.image" :src="row.image" :preview-src-list="[row.image]" fit="cover" style="width: 60px; height: 60px; border-radius: 4px;" />
+            <el-image v-if="row.image" :src="'http://localhost:8080' + row.image" :preview-src-list="['http://localhost:8080' + row.image]" fit="cover" style="width: 60px; height: 60px; border-radius: 4px;" />
             <span v-else style="color: #ccc;">无图片</span>
           </template>
         </el-table-column>
@@ -56,6 +56,16 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        v-model:current-page="pageNum"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        style="margin-top: 16px; justify-content: flex-end;"
+        @size-change="loadData"
+        @current-change="loadData"
+      />
     </el-card>
 
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑商品' : '新增商品'" width="600">
@@ -68,7 +78,7 @@
               :http-request="handleImageUpload"
               accept="image/*"
             >
-              <el-image v-if="form.image" :src="form.image" fit="cover" style="width: 120px; height: 120px;" />
+              <el-image v-if="form.image" :src="'http://localhost:8080' + form.image" fit="cover" style="width: 120px; height: 120px;" />
               <el-icon v-else class="image-uploader-icon"><Plus /></el-icon>
             </el-upload>
             <el-button v-if="form.image" link type="danger" @click="form.image = ''">移除图片</el-button>
@@ -108,7 +118,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { listProducts, addProduct, updateProduct, deleteProduct, deleteBatchProducts, searchProducts, getProductsByCategoryId } from '../../api/product'
+import { listProducts, addProduct, updateProduct, deleteProduct, deleteBatchProducts, searchProducts, getProductsByCategoryId, listProductsPage } from '../../api/product'
 import { listCategories } from '../../api/category'
 import { uploadImage } from '../../api/upload'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -124,6 +134,9 @@ const filterCategoryId = ref<number | undefined>(undefined)
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
+const pageNum = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 const categoryMap = computed(() => {
   const map: Record<number, string> = {}
@@ -151,8 +164,9 @@ async function handleImageUpload(options: UploadRequestOptions) {
 }
 
 async function loadData() {
-  const [res, catRes] = await Promise.all([listProducts(), listCategories()])
-  tableData.value = res.data || []
+  const [res, catRes] = await Promise.all([listProductsPage(pageNum.value, pageSize.value), listCategories()])
+  tableData.value = res.data?.records || []
+  total.value = res.data?.total || 0
   categories.value = catRes.data || []
 }
 

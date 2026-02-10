@@ -27,7 +27,7 @@
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column label="头像" width="80">
           <template #default="{ row }">
-            <el-avatar v-if="row.avatar" :src="row.avatar" :size="40" />
+            <el-avatar v-if="row.avatar" :src="'http://localhost:8080' + row.avatar" :size="40" />
             <el-avatar v-else :size="40">{{ row.username?.charAt(0).toUpperCase() }}</el-avatar>
           </template>
         </el-table-column>
@@ -53,6 +53,16 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        v-model:current-page="pageNum"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        style="margin-top: 16px; justify-content: flex-end;"
+        @size-change="loadData"
+        @current-change="loadData"
+      />
     </el-card>
 
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑用户' : '新增用户'" width="500">
@@ -65,7 +75,7 @@
               :http-request="handleAvatarUpload"
               accept="image/*"
             >
-              <el-avatar v-if="form.avatar" :src="form.avatar" :size="80" />
+              <el-avatar v-if="form.avatar" :src="'http://localhost:8080' + form.avatar" :size="80" />
               <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
             </el-upload>
             <el-button v-if="form.avatar" link type="danger" @click="form.avatar = ''">移除</el-button>
@@ -101,7 +111,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listUsers, addUser, updateUser, deleteUser, deleteBatchUsers, searchUsers, getUsersByRole } from '../../api/user'
+import { listUsers, addUser, updateUser, deleteUser, deleteBatchUsers, searchUsers, getUsersByRole, listUsersPage } from '../../api/user'
 import { uploadImage } from '../../api/upload'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
@@ -116,6 +126,9 @@ const filterRole = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
+const pageNum = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 const defaultForm = (): User => ({ username: '', password: '', phone: '', role: 'ADMIN' as any, isHotelEmployee: false, avatar: '' })
 const form = reactive<User>(defaultForm())
@@ -137,8 +150,9 @@ async function handleAvatarUpload(options: UploadRequestOptions) {
 }
 
 async function loadData() {
-  const res = await listUsers()
-  tableData.value = res.data || []
+  const res = await listUsersPage(pageNum.value, pageSize.value)
+  tableData.value = res.data?.records || []
+  total.value = res.data?.total || 0
 }
 
 async function handleSearch() {

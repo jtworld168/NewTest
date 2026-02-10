@@ -12,10 +12,6 @@ Page({
     this.loadData()
   },
 
-  onPullDownRefresh() {
-    this.loadData().then(() => wx.stopPullDownRefresh())
-  },
-
   async loadData() {
     this.setData({ loading: true })
     try {

@@ -1,12 +1,12 @@
 package com.supermarket.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.supermarket.common.LoginParam;
 import com.supermarket.common.Result;
 import com.supermarket.entity.User;
 import com.supermarket.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +20,7 @@ public class AuthController {
 
     @Operation(summary = "用户登录")
     @PostMapping("/login")
-    public Result<User> login(@RequestBody LoginParam param, HttpSession session) {
+    public Result<User> login(@RequestBody LoginParam param) {
         if (param.getUsername() == null || param.getUsername().isBlank()) {
             return Result.error("用户名不能为空");
         }
@@ -31,15 +31,15 @@ public class AuthController {
         if (user == null) {
             return Result.error("用户名或密码错误");
         }
-        session.setAttribute("loginUser", user.getId());
+        StpUtil.login(user.getId());
         user.setPassword(null);
         return Result.success(user);
     }
 
     @Operation(summary = "用户退出")
     @PostMapping("/logout")
-    public Result<Void> logout(HttpSession session) {
-        session.invalidate();
+    public Result<Void> logout() {
+        StpUtil.logout();
         return Result.success();
     }
 }

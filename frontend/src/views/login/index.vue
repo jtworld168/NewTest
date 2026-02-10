@@ -60,11 +60,23 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: url('https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=1920&q=80') center/cover no-repeat;
+  position: relative;
+}
+.login-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
 }
 .login-card {
   width: 400px;
   padding: 20px;
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
 }
 .login-title {
   text-align: center;

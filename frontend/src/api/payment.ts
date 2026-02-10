@@ -40,3 +40,7 @@ export function deletePayment(id: number): Promise<Result<void>> {
 export function deleteBatchPayments(ids: number[]): Promise<Result<void>> {
   return request.delete('/payments/deleteBatch', { data: ids })
 }
+
+export function listPaymentsPage(pageNum: number, pageSize: number): Promise<Result<any>> {
+  return request.get('/payments/listPage', { params: { pageNum, pageSize } })
+}

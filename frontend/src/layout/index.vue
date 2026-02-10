@@ -58,7 +58,7 @@
         <span class="header-title">{{ currentTitle }}</span>
         <div class="header-right">
           <template v-if="userStore.currentUser">
-            <el-avatar v-if="userStore.currentUser.avatar" :src="userStore.currentUser.avatar" :size="32" />
+            <el-avatar v-if="userStore.currentUser.avatar" :src="'http://localhost:8080' + userStore.currentUser.avatar" :size="32" />
             <el-avatar v-else :size="32">{{ userStore.currentUser.username?.charAt(0).toUpperCase() }}</el-avatar>
             <span class="username">{{ userStore.currentUser.username }}</span>
           </template>

@@ -25,3 +25,11 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
   type-enums-package: com.supermarket.enums
+
+sa-token:
+  token-name: satoken
+  timeout: 86400
+  is-concurrent: true
+  is-share: true
+  token-style: uuid
+  is-log: false

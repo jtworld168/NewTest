@@ -30,6 +30,16 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        v-model:current-page="pageNum"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        style="margin-top: 16px; justify-content: flex-end;"
+        @size-change="loadData"
+        @current-change="loadData"
+      />
     </el-card>
 
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑明细' : '新增明细'" width="500">
@@ -57,7 +67,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listOrderItems, addOrderItem, updateOrderItem, deleteOrderItem, deleteBatchOrderItems } from '../../api/orderItem'
+import { listOrderItems, addOrderItem, updateOrderItem, deleteOrderItem, deleteBatchOrderItems, listOrderItemsPage } from '../../api/orderItem'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { OrderItem } from '../../types'
@@ -67,6 +77,9 @@ const selectedIds = ref<number[]>([])
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
+const pageNum = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 const defaultForm = (): OrderItem => ({ orderId: 1, productId: 1, quantity: 1, priceAtPurchase: 0 })
 const form = reactive<OrderItem>(defaultForm())
@@ -79,8 +92,9 @@ const rules = {
 }
 
 async function loadData() {
-  const res = await listOrderItems()
-  tableData.value = res.data || []
+  const res = await listOrderItemsPage(pageNum.value, pageSize.value)
+  tableData.value = res.data?.records || []
+  total.value = res.data?.total || 0
 }
 
 function handleSelectionChange(rows: OrderItem[]) {

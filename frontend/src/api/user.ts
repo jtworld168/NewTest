@@ -36,3 +36,7 @@ export function deleteUser(id: number): Promise<Result<void>> {
 export function deleteBatchUsers(ids: number[]): Promise<Result<void>> {
   return request.delete('/users/deleteBatch', { data: ids })
 }
+
+export function listUsersPage(pageNum: number, pageSize: number): Promise<Result<any>> {
+  return request.get('/users/listPage', { params: { pageNum, pageSize } })
+}

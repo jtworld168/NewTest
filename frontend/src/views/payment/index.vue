@@ -48,6 +48,16 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        v-model:current-page="pageNum"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        style="margin-top: 16px; justify-content: flex-end;"
+        @size-change="loadData"
+        @current-change="loadData"
+      />
     </el-card>
 
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑支付' : '新增支付'" width="550">
@@ -88,7 +98,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listPayments, addPayment, updatePayment, deletePayment, deleteBatchPayments, searchPayments, getPaymentsByStatus } from '../../api/payment'
+import { listPayments, addPayment, updatePayment, deletePayment, deleteBatchPayments, searchPayments, getPaymentsByStatus, listPaymentsPage } from '../../api/payment'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { Payment } from '../../types'
@@ -104,6 +114,9 @@ const filterStatus = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
+const pageNum = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 const defaultForm = (): Payment => ({ orderId: 1, amount: 0, paymentMethod: 'WECHAT' as any, paymentStatus: 'PENDING' as any, transactionNo: '' })
 const form = reactive<Payment>(defaultForm())
@@ -116,8 +129,9 @@ const rules = {
 }
 
 async function loadData() {
-  const res = await listPayments()
-  tableData.value = res.data || []
+  const res = await listPaymentsPage(pageNum.value, pageSize.value)
+  tableData.value = res.data?.records || []
+  total.value = res.data?.total || 0
 }
 
 async function handleSearch() {

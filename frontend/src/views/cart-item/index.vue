@@ -31,6 +31,16 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        v-model:current-page="pageNum"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        style="margin-top: 16px; justify-content: flex-end;"
+        @size-change="loadData"
+        @current-change="loadData"
+      />
     </el-card>
 
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑购物车项' : '新增购物车项'" width="500">
@@ -55,7 +65,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listCartItems, getCartItemsByUserId, addCartItem, updateCartItem, deleteCartItem, deleteBatchCartItems } from '../../api/cartItem'
+import { listCartItems, getCartItemsByUserId, addCartItem, updateCartItem, deleteCartItem, deleteBatchCartItems, listCartItemsPage } from '../../api/cartItem'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { CartItem } from '../../types'
@@ -66,6 +76,9 @@ const filterUserId = ref<number | undefined>(undefined)
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
+const pageNum = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 const defaultForm = (): CartItem => ({ userId: 1, productId: 1, quantity: 1 })
 const form = reactive<CartItem>(defaultForm())
@@ -77,8 +90,9 @@ const rules = {
 }
 
 async function loadData() {
-  const res = await listCartItems()
-  tableData.value = res.data || []
+  const res = await listCartItemsPage(pageNum.value, pageSize.value)
+  tableData.value = res.data?.records || []
+  total.value = res.data?.total || 0
 }
 
 async function handleFilterByUser() {

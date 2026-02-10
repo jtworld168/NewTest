@@ -40,3 +40,7 @@ export function deleteOrder(id: number): Promise<Result<void>> {
 export function deleteBatchOrders(ids: number[]): Promise<Result<void>> {
   return request.delete('/orders/deleteBatch', { data: ids })
 }
+
+export function listOrdersPage(pageNum: number, pageSize: number): Promise<Result<any>> {
+  return request.get('/orders/listPage', { params: { pageNum, pageSize } })
+}

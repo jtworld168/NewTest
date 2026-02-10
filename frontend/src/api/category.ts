@@ -32,3 +32,7 @@ export function deleteCategory(id: number): Promise<Result<void>> {
 export function deleteBatchCategories(ids: number[]): Promise<Result<void>> {
   return request.delete('/categories/deleteBatch', { data: ids })
 }
+
+export function listCategoriesPage(pageNum: number, pageSize: number): Promise<Result<any>> {
+  return request.get('/categories/listPage', { params: { pageNum, pageSize } })
+}

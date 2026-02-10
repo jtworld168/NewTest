@@ -32,3 +32,7 @@ export function deleteCoupon(id: number): Promise<Result<void>> {
 export function deleteBatchCoupons(ids: number[]): Promise<Result<void>> {
   return request.delete('/coupons/deleteBatch', { data: ids })
 }
+
+export function listCouponsPage(pageNum: number, pageSize: number): Promise<Result<any>> {
+  return request.get('/coupons/listPage', { params: { pageNum, pageSize } })
+}

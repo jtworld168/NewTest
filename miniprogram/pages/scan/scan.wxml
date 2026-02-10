@@ -1,0 +1,3 @@
+<view class="scan-page">
+  <view class="scan-tip">正在打开摄像头...</view>
+</view>

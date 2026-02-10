@@ -30,6 +30,16 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-pagination
+        v-model:current-page="pageNum"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        style="margin-top: 16px; justify-content: flex-end;"
+        @size-change="loadData"
+        @current-change="loadData"
+      />
     </el-card>
 
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑分类' : '新增分类'" width="500">
@@ -51,7 +61,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listCategories, addCategory, updateCategory, deleteCategory, deleteBatchCategories, searchCategories } from '../../api/category'
+import { listCategories, addCategory, updateCategory, deleteCategory, deleteBatchCategories, searchCategories, listCategoriesPage } from '../../api/category'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { Category } from '../../types'
@@ -62,6 +72,9 @@ const searchKeyword = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
+const pageNum = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 const defaultForm = (): Category => ({ name: '', description: '' })
 const form = reactive<Category>(defaultForm())
@@ -71,8 +84,9 @@ const rules = {
 }
 
 async function loadData() {
-  const res = await listCategories()
-  tableData.value = res.data || []
+  const res = await listCategoriesPage(pageNum.value, pageSize.value)
+  tableData.value = res.data?.records || []
+  total.value = res.data?.total || 0
 }
 
 async function handleSearch() {
