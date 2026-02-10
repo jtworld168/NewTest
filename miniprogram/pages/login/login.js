@@ -31,8 +31,12 @@ Page({
       const res = await api.login(username.trim(), password.trim())
       if (res.code === 200 && res.data) {
         const app = getApp()
-        app.globalData.userInfo = res.data
-        wx.setStorageSync('userInfo', res.data)
+        const { user, token } = res.data
+        app.globalData.userInfo = user
+        wx.setStorageSync('userInfo', user)
+        if (token) {
+          wx.setStorageSync('satoken', token)
+        }
         wx.showToast({ title: '登录成功', icon: 'success' })
         setTimeout(() => {
           wx.switchTab({ url: '/pages/index/index' })

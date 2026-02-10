@@ -6,6 +6,7 @@ const app = getApp()
 function request(options) {
   const { url, method = 'GET', data, header = {} } = options
   const baseUrl = app.globalData.baseUrl
+  const token = wx.getStorageSync('satoken') || ''
 
   return new Promise((resolve, reject) => {
     wx.request({
@@ -14,6 +15,7 @@ function request(options) {
       data: data,
       header: {
         'Content-Type': 'application/json',
+        'satoken': token,
         ...header
       },
       success(res) {

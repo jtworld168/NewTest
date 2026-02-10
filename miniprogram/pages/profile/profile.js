@@ -87,6 +87,7 @@ Page({
           const app = getApp()
           app.globalData.userInfo = null
           wx.removeStorageSync('userInfo')
+          wx.removeStorageSync('satoken')
           this.setData({ userInfo: null, isLoggedIn: false, avatarUrl: '/images/default-avatar.png' })
           wx.showToast({ title: '已退出登录', icon: 'success' })
         }
