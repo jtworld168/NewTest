@@ -7,8 +7,12 @@ import com.supermarket.entity.User;
 import com.supermarket.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Tag(name = "认证管理", description = "用户登录退出接口")
 @RestController
@@ -20,7 +24,7 @@ public class AuthController {
 
     @Operation(summary = "用户登录")
     @PostMapping("/login")
-    public Result<User> login(@RequestBody LoginParam param) {
+    public Result<Object> login(@RequestBody LoginParam param, HttpServletResponse response) {
         if (param.getUsername() == null || param.getUsername().isBlank()) {
             return Result.error("用户名不能为空");
         }
@@ -32,8 +36,13 @@ public class AuthController {
             return Result.error("用户名或密码错误");
         }
         StpUtil.login(user.getId());
+        String token = StpUtil.getTokenValue();
+        response.setHeader("satoken", token);
         user.setPassword(null);
-        return Result.success(user);
+        Map<String, Object> result = new HashMap<>();
+        result.put("user", user);
+        result.put("token", token);
+        return Result.success(result);
     }
 
     @Operation(summary = "用户退出")

@@ -37,15 +37,15 @@ INSERT INTO `category` (`name`, `description`) VALUES
 ('速食', '方便食品');
 
 -- 商品
-INSERT INTO `product` (`name`, `price`, `stock`, `description`, `category_id`, `employee_discount_rate`, `barcode`, `image`) VALUES
-('可口可乐 330ml', 3.00, 200, '经典碳酸饮料', 1, 0.80, '6901939621035', NULL),
-('百事可乐 330ml', 3.00, 150, '百事碳酸饮料', 1, 0.80, '6922255451427', NULL),
-('农夫山泉 550ml', 2.00, 300, '天然矿泉水', 1, 0.90, '6921168593088', NULL),
-('乐事薯片 原味 70g', 6.50, 100, '经典原味薯片', 2, 0.85, '6924743921023', NULL),
-('奥利奥饼干 97g', 7.90, 80, '夹心巧克力饼干', 2, 0.85, '6901668044457', NULL),
-('抽纸 3包装', 12.90, 60, '柔软面巾纸', 3, 0.75, '6920174751581', NULL),
-('洗手液 500ml', 15.00, 40, '抑菌洗手液', 3, 0.70, '6902083890193', NULL),
-('康师傅红烧牛肉面', 4.50, 120, '经典方便面', 4, 0.80, '6920152430132', NULL);
+INSERT INTO `product` (`name`, `price`, `stock`, `description`, `category_id`, `employee_discount_rate`, `barcode`, `image`, `status`, `stock_alert_threshold`) VALUES
+('可口可乐 330ml', 3.00, 200, '经典碳酸饮料', 1, 0.80, '6901939621035', NULL, 1, 10),
+('百事可乐 330ml', 3.00, 150, '百事碳酸饮料', 1, 0.80, '6922255451427', NULL, 1, 10),
+('农夫山泉 550ml', 2.00, 300, '天然矿泉水', 1, 0.90, '6921168593088', NULL, 1, 10),
+('乐事薯片 原味 70g', 6.50, 100, '经典原味薯片', 2, 0.85, '6924743921023', NULL, 1, 10),
+('奥利奥饼干 97g', 7.90, 80, '夹心巧克力饼干', 2, 0.85, '6901668044457', NULL, 1, 10),
+('抽纸 3包装', 12.90, 60, '柔软面巾纸', 3, 0.75, '6920174751581', NULL, 1, 10),
+('洗手液 500ml', 15.00, 40, '抑菌洗手液', 3, 0.70, '6902083890193', NULL, 1, 10),
+('康师傅红烧牛肉面', 4.50, 120, '经典方便面', 4, 0.80, '6920152430132', NULL, 1, 10);
 
 -- 优惠券面额
 INSERT INTO `coupon` (`name`, `discount`, `min_amount`, `total_count`, `remaining_count`, `start_time`, `end_time`) VALUES
@@ -106,6 +106,8 @@ CREATE TABLE IF NOT EXISTS `product` (
     `employee_discount_rate` DECIMAL(3,2) DEFAULT NULL COMMENT '员工折扣率，如0.80表示八折',
     `barcode`     VARCHAR(100) DEFAULT NULL COMMENT '商品条形码',
     `image`       VARCHAR(500) DEFAULT NULL COMMENT '商品图片URL',
+    `status`      INT          DEFAULT 1 COMMENT '上架状态：0-下架，1-上架',
+    `stock_alert_threshold` INT DEFAULT 10 COMMENT '库存预警阈值',
     `create_time` DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted`     INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',

@@ -29,4 +29,8 @@ public interface ProductService extends IService<Product> {
     boolean deleteBatchProducts(List<Long> ids);
 
     List<Product> listAll();
+
+    List<Product> getOnShelfProducts();
+
+    List<Product> getLowStockProducts();
 }

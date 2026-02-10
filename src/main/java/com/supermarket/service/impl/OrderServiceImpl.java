@@ -73,15 +73,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public boolean addOrder(Long userId, Long productId, Integer quantity, Long userCouponId) {
+    public Order addOrder(Long userId, Long productId, Integer quantity, Long userCouponId) {
         User user = userService.getUserById(userId);
         if (user == null) {
-            return false;
+            return null;
         }
 
         Product product = productService.getProductById(productId);
         if (product == null) {
-            return false;
+            return null;
         }
 
         BigDecimal unitPrice = product.getPrice();
@@ -102,7 +102,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         order.setUserCouponId(userCouponId);
         order.setStatus(OrderStatus.PENDING);
 
-        return save(order);
+        save(order);
+        return order;
     }
 
     @Override

@@ -118,6 +118,18 @@ public class ProductController {
         return productService.deleteProduct(id) ? Result.success() : Result.error("删除商品失败");
     }
 
+    @Operation(summary = "查询上架商品")
+    @GetMapping("/onShelf")
+    public Result<List<Product>> getOnShelfProducts() {
+        return Result.success(productService.getOnShelfProducts());
+    }
+
+    @Operation(summary = "查询库存预警商品")
+    @GetMapping("/lowStock")
+    public Result<List<Product>> getLowStockProducts() {
+        return Result.success(productService.getLowStockProducts());
+    }
+
     @Operation(summary = "批量删除商品")
     @DeleteMapping("/deleteBatch")
     public Result<Void> deleteBatchProducts(@RequestBody List<Long> ids) {

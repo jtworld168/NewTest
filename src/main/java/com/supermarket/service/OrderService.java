@@ -21,7 +21,7 @@ public interface OrderService extends IService<Order> {
 
     IPage<Order> listPage(int pageNum, int pageSize);
 
-    boolean addOrder(Long userId, Long productId, Integer quantity, Long userCouponId);
+    Order addOrder(Long userId, Long productId, Integer quantity, Long userCouponId);
 
     boolean updateOrder(Order order);
 

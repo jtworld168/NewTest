@@ -86,4 +86,20 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         wrapper.orderByDesc(Product::getCreateTime);
         return list(wrapper);
     }
+
+    @Override
+    public List<Product> getOnShelfProducts() {
+        LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Product::getStatus, 1)
+               .orderByDesc(Product::getCreateTime);
+        return list(wrapper);
+    }
+
+    @Override
+    public List<Product> getLowStockProducts() {
+        return list(new LambdaQueryWrapper<Product>()
+            .apply("stock <= COALESCE(stock_alert_threshold, 10)")
+            .eq(Product::getStatus, 1)
+            .orderByAsc(Product::getStock));
+    }
 }

@@ -43,6 +43,12 @@ public class Product {
     @Schema(description = "商品图片URL")
     private String image;
 
+    @Schema(description = "上架状态：0-下架，1-上架")
+    private Integer status;
+
+    @Schema(description = "库存预警阈值")
+    private Integer stockAlertThreshold;
+
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
 

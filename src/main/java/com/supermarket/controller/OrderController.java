@@ -68,7 +68,7 @@ public class OrderController {
 
     @Operation(summary = "添加订单（自动计算员工折扣价和总金额）")
     @PostMapping("/add")
-    public Result<Void> addOrder(
+    public Result<Order> addOrder(
             @Parameter(description = "用户ID") @RequestParam Long userId,
             @Parameter(description = "商品ID") @RequestParam Long productId,
             @Parameter(description = "购买数量") @RequestParam Integer quantity,
@@ -82,8 +82,8 @@ public class OrderController {
         if (quantity == null || quantity <= 0) {
             return Result.badRequest("购买数量必须大于0");
         }
-        return orderService.addOrder(userId, productId, quantity, userCouponId)
-                ? Result.success() : Result.error("添加订单失败");
+        Order order = orderService.addOrder(userId, productId, quantity, userCouponId);
+        return order != null ? Result.success(order) : Result.error("添加订单失败");
     }
 
     @Operation(summary = "更新订单")

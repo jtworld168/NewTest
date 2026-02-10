@@ -53,7 +53,7 @@ class OrderServiceTest {
         User user = createTestUser("order_test_user1");
         Product product = createTestProduct("测试商品1", new BigDecimal("99.90"), null);
 
-        assertTrue(orderService.addOrder(user.getId(), product.getId(), 1, null));
+        assertTrue(orderService.addOrder(user.getId(), product.getId(), 1, null) != null);
 
         List<Order> orders = orderService.getOrdersByUserId(user.getId());
         assertFalse(orders.isEmpty());
@@ -137,7 +137,7 @@ class OrderServiceTest {
         Product product = createTestProduct("员工折扣商品", new BigDecimal("100.00"), new BigDecimal("0.80"));
 
         // Add order — should apply employee discount
-        assertTrue(orderService.addOrder(employee.getId(), product.getId(), 2, null));
+        assertNotNull(orderService.addOrder(employee.getId(), product.getId(), 2, null));
 
         List<Order> orders = orderService.getOrdersByUserId(employee.getId());
         assertEquals(1, orders.size());
@@ -164,7 +164,7 @@ class OrderServiceTest {
         Product product = createTestProduct("普通商品测试", new BigDecimal("50.00"), new BigDecimal("0.90"));
 
         // Add order — should NOT apply employee discount
-        assertTrue(orderService.addOrder(customer.getId(), product.getId(), 1, null));
+        assertNotNull(orderService.addOrder(customer.getId(), product.getId(), 1, null));
 
         List<Order> orders = orderService.getOrdersByUserId(customer.getId());
         assertEquals(1, orders.size());
@@ -188,7 +188,7 @@ class OrderServiceTest {
         Product product = createTestProduct("无折扣商品测试", new BigDecimal("200.00"), null);
 
         // Add order — no discount rate on product, so full price
-        assertTrue(orderService.addOrder(employee.getId(), product.getId(), 1, null));
+        assertNotNull(orderService.addOrder(employee.getId(), product.getId(), 1, null));
 
         List<Order> orders = orderService.getOrdersByUserId(employee.getId());
         assertEquals(1, orders.size());

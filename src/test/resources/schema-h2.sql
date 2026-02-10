@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS `product` (
     `employee_discount_rate` DECIMAL(3,2) DEFAULT NULL,
     `barcode`     VARCHAR(100) DEFAULT NULL,
     `image`       VARCHAR(500) DEFAULT NULL,
+    `status`      INT          DEFAULT 1,
+    `stock_alert_threshold` INT DEFAULT 10,
     `create_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `update_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `deleted`     INT            DEFAULT 0,

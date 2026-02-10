@@ -11,6 +11,14 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 10MB
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: 0
+      timeout: 3000ms
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/unmanned_supermarket}
 
 file:
   upload-dir: ${UPLOAD_DIR:file}
@@ -33,3 +41,12 @@ sa-token:
   is-share: true
   token-style: uuid
   is-log: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+  endpoint:
+    health:
+      show-details: when-authorized

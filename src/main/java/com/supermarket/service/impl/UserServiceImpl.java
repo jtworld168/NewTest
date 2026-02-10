@@ -1,5 +1,6 @@
 package com.supermarket.service.impl;
 
+import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -55,6 +56,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public boolean addUser(User user) {
+        user.setPassword(BCrypt.hashpw(user.getPassword()));
         return save(user);
     }
 
@@ -76,9 +78,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public User login(String username, String password) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername, username)
-               .eq(User::getPassword, password);
-        return getOne(wrapper);
+        wrapper.eq(User::getUsername, username);
+        User user = getOne(wrapper);
+        if (user != null && BCrypt.checkpw(password, user.getPassword())) {
+            return user;
+        }
+        return null;
     }
 
     @Override
