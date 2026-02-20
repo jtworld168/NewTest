@@ -59,6 +59,19 @@ INSERT INTO `user_coupon` (`user_id`, `coupon_id`, `status`) VALUES
 (4, 3, 0),
 (5, 2, 0);
 
+-- 店铺
+INSERT INTO `store` (`name`, `address`, `phone`, `status`) VALUES
+('总店', '市中心商业街1号', '400-000-0001', 1),
+('东区分店', '东区购物广场2楼', '400-000-0002', 1),
+('西区分店', '西区步行街88号', '400-000-0003', 1);
+
+-- 店铺商品
+INSERT INTO `store_product` (`store_id`, `product_id`, `store_price`, `store_stock`, `status`) VALUES
+(1, 1, 3.00, 100, 1), (1, 2, 3.00, 80, 1), (1, 3, 2.00, 150, 1), (1, 4, 6.50, 50, 1),
+(1, 5, 7.90, 40, 1), (1, 6, 12.90, 30, 1), (1, 7, 15.00, 20, 1), (1, 8, 4.50, 60, 1),
+(2, 1, 3.50, 60, 1), (2, 3, 2.50, 80, 1), (2, 4, 7.00, 30, 1), (2, 8, 5.00, 40, 1),
+(3, 2, 3.50, 50, 1), (3, 5, 8.50, 25, 1), (3, 6, 13.90, 20, 1), (3, 7, 16.00, 15, 1);
+
 -- 购物车
 INSERT INTO `cart_item` (`user_id`, `product_id`, `quantity`) VALUES
 (4, 1, 2),
@@ -66,10 +79,10 @@ INSERT INTO `cart_item` (`user_id`, `product_id`, `quantity`) VALUES
 (5, 3, 3);
 
 -- 订单
-INSERT INTO `order` (`user_id`, `product_id`, `quantity`, `price_at_purchase`, `total_amount`, `user_coupon_id`, `status`) VALUES
-(4, 1, 2, 3.00, 6.00, NULL, 2),
-(5, 3, 1, 2.00, 2.00, NULL, 1),
-(2, 4, 1, 5.53, 5.53, NULL, 2);
+INSERT INTO `order` (`user_id`, `store_id`, `product_id`, `quantity`, `price_at_purchase`, `total_amount`, `user_coupon_id`, `status`) VALUES
+(4, 1, 1, 2, 3.00, 6.00, NULL, 2),
+(5, 2, 3, 1, 2.00, 2.00, NULL, 1),
+(2, 1, 4, 1, 5.53, 5.53, NULL, 2);
 
 -- 订单商品明细
 INSERT INTO `order_items` (`order_id`, `product_id`, `quantity`, `price_at_purchase`, `subtotal`) VALUES
@@ -159,13 +172,48 @@ CREATE TABLE IF NOT EXISTS `user_coupon` (
     CONSTRAINT `fk_user_coupon_coupon` FOREIGN KEY (`coupon_id`) REFERENCES `coupon` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户优惠券表';
 
+-- 店铺表
+CREATE TABLE IF NOT EXISTS `store` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '店铺ID',
+    `name`        VARCHAR(100) NOT NULL COMMENT '店铺名称',
+    `address`     VARCHAR(500) DEFAULT NULL COMMENT '店铺地址',
+    `phone`       VARCHAR(20)  DEFAULT NULL COMMENT '联系电话',
+    `image`       VARCHAR(500) DEFAULT NULL COMMENT '店铺图片URL',
+    `status`      INT          DEFAULT 1 COMMENT '店铺状态：0-关闭，1-营业',
+    `create_time` DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted`     INT          DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_store_name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='店铺表';
+
+-- 店铺商品表
+CREATE TABLE IF NOT EXISTS `store_product` (
+    `id`          BIGINT         NOT NULL AUTO_INCREMENT COMMENT '店铺商品ID',
+    `store_id`    BIGINT         NOT NULL COMMENT '店铺ID',
+    `product_id`  BIGINT         NOT NULL COMMENT '商品ID（关联总商品表）',
+    `store_price` DECIMAL(10,2)  DEFAULT NULL COMMENT '店铺售价（可与总商品表价格不同）',
+    `store_stock` INT            DEFAULT 0 COMMENT '店铺库存',
+    `status`      INT            DEFAULT 1 COMMENT '上架状态：0-下架，1-上架',
+    `create_time` DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted`     INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    PRIMARY KEY (`id`),
+    KEY `idx_sp_store_id` (`store_id`),
+    KEY `idx_sp_product_id` (`product_id`),
+    UNIQUE KEY `uk_store_product` (`store_id`, `product_id`),
+    CONSTRAINT `fk_sp_store` FOREIGN KEY (`store_id`) REFERENCES `store` (`id`),
+    CONSTRAINT `fk_sp_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='店铺商品表';
+
 -- 订单表
 CREATE TABLE IF NOT EXISTS `order` (
     `id`                BIGINT         NOT NULL AUTO_INCREMENT COMMENT '订单ID',
     `user_id`           BIGINT         NOT NULL COMMENT '用户ID',
-    `product_id`        BIGINT         NOT NULL COMMENT '商品ID',
-    `quantity`          INT            NOT NULL DEFAULT 1 COMMENT '购买数量',
-    `price_at_purchase` DECIMAL(10,2)  NOT NULL COMMENT '下单时单价（已计算员工折扣）',
+    `store_id`          BIGINT         DEFAULT NULL COMMENT '店铺ID',
+    `product_id`        BIGINT         DEFAULT NULL COMMENT '商品ID（兼容单商品订单）',
+    `quantity`          INT            DEFAULT 1 COMMENT '购买数量',
+    `price_at_purchase` DECIMAL(10,2)  DEFAULT NULL COMMENT '下单时单价（已计算员工折扣）',
     `total_amount`      DECIMAL(10,2)  NOT NULL COMMENT '订单总金额',
     `user_coupon_id`    BIGINT         DEFAULT NULL COMMENT '用户优惠券ID',
     `status`            INT            NOT NULL DEFAULT 0 COMMENT '订单状态：0-待支付，1-已支付，2-已完成，3-已取消',
@@ -174,14 +222,14 @@ CREATE TABLE IF NOT EXISTS `order` (
     `deleted`           INT            DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
     PRIMARY KEY (`id`),
     KEY `idx_user_id` (`user_id`),
+    KEY `idx_store_id` (`store_id`),
     KEY `idx_product_id` (`product_id`),
     KEY `idx_user_coupon_id` (`user_coupon_id`),
     KEY `idx_order_status` (`status`),
     CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+    CONSTRAINT `fk_order_store` FOREIGN KEY (`store_id`) REFERENCES `store` (`id`),
     CONSTRAINT `fk_order_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
     CONSTRAINT `fk_order_user_coupon` FOREIGN KEY (`user_coupon_id`) REFERENCES `user_coupon` (`id`),
-    CONSTRAINT `chk_order_quantity` CHECK (`quantity` > 0),
-    CONSTRAINT `chk_order_price` CHECK (`price_at_purchase` > 0),
     CONSTRAINT `chk_order_total` CHECK (`total_amount` > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='订单表';
 

@@ -91,12 +91,41 @@ CREATE TABLE IF NOT EXISTS `cart_item` (
     CONSTRAINT `chk_cart_quantity` CHECK (`quantity` > 0)
 );
 
+CREATE TABLE IF NOT EXISTS `store` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT,
+    `name`        VARCHAR(100) NOT NULL,
+    `address`     VARCHAR(500) DEFAULT NULL,
+    `phone`       VARCHAR(20)  DEFAULT NULL,
+    `image`       VARCHAR(500) DEFAULT NULL,
+    `status`      INT          DEFAULT 1,
+    `create_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    `update_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    `deleted`     INT          DEFAULT 0,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `store_product` (
+    `id`          BIGINT         NOT NULL AUTO_INCREMENT,
+    `store_id`    BIGINT         NOT NULL,
+    `product_id`  BIGINT         NOT NULL,
+    `store_price` DECIMAL(10,2)  DEFAULT NULL,
+    `store_stock` INT            DEFAULT 0,
+    `status`      INT            DEFAULT 1,
+    `create_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `update_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+    `deleted`     INT            DEFAULT 0,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_sp_store` FOREIGN KEY (`store_id`) REFERENCES `store` (`id`),
+    CONSTRAINT `fk_sp_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`)
+);
+
 CREATE TABLE IF NOT EXISTS `order` (
     `id`                BIGINT         NOT NULL AUTO_INCREMENT,
     `user_id`           BIGINT         NOT NULL,
-    `product_id`        BIGINT         NOT NULL,
-    `quantity`          INT            NOT NULL DEFAULT 1,
-    `price_at_purchase` DECIMAL(10,2)  NOT NULL,
+    `store_id`          BIGINT         DEFAULT NULL,
+    `product_id`        BIGINT         DEFAULT NULL,
+    `quantity`          INT            DEFAULT 1,
+    `price_at_purchase` DECIMAL(10,2)  DEFAULT NULL,
     `total_amount`      DECIMAL(10,2)  NOT NULL,
     `user_coupon_id`    BIGINT         DEFAULT NULL,
     `status`            INT            NOT NULL DEFAULT 0,
@@ -105,10 +134,7 @@ CREATE TABLE IF NOT EXISTS `order` (
     `deleted`           INT            DEFAULT 0,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-    CONSTRAINT `fk_order_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`),
     CONSTRAINT `fk_order_user_coupon` FOREIGN KEY (`user_coupon_id`) REFERENCES `user_coupon` (`id`),
-    CONSTRAINT `chk_order_quantity` CHECK (`quantity` > 0),
-    CONSTRAINT `chk_order_price` CHECK (`price_at_purchase` > 0),
     CONSTRAINT `chk_order_total` CHECK (`total_amount` > 0)
 );
 

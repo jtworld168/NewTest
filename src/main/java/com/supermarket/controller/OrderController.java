@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "订单管理", description = "订单增删改查接口（含员工折扣计算）")
 @RestController
@@ -58,11 +59,21 @@ public class OrderController {
         return Result.success(orderService.getOrdersByUserCouponId(userCouponId));
     }
 
+    @Operation(summary = "根据店铺ID查询订单")
+    @GetMapping("/getByStoreId/{storeId}")
+    public Result<List<Order>> getOrdersByStoreId(@Parameter(description = "店铺ID") @PathVariable Long storeId) {
+        return Result.success(orderService.getOrdersByStoreId(storeId));
+    }
+
     @Operation(summary = "分页查询订单列表")
     @GetMapping("/listPage")
     public Result<IPage<Order>> listPage(
+            @Parameter(description = "店铺ID（可选，为空查全部）") @RequestParam(required = false) Long storeId,
             @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
+        if (storeId != null) {
+            return Result.success(orderService.listPageByStoreId(storeId, pageNum, pageSize));
+        }
         return Result.success(orderService.listPage(pageNum, pageSize));
     }
 
@@ -83,6 +94,26 @@ public class OrderController {
             return Result.badRequest("购买数量必须大于0");
         }
         Order order = orderService.addOrder(userId, productId, quantity, userCouponId);
+        return order != null ? Result.success(order) : Result.error("添加订单失败");
+    }
+
+    @Operation(summary = "添加多商品订单（一个订单包含多个商品）")
+    @PostMapping("/addMultiItem")
+    public Result<Order> addMultiItemOrder(@RequestBody Map<String, Object> request) {
+        Long userId = request.get("userId") != null ? ((Number) request.get("userId")).longValue() : null;
+        Long storeId = request.get("storeId") != null ? ((Number) request.get("storeId")).longValue() : null;
+        Long userCouponId = request.get("userCouponId") != null ? ((Number) request.get("userCouponId")).longValue() : null;
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> items = (List<Map<String, Object>>) request.get("items");
+
+        if (userId == null) {
+            return Result.badRequest("用户ID不能为空");
+        }
+        if (items == null || items.isEmpty()) {
+            return Result.badRequest("商品列表不能为空");
+        }
+
+        Order order = orderService.addMultiItemOrder(userId, storeId, items, userCouponId);
         return order != null ? Result.success(order) : Result.error("添加订单失败");
     }
 

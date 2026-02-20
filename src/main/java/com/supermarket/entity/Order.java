@@ -1,5 +1,7 @@
 package com.supermarket.entity;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -18,36 +20,51 @@ public class Order {
 
     @Schema(description = "订单ID")
     @TableId(type = IdType.AUTO)
+    @ExcelProperty("订单ID")
     private Long id;
 
     @Schema(description = "用户ID")
+    @ExcelProperty("用户ID")
     private Long userId;
 
-    @Schema(description = "商品ID")
+    @Schema(description = "店铺ID")
+    @ExcelProperty("店铺ID")
+    private Long storeId;
+
+    @Schema(description = "商品ID（兼容单商品订单）")
+    @ExcelProperty("商品ID")
     private Long productId;
 
     @Schema(description = "购买数量")
+    @ExcelProperty("购买数量")
     private Integer quantity;
 
     @Schema(description = "下单时单价（已计算员工折扣）")
+    @ExcelProperty("购买单价")
     private BigDecimal priceAtPurchase;
 
     @Schema(description = "订单总金额")
+    @ExcelProperty("订单总金额")
     private BigDecimal totalAmount;
 
     @Schema(description = "用户优惠券ID（关联用户优惠券表）")
+    @ExcelProperty("用户优惠券ID")
     private Long userCouponId;
 
     @Schema(description = "订单状态：PENDING-待支付，PAID-已支付，COMPLETED-已完成，CANCELLED-已取消")
+    @ExcelProperty("订单状态")
     private OrderStatus status;
 
     @Schema(description = "创建时间")
+    @ExcelIgnore
     private LocalDateTime createTime;
 
     @Schema(description = "更新时间")
+    @ExcelIgnore
     private LocalDateTime updateTime;
 
     @Schema(description = "是否删除：0-未删除，1-已删除")
     @TableLogic
+    @ExcelIgnore
     private Integer deleted;
 }

@@ -3,9 +3,13 @@ package com.supermarket.controller;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.read.listener.PageReadListener;
 import com.supermarket.common.Result;
+import com.supermarket.entity.Order;
 import com.supermarket.entity.Product;
+import com.supermarket.entity.Store;
 import com.supermarket.entity.User;
+import com.supermarket.service.OrderService;
 import com.supermarket.service.ProductService;
+import com.supermarket.service.StoreService;
 import com.supermarket.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,6 +32,8 @@ public class ExcelController {
 
     private final ProductService productService;
     private final UserService userService;
+    private final OrderService orderService;
+    private final StoreService storeService;
 
     @Operation(summary = "导出商品数据")
     @GetMapping("/export/products")
@@ -77,5 +83,29 @@ public class ExcelController {
             userService.addUser(u);
         }
         return Result.success("成功导入 " + users.size() + " 条用户数据");
+    }
+
+    @Operation(summary = "导出订单数据")
+    @GetMapping("/export/orders")
+    public void exportOrders(HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        String fileName = URLEncoder.encode("订单数据", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ".xlsx");
+        response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+        List<Order> orders = orderService.listAll();
+        EasyExcel.write(response.getOutputStream(), Order.class).sheet("订单").doWrite(orders);
+    }
+
+    @Operation(summary = "导出店铺数据")
+    @GetMapping("/export/stores")
+    public void exportStores(HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        String fileName = URLEncoder.encode("店铺数据", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ".xlsx");
+        response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+        List<Store> stores = storeService.listAll();
+        EasyExcel.write(response.getOutputStream(), Store.class).sheet("店铺").doWrite(stores);
     }
 }

@@ -5,19 +5,23 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.supermarket.entity.Order;
+import com.supermarket.entity.OrderItem;
 import com.supermarket.entity.Product;
 import com.supermarket.entity.User;
 import com.supermarket.enums.OrderStatus;
 import com.supermarket.mapper.OrderMapper;
+import com.supermarket.service.OrderItemService;
 import com.supermarket.service.OrderService;
 import com.supermarket.service.ProductService;
 import com.supermarket.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     private final UserService userService;
     private final ProductService productService;
+    private final OrderItemService orderItemService;
 
     @Override
     public Order getOrderById(Long id) {
@@ -66,9 +71,25 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
+    public List<Order> getOrdersByStoreId(Long storeId) {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getStoreId, storeId)
+               .orderByDesc(Order::getCreateTime);
+        return list(wrapper);
+    }
+
+    @Override
     public IPage<Order> listPage(int pageNum, int pageSize) {
         LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByDesc(Order::getCreateTime);
+        return page(new Page<>(pageNum, pageSize), wrapper);
+    }
+
+    @Override
+    public IPage<Order> listPageByStoreId(Long storeId, int pageNum, int pageSize) {
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getStoreId, storeId)
+               .orderByDesc(Order::getCreateTime);
         return page(new Page<>(pageNum, pageSize), wrapper);
     }
 
@@ -103,6 +124,74 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         order.setStatus(OrderStatus.PENDING);
 
         save(order);
+        return order;
+    }
+
+    @Override
+    @Transactional
+    public Order addMultiItemOrder(Long userId, Long storeId, List<Map<String, Object>> items, Long userCouponId) {
+        User user = userService.getUserById(userId);
+        if (user == null) {
+            return null;
+        }
+
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
+        // Create order header first
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setStoreId(storeId);
+        order.setUserCouponId(userCouponId);
+        order.setStatus(OrderStatus.PENDING);
+        // Set placeholder values - will be updated after items are calculated
+        order.setTotalAmount(BigDecimal.ZERO);
+        // For multi-item orders, productId/quantity/priceAtPurchase are from first item for backward compat
+        save(order);
+
+        BigDecimal firstUnitPrice = null;
+        Long firstProductId = null;
+        int firstQuantity = 0;
+
+        for (Map<String, Object> item : items) {
+            Long productId = ((Number) item.get("productId")).longValue();
+            int quantity = ((Number) item.get("quantity")).intValue();
+
+            Product product = productService.getProductById(productId);
+            if (product == null) {
+                continue;
+            }
+
+            BigDecimal unitPrice = product.getPrice();
+            if (Boolean.TRUE.equals(user.getIsHotelEmployee()) && product.getEmployeeDiscountRate() != null) {
+                unitPrice = unitPrice.multiply(product.getEmployeeDiscountRate()).setScale(2, RoundingMode.HALF_UP);
+            }
+
+            BigDecimal subtotal = unitPrice.multiply(new BigDecimal(quantity));
+            totalAmount = totalAmount.add(subtotal);
+
+            // Create order item
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrderId(order.getId());
+            orderItem.setProductId(productId);
+            orderItem.setQuantity(quantity);
+            orderItem.setPriceAtPurchase(unitPrice);
+            orderItem.setSubtotal(subtotal);
+            orderItemService.addOrderItem(orderItem);
+
+            if (firstProductId == null) {
+                firstProductId = productId;
+                firstUnitPrice = unitPrice;
+                firstQuantity = quantity;
+            }
+        }
+
+        // Update order with calculated total and first product info for backward compat
+        order.setProductId(firstProductId);
+        order.setQuantity(firstQuantity);
+        order.setPriceAtPurchase(firstUnitPrice);
+        order.setTotalAmount(totalAmount);
+        updateById(order);
+
         return order;
     }
 
