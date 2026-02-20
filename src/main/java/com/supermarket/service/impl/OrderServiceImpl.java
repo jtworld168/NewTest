@@ -135,6 +135,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             return null;
         }
 
+        // Validate all products upfront
+        for (Map<String, Object> item : items) {
+            Long productId = ((Number) item.get("productId")).longValue();
+            Product product = productService.getProductById(productId);
+            if (product == null) {
+                return null;
+            }
+        }
+
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         // Create order header first
@@ -143,9 +152,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         order.setStoreId(storeId);
         order.setUserCouponId(userCouponId);
         order.setStatus(OrderStatus.PENDING);
-        // Set placeholder values - will be updated after items are calculated
         order.setTotalAmount(BigDecimal.ZERO);
-        // For multi-item orders, productId/quantity/priceAtPurchase are from first item for backward compat
         save(order);
 
         BigDecimal firstUnitPrice = null;
@@ -157,9 +164,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             int quantity = ((Number) item.get("quantity")).intValue();
 
             Product product = productService.getProductById(productId);
-            if (product == null) {
-                continue;
-            }
 
             BigDecimal unitPrice = product.getPrice();
             if (Boolean.TRUE.equals(user.getIsHotelEmployee()) && product.getEmployeeDiscountRate() != null) {

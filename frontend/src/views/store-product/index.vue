@@ -123,7 +123,7 @@ const productMap = computed(() => {
   return map
 })
 
-const defaultForm = () => ({ storeId: undefined, productId: undefined, storePrice: 0, storeStock: 0, status: 1 })
+const defaultForm = () => ({ storeId: undefined, productId: undefined, storePrice: undefined as number | undefined, storeStock: 0, status: 1 })
 const form = reactive<any>(defaultForm())
 
 const rules = {
