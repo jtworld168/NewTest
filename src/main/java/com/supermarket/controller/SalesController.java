@@ -2,6 +2,7 @@ package com.supermarket.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.supermarket.common.Result;
+import com.supermarket.entity.Category;
 import com.supermarket.entity.Order;
 import com.supermarket.entity.Product;
 import com.supermarket.enums.OrderStatus;
@@ -115,7 +116,7 @@ public class SalesController {
 
         var categories = categoryService.list();
         Map<Long, String> categoryNameMap = categories.stream()
-                .collect(Collectors.toMap(c -> c.getId(), c -> c.getName(), (a, b) -> a));
+                .collect(Collectors.toMap(Category::getId, Category::getName, (a, b) -> a));
 
         Map<Long, Integer> countMap = new LinkedHashMap<>();
         for (var cat : categories) {
