@@ -1,0 +1,14 @@
+{
+  "name": "无人超市",
+  "appid": "",
+  "description": "无人超市小程序",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "wxe25d5363380f040d",
+    "setting": {
+      "urlCheck": false
+    }
+  }
+}
