@@ -6,11 +6,15 @@
           <span>订单管理</span>
           <div>
             <el-button type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
+            <el-button type="success" @click="handleExport">导出Excel</el-button>
             <el-button type="primary" @click="openDialog()">新增订单</el-button>
           </div>
         </div>
       </template>
       <div class="search-bar">
+        <el-select v-model="filterStoreId" placeholder="按店铺筛选" clearable style="width: 160px" @change="loadData">
+          <el-option v-for="s in stores" :key="s.id" :label="s.name" :value="s.id" />
+        </el-select>
         <el-select v-model="filterStatus" placeholder="按状态筛选" clearable style="width: 160px" @change="handleFilter">
           <el-option label="待支付" value="PENDING" />
           <el-option label="已支付" value="PAID" />
@@ -22,15 +26,19 @@
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="userId" label="用户ID" width="80" />
+        <el-table-column label="店铺" width="120">
+          <template #default="{ row }">
+            {{ row.storeId ? (storeMap[row.storeId] || row.storeId) : '-' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="productId" label="商品ID" width="80" />
         <el-table-column prop="quantity" label="数量" width="80" />
         <el-table-column prop="priceAtPurchase" label="购买单价" width="100">
-          <template #default="{ row }">¥{{ row.priceAtPurchase }}</template>
+          <template #default="{ row }">{{ row.priceAtPurchase ? '¥' + row.priceAtPurchase : '-' }}</template>
         </el-table-column>
         <el-table-column prop="totalAmount" label="总金额" width="100">
           <template #default="{ row }">¥{{ row.totalAmount }}</template>
         </el-table-column>
-        <el-table-column prop="userCouponId" label="用户优惠券ID" width="120" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="statusType[row.status]">{{ statusMap[row.status] }}</el-tag>
@@ -62,6 +70,11 @@
           <el-form-item label="用户ID" prop="userId">
             <el-input-number v-model="form.userId" :min="1" style="width: 100%" />
           </el-form-item>
+          <el-form-item label="店铺">
+            <el-select v-model="form.storeId" placeholder="选择店铺（可选）" clearable style="width: 100%">
+              <el-option v-for="s in stores" :key="s.id" :label="s.name" :value="s.id" />
+            </el-select>
+          </el-form-item>
           <el-form-item label="商品ID" prop="productId">
             <el-input-number v-model="form.productId" :min="1" style="width: 100%" />
           </el-form-item>
@@ -92,18 +105,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { listOrders, addOrder, updateOrder, deleteOrder, deleteBatchOrders, getOrdersByStatus, listOrdersPage } from '../../api/order'
+import { listStores } from '../../api/store'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import type { Order } from '../../types'
+import type { Order, Store } from '../../types'
+import axios from 'axios'
+import { BASE_URL } from '../../api/request'
 
 const statusMap: Record<string, string> = { PENDING: '待支付', PAID: '已支付', COMPLETED: '已完成', CANCELLED: '已取消' }
 const statusType: Record<string, string> = { PENDING: 'warning', PAID: 'success', COMPLETED: '', CANCELLED: 'danger' }
 
 const tableData = ref<Order[]>([])
 const selectedIds = ref<number[]>([])
+const stores = ref<Store[]>([])
 const filterStatus = ref('')
+const filterStoreId = ref<number | undefined>(undefined)
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
@@ -111,7 +129,13 @@ const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 
-const defaultForm = () => ({ userId: 1, productId: 1, quantity: 1, userCouponId: undefined as number | undefined, status: 'PENDING' as any })
+const storeMap = computed(() => {
+  const map: Record<number, string> = {}
+  stores.value.forEach(s => { if (s.id) map[s.id] = s.name })
+  return map
+})
+
+const defaultForm = () => ({ userId: 1, storeId: undefined as number | undefined, productId: 1, quantity: 1, userCouponId: undefined as number | undefined, status: 'PENDING' as any })
 const form = reactive<any>(defaultForm())
 
 const rules = {
@@ -120,8 +144,17 @@ const rules = {
   quantity: [{ required: true, message: '请输入数量', trigger: 'blur' }]
 }
 
+async function loadStores() {
+  try {
+    const res = await listStores()
+    stores.value = res.data || []
+  } catch { /* ignore */ }
+}
+
 async function loadData() {
-  const res = await listOrdersPage(pageNum.value, pageSize.value)
+  const params: any = { pageNum: pageNum.value, pageSize: pageSize.value }
+  if (filterStoreId.value) params.storeId = filterStoreId.value
+  const res = await listOrdersPage(params.pageNum, params.pageSize, params.storeId)
   tableData.value = res.data?.records || []
   total.value = res.data?.total || 0
 }
@@ -132,6 +165,27 @@ async function handleFilter() {
     tableData.value = res.data || []
   } else {
     loadData()
+  }
+}
+
+async function handleExport() {
+  try {
+    const token = localStorage.getItem('satoken')
+    const response = await axios.get(`${BASE_URL}/api/excel/export/orders`, {
+      responseType: 'blob',
+      headers: token ? { satoken: token } : {}
+    })
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', '订单数据.xlsx')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    ElMessage.success('导出成功')
+  } catch {
+    ElMessage.error('导出失败')
   }
 }
 
@@ -153,6 +207,7 @@ async function handleSubmit() {
     ElMessage.success('更新成功')
   } else {
     const params: any = { userId: form.userId, productId: form.productId, quantity: form.quantity }
+    if (form.storeId) params.storeId = form.storeId
     if (form.userCouponId) params.userCouponId = form.userCouponId
     await addOrder(params)
     ElMessage.success('新增成功')
@@ -175,7 +230,10 @@ async function handleBatchDelete() {
   loadData()
 }
 
-onMounted(loadData)
+onMounted(() => {
+  loadStores()
+  loadData()
+})
 </script>
 
 <style scoped>

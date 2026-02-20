@@ -95,6 +95,18 @@ const router = createRouter({
           name: 'CartItems',
           component: () => import('../views/cart-item/index.vue'),
           meta: { title: '购物车管理' }
+        },
+        {
+          path: 'stores',
+          name: 'Stores',
+          component: () => import('../views/store/index.vue'),
+          meta: { title: '店铺管理' }
+        },
+        {
+          path: 'store-products',
+          name: 'StoreProducts',
+          component: () => import('../views/store-product/index.vue'),
+          meta: { title: '店铺商品' }
         }
       ]
     }

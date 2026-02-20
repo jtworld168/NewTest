@@ -154,6 +154,16 @@ function getPaymentsByOrderId(orderId) {
   return request({ url: '/payments/getByOrderId/' + orderId })
 }
 
+// ==================== Store ====================
+
+function getStoreList() {
+  return request({ url: '/stores/list' })
+}
+
+function getStoreById(id) {
+  return request({ url: '/stores/get/' + id })
+}
+
 // ==================== File ====================
 
 function getFileUrl(filename) {
@@ -187,5 +197,7 @@ module.exports = {
   updateUserCoupon,
   addPayment,
   getPaymentsByOrderId,
-  getFileUrl
+  getFileUrl,
+  getStoreList,
+  getStoreById
 }

@@ -33,9 +33,19 @@ Page({
         } catch (e) {}
       }
 
+      // Load store info
+      let store = null
+      if (order.storeId) {
+        try {
+          const sRes = await api.getStoreById(order.storeId)
+          store = sRes.data
+        } catch (e) {}
+      }
+
       order._productName = product ? product.name : '商品 #' + order.productId
       order._imageUrl = product && product.image ? api.getFileUrl(product.image) : ''
       order._barcode = product ? (product.barcode || '') : ''
+      order._storeName = store ? store.name : ''
       order._hasEmployeeDiscount = product && order.priceAtPurchase && order.priceAtPurchase < product.price
       order._originalPrice = product ? (product.price * order.quantity).toFixed(2) : ''
       order._discountAmount = order._hasEmployeeDiscount

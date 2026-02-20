@@ -8,6 +8,10 @@
   <!-- Product info -->
   <view class="detail-card">
     <text class="card-title">商品信息</text>
+    <view class="store-info" wx:if="{{order._storeName}}">
+      <text class="store-label">店铺: </text>
+      <text class="store-name">{{order._storeName}}</text>
+    </view>
     <view class="product-row">
       <image class="product-image" src="{{order._imageUrl || '/images/product-placeholder.png'}}" mode="aspectFill"></image>
       <view class="product-info">

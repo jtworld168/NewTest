@@ -69,6 +69,20 @@
           <el-icon><ShoppingCart /></el-icon>
           <span>购物车管理</span>
         </el-menu-item>
+        <el-sub-menu index="store-mgmt">
+          <template #title>
+            <el-icon><OfficeBuilding /></el-icon>
+            <span>店铺管理</span>
+          </template>
+          <el-menu-item index="/stores">
+            <el-icon><OfficeBuilding /></el-icon>
+            <span>店铺列表</span>
+          </el-menu-item>
+          <el-menu-item index="/store-products">
+            <el-icon><Goods /></el-icon>
+            <span>店铺商品</span>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
     <el-container>
@@ -99,7 +113,7 @@ import { BASE_URL } from '../api/request'
 import { ElMessage } from 'element-plus'
 import {
   HomeFilled, User, Menu, Goods, Document, List, Ticket, CreditCard, Present, ShoppingCart,
-  DataLine, PieChart, TrendCharts, Histogram
+  DataLine, PieChart, TrendCharts, Histogram, OfficeBuilding
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

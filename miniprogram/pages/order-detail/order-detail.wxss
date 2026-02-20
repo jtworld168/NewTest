@@ -52,6 +52,26 @@
   border-bottom: 1rpx solid var(--color-border);
 }
 
+.store-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+  padding: 8rpx 16rpx;
+  background: var(--color-bg-light);
+  border-radius: 8rpx;
+}
+
+.store-label {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+}
+
+.store-name {
+  font-size: 26rpx;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
 /* Product Row */
 .product-row {
   display: flex;

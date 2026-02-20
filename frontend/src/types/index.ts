@@ -64,8 +64,9 @@ export interface Product {
 export interface Order {
   id?: number
   userId: number
-  productId: number
-  quantity: number
+  storeId?: number
+  productId?: number
+  quantity?: number
   priceAtPurchase?: number
   totalAmount?: number
   userCouponId?: number
@@ -138,4 +139,28 @@ export interface CartItem {
 export interface LoginParam {
   username: string
   password: string
+}
+
+export interface Store {
+  id?: number
+  name: string
+  address?: string
+  phone?: string
+  image?: string
+  status?: number
+  createTime?: string
+  updateTime?: string
+  deleted?: number
+}
+
+export interface StoreProduct {
+  id?: number
+  storeId: number
+  productId: number
+  storePrice?: number
+  storeStock?: number
+  status?: number
+  createTime?: string
+  updateTime?: string
+  deleted?: number
 }

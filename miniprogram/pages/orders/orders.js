@@ -42,6 +42,15 @@ Page({
         }).catch(() => {})
       ))
 
+      // Load store details
+      const storeIds = [...new Set(orders.map(o => o.storeId).filter(Boolean))]
+      const storeMap = {}
+      await Promise.all(storeIds.map(id =>
+        api.getStoreById(id).then(sRes => {
+          if (sRes.data) storeMap[id] = sRes.data
+        }).catch(() => {})
+      ))
+
       // Pre-calculate display values to avoid WXML expression issues
       orders.forEach(order => {
         const product = productMap[order.productId]
@@ -49,6 +58,8 @@ Page({
         order._imageUrl = product && product.image ? api.getFileUrl(product.image) : ''
         order._barcode = product ? (product.barcode || '') : ''
         order._hasEmployeeDiscount = product && order.priceAtPurchase && order.priceAtPurchase < product.price
+        const store = order.storeId ? storeMap[order.storeId] : null
+        order._storeName = store ? store.name : ''
       })
 
       this.setData({ orders, loading: false })

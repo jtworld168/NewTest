@@ -41,6 +41,16 @@ export function deleteBatchOrders(ids: number[]): Promise<Result<void>> {
   return request.delete('/orders/deleteBatch', { data: ids })
 }
 
-export function listOrdersPage(pageNum: number, pageSize: number): Promise<Result<any>> {
-  return request.get('/orders/listPage', { params: { pageNum, pageSize } })
+export function listOrdersPage(pageNum: number, pageSize: number, storeId?: number): Promise<Result<any>> {
+  const params: any = { pageNum, pageSize }
+  if (storeId) params.storeId = storeId
+  return request.get('/orders/listPage', { params })
+}
+
+export function getOrdersByStoreId(storeId: number): Promise<Result<Order[]>> {
+  return request.get(`/orders/getByStoreId/${storeId}`)
+}
+
+export function addMultiItemOrder(data: { userId: number; storeId?: number; items: { productId: number; quantity: number }[]; userCouponId?: number }): Promise<Result<Order>> {
+  return request.post('/orders/addMultiItem', data)
 }
