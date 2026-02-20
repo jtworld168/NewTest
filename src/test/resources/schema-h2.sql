@@ -134,6 +134,7 @@ CREATE TABLE IF NOT EXISTS `order` (
     `deleted`           INT            DEFAULT 0,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_order_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+    CONSTRAINT `fk_order_store` FOREIGN KEY (`store_id`) REFERENCES `store` (`id`),
     CONSTRAINT `fk_order_user_coupon` FOREIGN KEY (`user_coupon_id`) REFERENCES `user_coupon` (`id`),
     CONSTRAINT `chk_order_total` CHECK (`total_amount` > 0)
 );
