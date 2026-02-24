@@ -2,7 +2,7 @@
   <el-container class="layout-container">
     <el-aside width="220px" class="aside">
       <div class="logo">
-        <h2>无人超市</h2>
+        <h2>智慧零售系统</h2>
       </div>
       <el-menu
         :default-active="activeMenu"

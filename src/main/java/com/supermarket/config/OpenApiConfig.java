@@ -13,8 +13,8 @@ public class OpenApiConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("无人超市后端管理系统 API")
-                        .description("无人超市后端管理系统接口文档")
+                        .title("智慧零售系统 API")
+                        .description("智慧零售系统接口文档")
                         .version("v1.0.0")
                         .contact(new Contact().name("supermarket")));
     }

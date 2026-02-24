@@ -1,7 +1,7 @@
 <view class="login-page">
   <view class="logo-area">
     <text class="logo-icon">🏪</text>
-    <text class="logo-title">无人超市</text>
+    <text class="logo-title">智慧零售</text>
     <text class="logo-subtitle">欢迎回来</text>
   </view>
 

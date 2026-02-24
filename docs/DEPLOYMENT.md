@@ -1,4 +1,4 @@
-# 无人超市管理系统 — 多环境部署文档
+# 智慧零售系统 — 多环境部署文档
 
 ## 目录
 
@@ -555,7 +555,7 @@ curl http://localhost:8080/actuator/health
 ```env
 # 生产环境通过 Nginx 代理，前后端同域，BASE_URL 为空
 VITE_API_BASE_URL=
-VITE_APP_TITLE=无人超市管理系统
+VITE_APP_TITLE=智慧零售系统
 ```
 
 > **说明**：生产环境前端通过 Nginx 代理访问后端 `/api/*`，无需跨域，`VITE_API_BASE_URL` 设为空即可。

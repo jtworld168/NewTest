@@ -15,7 +15,7 @@
     <swiper class="banner-swiper" indicator-dots autoplay interval="{{3000}}" circular>
       <swiper-item>
         <view class="banner-item banner-1">
-          <text class="banner-text">无人超市 · 智能购物</text>
+          <text class="banner-text">智慧零售 · 智能购物</text>
           <text class="banner-sub">随时随地，扫码即购</text>
         </view>
       </swiper-item>

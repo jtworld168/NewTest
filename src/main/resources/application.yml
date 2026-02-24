@@ -1,5 +1,5 @@
 # ============================================================
-# 无人超市管理系统 — 通用配置
+# 智慧零售系统 — 通用配置
 # 环境切换方式：
 #   开发环境: mvn spring-boot:run (默认dev)
 #   测试环境: mvn spring-boot:run -Dspring.profiles.active=test
