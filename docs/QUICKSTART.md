@@ -165,6 +165,37 @@ curl -X POST http://localhost:8080/api/products/add \
 
 ---
 
+## 环境切换
+
+本项目支持三套环境（开发、测试、生产），通过 Spring Profiles 和前端环境变量切换：
+
+### 后端切换
+
+```bash
+# 开发环境（默认）
+mvn spring-boot:run
+
+# 测试环境
+mvn spring-boot:run -Dspring-boot.run.profiles=test
+
+# 生产环境
+java -jar target/unmanned-supermarket-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+```
+
+配置文件：`application-dev.yml` / `application-test.yml` / `application-prod.yml`
+
+### 前端切换
+
+```bash
+npm run dev                    # 开发（使用 .env.development）
+npm run build                  # 生产（使用 .env.production）
+npm run build -- --mode test   # 测试（使用 .env.test）
+```
+
+> 详细部署指南请参阅 [DEPLOYMENT.md](./DEPLOYMENT.md)。
+
+---
+
 ## 常见问题
 
 ### Q: 启动报数据库连接失败？
