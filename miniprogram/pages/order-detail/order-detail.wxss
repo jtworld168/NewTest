@@ -108,6 +108,37 @@
   color: var(--color-text-secondary);
 }
 
+.product-price-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.original-price {
+  font-size: 24rpx;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.employee-tag {
+  font-size: 20rpx;
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  padding: 2rpx 12rpx;
+  border-radius: var(--radius-sm);
+}
+
+.employee-notice {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  padding: 12rpx 0 0;
+  text-align: center;
+}
+
+.discount-row .price-label {
+  color: var(--color-primary);
+}
+
 .product-qty {
   font-size: 24rpx;
   color: var(--color-text-secondary);

@@ -5,7 +5,10 @@ Page({
     order: null,
     orderItems: [],
     payment: null,
-    loading: true
+    loading: true,
+    isEmployeeOrder: false,
+    originalTotal: '0.00',
+    discountAmount: '0.00'
   },
 
   onLoad(options) {
@@ -52,6 +55,15 @@ Page({
           item._barcode = product ? (product.barcode || '') : ''
           item._subtotalDisplay = item.subtotal ? Number(item.subtotal).toFixed(2) : '0.00'
           item._priceDisplay = item.priceAtPurchase ? Number(item.priceAtPurchase).toFixed(2) : '0.00'
+          // Detect employee discount: compare as cents to avoid floating-point issues
+          if (product && item.priceAtPurchase) {
+            const purchaseCents = Math.round(Number(item.priceAtPurchase) * 100)
+            const priceCents = Math.round(Number(product.price) * 100)
+            if (purchaseCents < priceCents) {
+              item._hasEmployeeDiscount = true
+              item._originalPrice = Number(product.price).toFixed(2)
+            }
+          }
           orderItems.push(item)
         }
       } catch (e) {
@@ -80,6 +92,18 @@ Page({
 
       order._totalDisplay = order.totalAmount ? Number(order.totalAmount).toFixed(2) : '0.00'
 
+      // Calculate employee discount info
+      let isEmployeeOrder = orderItems.some(item => item._hasEmployeeDiscount)
+      let originalTotal = 0
+      orderItems.forEach(item => {
+        if (item._hasEmployeeDiscount) {
+          originalTotal += Number(item._originalPrice) * (item.quantity || 1)
+        } else {
+          originalTotal += Number(item.priceAtPurchase || 0) * (item.quantity || 1)
+        }
+      })
+      const discountAmount = isEmployeeOrder ? (originalTotal - Number(order.totalAmount || 0)) : 0
+
       // Load payment info
       let payment = null
       try {
@@ -90,7 +114,7 @@ Page({
         }
       } catch (e) {}
 
-      this.setData({ order, orderItems, payment, loading: false })
+      this.setData({ order, orderItems, payment, loading: false, isEmployeeOrder, originalTotal: originalTotal.toFixed(2), discountAmount: discountAmount.toFixed(2) })
     } catch (e) {
       console.error('Failed to load order detail:', e)
       this.setData({ loading: false })
