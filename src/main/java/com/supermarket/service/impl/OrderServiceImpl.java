@@ -4,15 +4,19 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.supermarket.entity.Coupon;
 import com.supermarket.entity.Order;
 import com.supermarket.entity.OrderItem;
 import com.supermarket.entity.Product;
 import com.supermarket.entity.User;
+import com.supermarket.entity.UserCoupon;
 import com.supermarket.enums.OrderStatus;
 import com.supermarket.mapper.OrderMapper;
+import com.supermarket.service.CouponService;
 import com.supermarket.service.OrderItemService;
 import com.supermarket.service.OrderService;
 import com.supermarket.service.ProductService;
+import com.supermarket.service.UserCouponService;
 import com.supermarket.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,6 +41,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private final UserService userService;
     private final ProductService productService;
     private final OrderItemService orderItemService;
+    private final UserCouponService userCouponService;
+    private final CouponService couponService;
 
     @Autowired(required = false)
     private RedisTemplate<String, Object> redisTemplate;
@@ -124,6 +130,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         BigDecimal totalAmount = unitPrice.multiply(new BigDecimal(quantity));
 
+        // Apply coupon discount if provided (employee discount and coupon cannot stack)
+        totalAmount = applyCouponDiscount(totalAmount, userCouponId, user);
+
         Order order = new Order();
         order.setUserId(userId);
         order.setProductId(productId);
@@ -187,6 +196,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             }
         }
 
+        // Apply coupon discount if provided (employee discount and coupon cannot stack)
+        totalAmount = applyCouponDiscount(totalAmount, userCouponId, user);
+
         // Create order with correct totalAmount (satisfies CHECK constraint)
         Order order = new Order();
         order.setUserId(userId);
@@ -240,6 +252,33 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByDesc(Order::getCreateTime);
         return list(wrapper);
+    }
+
+    /**
+     * 应用优惠券折扣（员工折扣和优惠券不可叠加，员工不应用优惠券）
+     */
+    private BigDecimal applyCouponDiscount(BigDecimal totalAmount, Long userCouponId, User user) {
+        if (userCouponId == null) {
+            return totalAmount;
+        }
+        // Employee discount and coupon cannot stack
+        if (Boolean.TRUE.equals(user.getIsHotelEmployee())) {
+            return totalAmount;
+        }
+        UserCoupon userCoupon = userCouponService.getUserCouponById(userCouponId);
+        if (userCoupon == null || userCoupon.getCouponId() == null) {
+            return totalAmount;
+        }
+        Coupon coupon = couponService.getCouponById(userCoupon.getCouponId());
+        if (coupon == null || coupon.getDiscount() == null) {
+            return totalAmount;
+        }
+        // Check minimum spend requirement
+        if (coupon.getMinAmount() != null && totalAmount.compareTo(coupon.getMinAmount()) < 0) {
+            return totalAmount;
+        }
+        BigDecimal discounted = totalAmount.subtract(coupon.getDiscount());
+        return discounted.compareTo(BigDecimal.ONE) >= 0 ? discounted : BigDecimal.ONE;
     }
 
     /**

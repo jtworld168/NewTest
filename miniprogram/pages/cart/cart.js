@@ -330,7 +330,7 @@ Page({
       // Navigate to payment page with the order
       if (order && order.id) {
         wx.navigateTo({
-          url: '/pages/payment/payment?orderId=' + order.id + '&amount=' + (order.totalAmount || this.data.finalPrice)
+          url: '/pages/payment/payment?orderId=' + order.id + '&amount=' + this.data.finalPrice
         })
       } else {
         wx.showToast({ title: '下单成功', icon: 'success' })
