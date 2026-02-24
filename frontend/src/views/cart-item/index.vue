@@ -19,8 +19,18 @@
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="userId" label="用户ID" width="100" />
-        <el-table-column prop="productId" label="商品ID" width="100" />
+        <el-table-column prop="userId" label="用户" width="120">
+          <template #default="{ row }">{{ userMap[row.userId] || '用户' + row.userId }}</template>
+        </el-table-column>
+        <el-table-column prop="productId" label="商品" width="160">
+          <template #default="{ row }">
+            <template v-if="productMap[row.productId]">
+              {{ productMap[row.productId].name }}
+              <div style="font-size: 12px; color: #999;" v-if="productMap[row.productId].barcode">条码: {{ productMap[row.productId].barcode }}</div>
+            </template>
+            <template v-else>商品{{ row.productId }}</template>
+          </template>
+        </el-table-column>
         <el-table-column prop="quantity" label="数量" width="100" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
         <el-table-column prop="updateTime" label="更新时间" width="180" />
@@ -64,14 +74,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { listCartItems, getCartItemsByUserId, addCartItem, updateCartItem, deleteCartItem, deleteBatchCartItems, listCartItemsPage } from '../../api/cartItem'
+import { listUsers } from '../../api/user'
+import { listProducts } from '../../api/product'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import type { CartItem } from '../../types'
+import type { CartItem, User, Product } from '../../types'
 
 const tableData = ref<CartItem[]>([])
 const selectedIds = ref<number[]>([])
+const users = ref<User[]>([])
+const products = ref<Product[]>([])
 const filterUserId = ref<number | undefined>(undefined)
 const dialogVisible = ref(false)
 const isEdit = ref(false)
@@ -79,6 +93,18 @@ const formRef = ref<FormInstance>()
 const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+
+const userMap = computed(() => {
+  const map: Record<number, string> = {}
+  users.value.forEach(u => { if (u.id) map[u.id] = u.username })
+  return map
+})
+
+const productMap = computed(() => {
+  const map: Record<number, { name: string; barcode?: string }> = {}
+  products.value.forEach(p => { if (p.id) map[p.id] = { name: p.name, barcode: p.barcode } })
+  return map
+})
 
 const defaultForm = (): CartItem => ({ userId: 1, productId: 1, quantity: 1 })
 const form = reactive<CartItem>(defaultForm())
@@ -142,7 +168,14 @@ async function handleBatchDelete() {
   loadData()
 }
 
-onMounted(loadData)
+onMounted(async () => {
+  try {
+    const [userRes, productRes] = await Promise.all([listUsers(), listProducts()])
+    users.value = userRes.data || []
+    products.value = productRes.data || []
+  } catch {}
+  loadData()
+})
 </script>
 
 <style scoped>

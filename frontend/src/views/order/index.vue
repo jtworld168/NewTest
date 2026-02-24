@@ -25,13 +25,25 @@
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="userId" label="用户ID" width="80" />
+        <el-table-column prop="userId" label="用户" width="120">
+          <template #default="{ row }">
+            {{ userMap[row.userId] || '用户' + row.userId }}
+          </template>
+        </el-table-column>
         <el-table-column label="店铺" width="120">
           <template #default="{ row }">
             {{ row.storeId ? (storeMap[row.storeId] || row.storeId) : '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="productId" label="商品ID" width="80" />
+        <el-table-column prop="productId" label="商品" width="160">
+          <template #default="{ row }">
+            <template v-if="row.productId && productMap[row.productId]">
+              {{ productMap[row.productId].name }}
+              <div style="font-size: 12px; color: #999;" v-if="productMap[row.productId].barcode">条码: {{ productMap[row.productId].barcode }}</div>
+            </template>
+            <template v-else>{{ row.productId ? '商品' + row.productId : '-' }}</template>
+          </template>
+        </el-table-column>
         <el-table-column prop="quantity" label="数量" width="80" />
         <el-table-column prop="priceAtPurchase" label="购买单价" width="100">
           <template #default="{ row }">{{ row.priceAtPurchase ? '¥' + row.priceAtPurchase : '-' }}</template>
@@ -106,11 +118,13 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { listOrders, addOrder, updateOrder, deleteOrder, deleteBatchOrders, getOrdersByStatus, listOrdersPage } from '../../api/order'
+import { listOrders, addOrder, updateOrder, deleteOrder, deleteBatchOrders, getOrdersByStatus, listOrdersPage, addMultiItemOrder } from '../../api/order'
 import { listStores } from '../../api/store'
+import { listUsers } from '../../api/user'
+import { listProducts } from '../../api/product'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import type { Order, Store } from '../../types'
+import type { Order, Store, User, Product } from '../../types'
 import axios from 'axios'
 import { BASE_URL } from '../../api/request'
 
@@ -120,6 +134,8 @@ const statusType: Record<string, string> = { PENDING: 'warning', PAID: 'success'
 const tableData = ref<Order[]>([])
 const selectedIds = ref<number[]>([])
 const stores = ref<Store[]>([])
+const users = ref<User[]>([])
+const products = ref<Product[]>([])
 const filterStatus = ref('')
 const filterStoreId = ref<number | undefined>(undefined)
 const dialogVisible = ref(false)
@@ -135,6 +151,18 @@ const storeMap = computed(() => {
   return map
 })
 
+const userMap = computed(() => {
+  const map: Record<number, string> = {}
+  users.value.forEach(u => { if (u.id) map[u.id] = u.username })
+  return map
+})
+
+const productMap = computed(() => {
+  const map: Record<number, { name: string; barcode?: string }> = {}
+  products.value.forEach(p => { if (p.id) map[p.id] = { name: p.name, barcode: p.barcode } })
+  return map
+})
+
 const defaultForm = () => ({ userId: 1, storeId: undefined as number | undefined, productId: 1, quantity: 1, userCouponId: undefined as number | undefined, status: 'PENDING' as any })
 const form = reactive<any>(defaultForm())
 
@@ -146,8 +174,14 @@ const rules = {
 
 async function loadStores() {
   try {
-    const res = await listStores()
-    stores.value = res.data || []
+    const [storeRes, userRes, productRes] = await Promise.all([
+      listStores(),
+      listUsers(),
+      listProducts()
+    ])
+    stores.value = storeRes.data || []
+    users.value = userRes.data || []
+    products.value = productRes.data || []
   } catch { /* ignore */ }
 }
 

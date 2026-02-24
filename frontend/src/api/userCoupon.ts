@@ -40,3 +40,7 @@ export function deleteBatchUserCoupons(ids: number[]): Promise<Result<void>> {
 export function listUserCouponsPage(pageNum: number, pageSize: number): Promise<Result<any>> {
   return request.get('/user-coupons/listPage', { params: { pageNum, pageSize } })
 }
+
+export function distributeToAllUsers(couponId: number): Promise<Result<void>> {
+  return request.post('/user-coupons/distributeAll', null, { params: { couponId } })
+}

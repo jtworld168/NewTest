@@ -98,6 +98,18 @@ function addOrder(userId, productId, quantity, userCouponId) {
   return request({ url: url, method: 'POST' })
 }
 
+function addMultiItemOrder(userId, items, userCouponId) {
+  var data = { userId: userId, items: items }
+  if (userCouponId) {
+    data.userCouponId = userCouponId
+  }
+  return request({ url: '/orders/addMultiItem', method: 'POST', data: data })
+}
+
+function getOrderItemsByOrderId(orderId) {
+  return request({ url: '/order-items/getByOrderId/' + orderId })
+}
+
 function updateOrder(order) {
   return request({ url: '/orders/update', method: 'PUT', data: order })
 }
@@ -185,6 +197,8 @@ module.exports = {
   getOrdersByUserId,
   getOrderById,
   addOrder,
+  addMultiItemOrder,
+  getOrderItemsByOrderId,
   updateOrder,
   getCartByUserId,
   addCartItem,

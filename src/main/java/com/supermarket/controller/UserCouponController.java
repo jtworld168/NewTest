@@ -4,8 +4,10 @@ import com.supermarket.common.Result;
 import com.supermarket.entity.Coupon;
 import com.supermarket.entity.UserCoupon;
 import com.supermarket.enums.CouponStatus;
+import com.supermarket.entity.User;
 import com.supermarket.service.CouponService;
 import com.supermarket.service.UserCouponService;
+import com.supermarket.service.UserService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,6 +26,7 @@ public class UserCouponController {
 
     private final UserCouponService userCouponService;
     private final CouponService couponService;
+    private final UserService userService;
 
     @Operation(summary = "根据ID查询用户优惠券")
     @GetMapping("/get/{id}")
@@ -118,6 +121,30 @@ public class UserCouponController {
             return Result.badRequest("用户优惠券不存在");
         }
         return userCouponService.deleteUserCoupon(id) ? Result.success() : Result.error("删除用户优惠券失败");
+    }
+
+    @Operation(summary = "一键发放优惠券给所有用户")
+    @PostMapping("/distributeAll")
+    @Transactional
+    public Result<Void> distributeToAllUsers(@RequestParam Long couponId) {
+        if (couponId == null) {
+            return Result.badRequest("优惠券面额ID不能为空");
+        }
+        Coupon coupon = couponService.getCouponById(couponId);
+        if (coupon == null) {
+            return Result.badRequest("优惠券不存在");
+        }
+        List<User> users = userService.listAll();
+        int count = 0;
+        for (User user : users) {
+            UserCoupon uc = new UserCoupon();
+            uc.setUserId(user.getId());
+            uc.setCouponId(couponId);
+            uc.setStatus(CouponStatus.AVAILABLE);
+            userCouponService.addUserCoupon(uc);
+            count++;
+        }
+        return Result.success();
     }
 
     @Operation(summary = "批量删除用户优惠券")

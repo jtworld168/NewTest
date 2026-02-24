@@ -5,7 +5,11 @@ Page({
     products: [],
     categories: [],
     loading: true,
-    cartMap: {} // productId -> cartItem
+    cartMap: {}, // productId -> cartItem
+    showDropBall: false,
+    dropBallX: 0,
+    dropBallY: 0,
+    dropBallAnimation: null
   },
 
   onShow() {
@@ -149,16 +153,42 @@ Page({
       } else {
         await api.addCartItem({ userId: app.globalData.userInfo.id, productId, quantity: 1 })
       }
-      wx.showToast({ title: '已添加', icon: 'success', duration: 800 })
-      // Trigger bounce animation
-      const products = this.data.products
-      const idx = products.findIndex(p => p.id === productId)
-      if (idx !== -1) {
-        this.setData({ ['products[' + idx + ']._bouncing']: true })
-        setTimeout(() => {
-          this.setData({ ['products[' + idx + ']._bouncing']: false })
-        }, 500)
-      }
+
+      // Get button position for drop animation
+      const that = this
+      const query = wx.createSelectorQuery()
+      query.selectViewport().scrollOffset()
+      query.exec(function(res) {
+        const touch = e.touches && e.touches[0]
+        const startX = touch ? touch.clientX : 300
+        const startY = touch ? touch.clientY : 400
+
+        // Animate: start at button, drop to bottom-left (cart tab position)
+        that.setData({
+          showDropBall: true,
+          dropBallX: startX - 15,
+          dropBallY: startY - 15
+        })
+
+        setTimeout(function() {
+          const animation = wx.createAnimation({
+            duration: 600,
+            timingFunction: 'ease-in'
+          })
+          // Target: bottom-left cart icon area
+          const sysInfo = wx.getSystemInfoSync()
+          const targetX = sysInfo.windowWidth * 0.25 - startX + 15
+          const targetY = sysInfo.windowHeight - startY - 30
+
+          animation.translate(targetX, targetY).scale(0.3).opacity(0.4).step()
+          that.setData({ dropBallAnimation: animation.export() })
+
+          setTimeout(function() {
+            that.setData({ showDropBall: false, dropBallAnimation: null })
+          }, 650)
+        }, 50)
+      })
+
       this.loadData()
     } catch (err) {
       wx.showToast({ title: '操作失败', icon: 'error' })
@@ -196,6 +226,34 @@ Page({
         productId: product.id,
         quantity: 1
       })
+
+      // Show drop animation
+      const that = this
+      const sysInfo = wx.getSystemInfoSync()
+      const startX = sysInfo.windowWidth / 2
+      const startY = sysInfo.windowHeight / 2
+
+      that.setData({
+        showDropBall: true,
+        dropBallX: startX - 15,
+        dropBallY: startY - 15
+      })
+
+      setTimeout(function() {
+        const animation = wx.createAnimation({
+          duration: 600,
+          timingFunction: 'ease-in'
+        })
+        const targetX = sysInfo.windowWidth * 0.25 - startX + 15
+        const targetY = sysInfo.windowHeight - startY - 30
+        animation.translate(targetX, targetY).scale(0.3).opacity(0.4).step()
+        that.setData({ dropBallAnimation: animation.export() })
+
+        setTimeout(function() {
+          that.setData({ showDropBall: false, dropBallAnimation: null })
+        }, 650)
+      }, 50)
+
       wx.showToast({ title: '已加入购物车', icon: 'success' })
       this.loadData()
     } catch (err) {

@@ -97,6 +97,18 @@ export function addOrder(userId, productId, quantity, userCouponId) {
   return request({ url: url, method: 'POST' })
 }
 
+export function addMultiItemOrder(userId, items, userCouponId) {
+  var data = { userId: userId, items: items }
+  if (userCouponId) {
+    data.userCouponId = userCouponId
+  }
+  return request({ url: '/orders/addMultiItem', method: 'POST', data: data })
+}
+
+export function getOrderItemsByOrderId(orderId) {
+  return request({ url: '/order-items/getByOrderId/' + orderId })
+}
+
 export function updateOrder(order) {
   return request({ url: '/orders/update', method: 'PUT', data: order })
 }

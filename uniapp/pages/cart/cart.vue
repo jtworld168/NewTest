@@ -375,15 +375,21 @@ async function doCheckout(selectedItems, couponId) {
   const app = getApp()
   try {
     uni.showLoading({ title: '创建订单中...' })
-    const orderIds = []
+
+    // Build multi-item order: one order with all selected products
+    const items = selectedItems.map(item => ({
+      productId: item.productId,
+      quantity: item.quantity
+    }))
+
+    const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, couponId)
+    const order = res.data
+
+    // Delete cart items after order creation
     for (const item of selectedItems) {
-      const res = await api.addOrder(app.globalData.userInfo.id, item.productId, item.quantity, couponId)
-      if (res.data && res.data.id) {
-        orderIds.push(res.data.id)
-      }
       await api.deleteCartItem(item.id)
-      couponId = null
     }
+
     uni.hideLoading()
 
     if (selectedCouponId.value) {
@@ -398,8 +404,8 @@ async function doCheckout(selectedItems, couponId) {
       }
     }
 
-    if (orderIds.length > 0) {
-      uni.navigateTo({ url: '/pages/payment/payment?orderId=' + orderIds[0] + '&amount=' + finalPrice.value })
+    if (order && order.id) {
+      uni.navigateTo({ url: '/pages/payment/payment?orderId=' + order.id + '&amount=' + (order.totalAmount || finalPrice.value) })
     } else {
       uni.showToast({ title: '下单成功', icon: 'success' })
       setTimeout(() => {

@@ -82,4 +82,9 @@
       <text class="empty-text">暂无商品</text>
     </view>
   </view>
+
+  <!-- Cart drop animation ball -->
+  <view class="cart-drop-ball" wx:if="{{showDropBall}}" style="left:{{dropBallX}}px;top:{{dropBallY}}px;" animation="{{dropBallAnimation}}">
+    <view class="drop-ball-inner">+1</view>
+  </view>
 </view>

@@ -279,6 +279,27 @@
   animation: cartBounce 0.5s ease;
 }
 
+/* Cart drop ball animation */
+.cart-drop-ball {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.drop-ball-inner {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #C9A96E, #B8956A);
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(201, 169, 110, 0.5);
+}
+
 .product-qty-num {
   width: 52rpx;
   text-align: center;

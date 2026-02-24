@@ -297,16 +297,21 @@ Page({
     const app = getApp()
     try {
       wx.showLoading({ title: '创建订单中...' })
-      const orderIds = []
+
+      // Build multi-item order: one order with all selected products
+      const items = selectedItems.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity
+      }))
+
+      const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, couponId)
+      const order = res.data
+
+      // Delete cart items after order creation
       for (const item of selectedItems) {
-        const res = await api.addOrder(app.globalData.userInfo.id, item.productId, item.quantity, couponId)
-        if (res.data && res.data.id) {
-          orderIds.push(res.data.id)
-        }
         await api.deleteCartItem(item.id)
-        // Coupon is only applied to the first order to avoid double deduction
-        couponId = null
       }
+
       wx.hideLoading()
 
       // Mark the user coupon as used (selectedCouponId is the UserCoupon record ID)
@@ -322,10 +327,10 @@ Page({
         }
       }
 
-      // Navigate to payment page with the first order
-      if (orderIds.length > 0) {
+      // Navigate to payment page with the order
+      if (order && order.id) {
         wx.navigateTo({
-          url: '/pages/payment/payment?orderId=' + orderIds[0] + '&amount=' + this.data.finalPrice
+          url: '/pages/payment/payment?orderId=' + order.id + '&amount=' + (order.totalAmount || this.data.finalPrice)
         })
       } else {
         wx.showToast({ title: '下单成功', icon: 'success' })

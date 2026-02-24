@@ -37,34 +37,52 @@
           <el-icon><User /></el-icon>
           <span>用户管理</span>
         </el-menu-item>
-        <el-menu-item index="/categories">
-          <el-icon><Menu /></el-icon>
-          <span>分类管理</span>
-        </el-menu-item>
-        <el-menu-item index="/products">
-          <el-icon><Goods /></el-icon>
-          <span>商品管理</span>
-        </el-menu-item>
-        <el-menu-item index="/orders">
-          <el-icon><Document /></el-icon>
-          <span>订单管理</span>
-        </el-menu-item>
-        <el-menu-item index="/order-items">
-          <el-icon><List /></el-icon>
-          <span>订单明细</span>
-        </el-menu-item>
-        <el-menu-item index="/coupons">
-          <el-icon><Ticket /></el-icon>
-          <span>优惠券模板</span>
-        </el-menu-item>
-        <el-menu-item index="/user-coupons">
-          <el-icon><Present /></el-icon>
-          <span>用户优惠券</span>
-        </el-menu-item>
-        <el-menu-item index="/payments">
-          <el-icon><CreditCard /></el-icon>
-          <span>支付管理</span>
-        </el-menu-item>
+        <el-sub-menu index="product-mgmt">
+          <template #title>
+            <el-icon><Goods /></el-icon>
+            <span>商品管理</span>
+          </template>
+          <el-menu-item index="/categories">
+            <el-icon><Menu /></el-icon>
+            <span>分类管理</span>
+          </el-menu-item>
+          <el-menu-item index="/products">
+            <el-icon><Goods /></el-icon>
+            <span>商品列表</span>
+          </el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu index="order-mgmt">
+          <template #title>
+            <el-icon><Document /></el-icon>
+            <span>订单管理</span>
+          </template>
+          <el-menu-item index="/orders">
+            <el-icon><Document /></el-icon>
+            <span>订单列表</span>
+          </el-menu-item>
+          <el-menu-item index="/order-items">
+            <el-icon><List /></el-icon>
+            <span>订单明细</span>
+          </el-menu-item>
+          <el-menu-item index="/payments">
+            <el-icon><CreditCard /></el-icon>
+            <span>支付管理</span>
+          </el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu index="coupon-mgmt">
+          <template #title>
+            <el-icon><Ticket /></el-icon>
+            <span>优惠券管理</span>
+          </template>
+          <el-menu-item index="/coupons">
+            <el-icon><Ticket /></el-icon>
+            <span>优惠券模板</span>
+          </el-menu-item>
+          <el-menu-item index="/user-coupons">
+            <el-icon><Present /></el-icon>
+            <span>用户优惠券</span>
+          </el-menu-item>
+        </el-sub-menu>
         <el-menu-item index="/cart-items">
           <el-icon><ShoppingCart /></el-icon>
           <span>购物车管理</span>
