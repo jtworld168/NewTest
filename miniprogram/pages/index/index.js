@@ -1,4 +1,5 @@
 const api = require('../../utils/api')
+const sysInfo = wx.getSystemInfoSync()
 
 Page({
   data: {
@@ -14,6 +15,28 @@ Page({
 
   onShow() {
     this.loadData()
+  },
+
+  playDropAnimation(startX, startY) {
+    var that = this
+    that.setData({
+      showDropBall: true,
+      dropBallX: startX - 15,
+      dropBallY: startY - 15
+    })
+    setTimeout(function() {
+      var animation = wx.createAnimation({
+        duration: 600,
+        timingFunction: 'ease-in'
+      })
+      var targetX = sysInfo.windowWidth * 0.25 - startX + 15
+      var targetY = sysInfo.windowHeight - startY - 30
+      animation.translate(targetX, targetY).scale(0.3).opacity(0.4).step()
+      that.setData({ dropBallAnimation: animation.export() })
+      setTimeout(function() {
+        that.setData({ showDropBall: false, dropBallAnimation: null })
+      }, 650)
+    }, 50)
   },
 
   async loadData() {
@@ -154,40 +177,11 @@ Page({
         await api.addCartItem({ userId: app.globalData.userInfo.id, productId, quantity: 1 })
       }
 
-      // Get button position for drop animation
-      const that = this
-      const query = wx.createSelectorQuery()
-      query.selectViewport().scrollOffset()
-      query.exec(function(res) {
-        const touch = e.touches && e.touches[0]
-        const startX = touch ? touch.clientX : 300
-        const startY = touch ? touch.clientY : 400
-
-        // Animate: start at button, drop to bottom-left (cart tab position)
-        that.setData({
-          showDropBall: true,
-          dropBallX: startX - 15,
-          dropBallY: startY - 15
-        })
-
-        setTimeout(function() {
-          const animation = wx.createAnimation({
-            duration: 600,
-            timingFunction: 'ease-in'
-          })
-          // Target: bottom-left cart icon area
-          const sysInfo = wx.getSystemInfoSync()
-          const targetX = sysInfo.windowWidth * 0.25 - startX + 15
-          const targetY = sysInfo.windowHeight - startY - 30
-
-          animation.translate(targetX, targetY).scale(0.3).opacity(0.4).step()
-          that.setData({ dropBallAnimation: animation.export() })
-
-          setTimeout(function() {
-            that.setData({ showDropBall: false, dropBallAnimation: null })
-          }, 650)
-        }, 50)
-      })
+      // Get touch position for drop animation
+      var touch = e.touches && e.touches[0]
+      var startX = touch ? touch.clientX : sysInfo.windowWidth / 2
+      var startY = touch ? touch.clientY : sysInfo.windowHeight / 2
+      this.playDropAnimation(startX, startY)
 
       this.loadData()
     } catch (err) {
@@ -227,32 +221,7 @@ Page({
         quantity: 1
       })
 
-      // Show drop animation
-      const that = this
-      const sysInfo = wx.getSystemInfoSync()
-      const startX = sysInfo.windowWidth / 2
-      const startY = sysInfo.windowHeight / 2
-
-      that.setData({
-        showDropBall: true,
-        dropBallX: startX - 15,
-        dropBallY: startY - 15
-      })
-
-      setTimeout(function() {
-        const animation = wx.createAnimation({
-          duration: 600,
-          timingFunction: 'ease-in'
-        })
-        const targetX = sysInfo.windowWidth * 0.25 - startX + 15
-        const targetY = sysInfo.windowHeight - startY - 30
-        animation.translate(targetX, targetY).scale(0.3).opacity(0.4).step()
-        that.setData({ dropBallAnimation: animation.export() })
-
-        setTimeout(function() {
-          that.setData({ showDropBall: false, dropBallAnimation: null })
-        }, 650)
-      }, 50)
+      this.playDropAnimation(sysInfo.windowWidth / 2, sysInfo.windowHeight / 2)
 
       wx.showToast({ title: '已加入购物车', icon: 'success' })
       this.loadData()

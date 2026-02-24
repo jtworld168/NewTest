@@ -135,14 +135,12 @@ public class UserCouponController {
             return Result.badRequest("优惠券不存在");
         }
         List<User> users = userService.listAll();
-        int count = 0;
         for (User user : users) {
             UserCoupon uc = new UserCoupon();
             uc.setUserId(user.getId());
             uc.setCouponId(couponId);
             uc.setStatus(CouponStatus.AVAILABLE);
             userCouponService.addUserCoupon(uc);
-            count++;
         }
         return Result.success();
     }
