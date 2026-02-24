@@ -28,7 +28,7 @@
         <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column label="头像" width="80" align="center">
           <template #default="{ row }">
-            <el-avatar v-if="row.avatar" :src="BASE_URL + row.avatar" :size="40" />
+            <el-avatar v-if="row.avatar" :src="BASE_URL + '/api' + row.avatar" :size="40" />
             <el-avatar v-else :size="40">{{ row.username?.charAt(0).toUpperCase() }}</el-avatar>
           </template>
         </el-table-column>
@@ -76,7 +76,7 @@
               :http-request="handleAvatarUpload"
               accept="image/*"
             >
-              <el-avatar v-if="form.avatar" :src="BASE_URL + form.avatar" :size="80" />
+              <el-avatar v-if="form.avatar" :src="BASE_URL + '/api' + form.avatar" :size="80" />
               <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
             </el-upload>
             <el-button v-if="form.avatar" link type="danger" @click="form.avatar = ''">移除</el-button>

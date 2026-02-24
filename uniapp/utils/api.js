@@ -183,7 +183,11 @@ export function getStoreById(id) {
 // ==================== File ====================
 
 export function getFileUrl(filename) {
-  return BASE_URL.replace('/api', '') + '/file/' + filename
+  if (!filename) return ''
+  // DB stores: /file/xxx.jpg
+  // We need: http://localhost:8080/api/file/xxx.jpg
+  var name = filename.replace(/^\/file\//, '')
+  return BASE_URL + '/file/' + name
 }
 
 export default {

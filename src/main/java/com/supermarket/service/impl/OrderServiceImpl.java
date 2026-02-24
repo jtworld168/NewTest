@@ -155,20 +155,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             }
         }
 
+        // Pre-calculate totalAmount and item details BEFORE saving order
         BigDecimal totalAmount = BigDecimal.ZERO;
-
-        // Create order header first
-        Order order = new Order();
-        order.setUserId(userId);
-        order.setStoreId(storeId);
-        order.setUserCouponId(userCouponId);
-        order.setStatus(OrderStatus.PENDING);
-        order.setTotalAmount(BigDecimal.ZERO);
-        save(order);
-
         BigDecimal firstUnitPrice = null;
         Long firstProductId = null;
         int firstQuantity = 0;
+
+        // Structure to hold calculated item details
+        java.util.List<Object[]> calculatedItems = new java.util.ArrayList<>();
 
         for (Map<String, Object> item : items) {
             Long productId = ((Number) item.get("productId")).longValue();
@@ -184,14 +178,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             BigDecimal subtotal = unitPrice.multiply(new BigDecimal(quantity));
             totalAmount = totalAmount.add(subtotal);
 
-            // Create order item
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrderId(order.getId());
-            orderItem.setProductId(productId);
-            orderItem.setQuantity(quantity);
-            orderItem.setPriceAtPurchase(unitPrice);
-            orderItem.setSubtotal(subtotal);
-            orderItemService.addOrderItem(orderItem);
+            calculatedItems.add(new Object[]{productId, quantity, unitPrice, subtotal});
 
             if (firstProductId == null) {
                 firstProductId = productId;
@@ -200,12 +187,29 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             }
         }
 
-        // Update order with calculated total and first product info for backward compat
+        // Create order with correct totalAmount (satisfies CHECK constraint)
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setStoreId(storeId);
+        order.setUserCouponId(userCouponId);
+        order.setStatus(OrderStatus.PENDING);
         order.setProductId(firstProductId);
         order.setQuantity(firstQuantity);
         order.setPriceAtPurchase(firstUnitPrice);
         order.setTotalAmount(totalAmount);
-        updateById(order);
+        save(order);
+
+        // Create order items after order is saved (we need order.id)
+        for (Object[] calc : calculatedItems) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrderId(order.getId());
+            orderItem.setProductId((Long) calc[0]);
+            orderItem.setQuantity((Integer) calc[1]);
+            orderItem.setPriceAtPurchase((BigDecimal) calc[2]);
+            orderItem.setSubtotal((BigDecimal) calc[3]);
+            orderItemService.addOrderItem(orderItem);
+        }
+
         setOrderExpireKey(order.getId());
 
         return order;

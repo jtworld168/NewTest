@@ -87,6 +87,37 @@ public class FileUploadController {
         }
     }
 
+    @GetMapping("/{filename}")
+    @Operation(summary = "预览图片", description = "根据文件名预览图片（内联显示）")
+    public ResponseEntity<Resource> previewFile(
+            @Parameter(description = "文件名") @PathVariable String filename) {
+        try {
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            Path filePath = uploadPath.resolve(filename).normalize();
+
+            if (!filePath.startsWith(uploadPath)) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            if (!Files.exists(filePath) || !Files.isRegularFile(filePath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Resource resource = new UrlResource(filePath.toUri());
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @GetMapping("/download/{filename}")
     @Operation(summary = "下载文件", description = "根据文件名下载已上传的文件")
     public ResponseEntity<Resource> downloadFile(

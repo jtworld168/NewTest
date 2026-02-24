@@ -3,6 +3,7 @@ const api = require('../../utils/api')
 Page({
   data: {
     order: null,
+    orderItems: [],
     payment: null,
     loading: true
   },
@@ -24,15 +25,6 @@ Page({
         return
       }
 
-      // Load product info
-      let product = null
-      if (order.productId) {
-        try {
-          const pRes = await api.getProductById(order.productId)
-          product = pRes.data
-        } catch (e) {}
-      }
-
       // Load store info
       let store = null
       if (order.storeId) {
@@ -41,17 +33,52 @@ Page({
           store = sRes.data
         } catch (e) {}
       }
-
-      order._productName = product ? product.name : '商品 #' + order.productId
-      order._imageUrl = product && product.image ? api.getFileUrl(product.image) : ''
-      order._barcode = product ? (product.barcode || '') : ''
       order._storeName = store ? store.name : ''
-      order._hasEmployeeDiscount = product && order.priceAtPurchase && order.priceAtPurchase < product.price
-      order._originalPrice = product ? (product.price * order.quantity).toFixed(2) : ''
-      order._discountAmount = order._hasEmployeeDiscount
-        ? ((product.price * order.quantity) - (order.priceAtPurchase * order.quantity)).toFixed(2)
-        : '0.00'
-      order._couponDiscount = order.userCouponId ? ((order.priceAtPurchase * order.quantity) - order.totalAmount).toFixed(2) : '0.00'
+
+      // Load order items (multi-product)
+      let orderItems = []
+      try {
+        const itemsRes = await api.getOrderItemsByOrderId(orderId)
+        const rawItems = itemsRes.data || []
+        for (let i = 0; i < rawItems.length; i++) {
+          const item = rawItems[i]
+          let product = null
+          try {
+            const pRes = await api.getProductById(item.productId)
+            product = pRes.data
+          } catch (e) {}
+          item._productName = product ? product.name : '商品 #' + item.productId
+          item._imageUrl = product && product.image ? api.getFileUrl(product.image) : ''
+          item._barcode = product ? (product.barcode || '') : ''
+          item._subtotalDisplay = item.subtotal ? Number(item.subtotal).toFixed(2) : '0.00'
+          item._priceDisplay = item.priceAtPurchase ? Number(item.priceAtPurchase).toFixed(2) : '0.00'
+          orderItems.push(item)
+        }
+      } catch (e) {
+        console.error('Failed to load order items:', e)
+      }
+
+      // If no order items found, fall back to single-product display
+      if (orderItems.length === 0 && order.productId) {
+        let product = null
+        try {
+          const pRes = await api.getProductById(order.productId)
+          product = pRes.data
+        } catch (e) {}
+        orderItems.push({
+          productId: order.productId,
+          quantity: order.quantity || 1,
+          priceAtPurchase: order.priceAtPurchase,
+          subtotal: order.totalAmount,
+          _productName: product ? product.name : '商品 #' + order.productId,
+          _imageUrl: product && product.image ? api.getFileUrl(product.image) : '',
+          _barcode: product ? (product.barcode || '') : '',
+          _subtotalDisplay: order.totalAmount ? Number(order.totalAmount).toFixed(2) : '0.00',
+          _priceDisplay: order.priceAtPurchase ? Number(order.priceAtPurchase).toFixed(2) : '0.00'
+        })
+      }
+
+      order._totalDisplay = order.totalAmount ? Number(order.totalAmount).toFixed(2) : '0.00'
 
       // Load payment info
       let payment = null
@@ -63,7 +90,7 @@ Page({
         }
       } catch (e) {}
 
-      this.setData({ order, payment, loading: false })
+      this.setData({ order, orderItems, payment, loading: false })
     } catch (e) {
       console.error('Failed to load order detail:', e)
       this.setData({ loading: false })

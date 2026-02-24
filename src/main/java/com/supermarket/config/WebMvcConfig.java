@@ -16,6 +16,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Images are served via /api/file/{filename} controller endpoint
+        // This static handler is kept as fallback for /file/** direct access
         String absolutePath = Paths.get(uploadDir).toAbsolutePath().toUri().toString();
         registry.addResourceHandler("/file/**")
                 .addResourceLocations(absolutePath);

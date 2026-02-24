@@ -179,7 +179,12 @@ function getStoreById(id) {
 // ==================== File ====================
 
 function getFileUrl(filename) {
-  return app.globalData.baseUrl.replace('/api', '') + '/file/' + filename
+  if (!filename) return ''
+  // DB stores: /file/xxx.jpg
+  // We need: http://localhost:8080/api/file/xxx.jpg
+  // baseUrl = http://localhost:8080/api
+  var name = filename.replace(/^\/file\//, '')
+  return app.globalData.baseUrl + '/file/' + name
 }
 
 module.exports = {

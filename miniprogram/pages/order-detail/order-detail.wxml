@@ -5,20 +5,21 @@
     <text class="status-text">{{order.status === 'PENDING' ? '待支付' : order.status === 'PAID' ? '已支付' : order.status === 'COMPLETED' ? '已完成' : '已取消'}}</text>
   </view>
 
-  <!-- Product info -->
+  <!-- Product info - shows ALL items -->
   <view class="detail-card">
-    <text class="card-title">商品信息</text>
+    <text class="card-title">商品信息 ({{orderItems.length}}件)</text>
     <view class="store-info" wx:if="{{order._storeName}}">
       <text class="store-label">店铺: </text>
       <text class="store-name">{{order._storeName}}</text>
     </view>
-    <view class="product-row">
-      <image class="product-image" src="{{order._imageUrl || '/images/product-placeholder.png'}}" mode="aspectFill"></image>
+    <view wx:for="{{orderItems}}" wx:key="productId" class="product-row">
+      <image class="product-image" src="{{item._imageUrl || '/images/product-placeholder.png'}}" mode="aspectFill"></image>
       <view class="product-info">
-        <text class="product-name">{{order._productName || '商品'}}</text>
-        <text class="product-price">单价: ¥{{order.priceAtPurchase}}</text>
-        <text class="product-qty">数量: x{{order.quantity}}</text>
-        <text class="product-barcode" wx:if="{{order._barcode}}">条形码: {{order._barcode}}</text>
+        <text class="product-name">{{item._productName || '商品'}}</text>
+        <text class="product-price">单价: ¥{{item._priceDisplay}}</text>
+        <text class="product-qty">数量: x{{item.quantity}}</text>
+        <text class="product-subtotal">小计: ¥{{item._subtotalDisplay}}</text>
+        <text class="product-barcode" wx:if="{{item._barcode}}">条形码: {{item._barcode}}</text>
       </view>
     </view>
   </view>
@@ -26,21 +27,9 @@
   <!-- Price breakdown -->
   <view class="detail-card">
     <text class="card-title">价格明细</text>
-    <view class="price-row" wx:if="{{order._originalPrice}}">
-      <text class="price-label">商品原价</text>
-      <text class="price-value">¥{{order._originalPrice}}</text>
-    </view>
-    <view class="price-row" wx:if="{{order._hasEmployeeDiscount}}">
-      <text class="price-label">员工折扣</text>
-      <text class="price-value discount">-¥{{order._discountAmount}}</text>
-    </view>
-    <view class="price-row" wx:if="{{order.userCouponId}}">
-      <text class="price-label">优惠券抵扣</text>
-      <text class="price-value discount">-¥{{order._couponDiscount}}</text>
-    </view>
     <view class="price-row total-row">
-      <text class="price-label">实付金额</text>
-      <text class="price-value total">¥{{order.totalAmount}}</text>
+      <text class="price-label">订单总额</text>
+      <text class="price-value total">¥{{order._totalDisplay}}</text>
     </view>
   </view>
 

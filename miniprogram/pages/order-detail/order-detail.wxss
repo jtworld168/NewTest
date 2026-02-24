@@ -113,6 +113,23 @@
   color: var(--color-text-secondary);
 }
 
+.product-subtotal {
+  font-size: 26rpx;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.product-row {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid rgba(0,0,0,0.05);
+}
+
+.product-row:last-child {
+  border-bottom: none;
+}
+
 /* Price Rows */
 .price-row {
   display: flex;
