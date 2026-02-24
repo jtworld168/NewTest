@@ -19,10 +19,10 @@
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="name" label="分类名称" />
         <el-table-column prop="description" label="描述" />
-        <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column prop="createTime" label="创建时间" width="180" align="center" />
         <el-table-column label="操作" fixed="right" align="right" width="180">
           <template #default="{ row }">
             <el-button size="small" @click="openDialog(row)">编辑</el-button>

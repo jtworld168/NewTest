@@ -23,34 +23,34 @@
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="商品图片" width="100">
+        <el-table-column prop="id" label="ID" width="80" align="center" />
+        <el-table-column label="商品图片" width="100" align="center">
           <template #default="{ row }">
             <el-image v-if="row.image" :src="BASE_URL + row.image" :preview-src-list="[BASE_URL + row.image]" fit="cover" style="width: 60px; height: 60px; border-radius: 4px;" />
             <span v-else style="color: #ccc;">无图片</span>
           </template>
         </el-table-column>
         <el-table-column prop="name" label="商品名称" />
-        <el-table-column prop="barcode" label="条形码" width="140">
+        <el-table-column prop="barcode" label="条形码" width="140" align="center">
           <template #default="{ row }">
             <span v-if="row.barcode">{{ row.barcode }}</span>
             <span v-else style="color: #ccc;">-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="price" label="价格" width="100">
+        <el-table-column prop="price" label="价格" width="100" align="center">
           <template #default="{ row }">¥{{ row.price }}</template>
         </el-table-column>
-        <el-table-column prop="stock" label="库存" width="80" />
-        <el-table-column prop="categoryId" label="分类" width="100">
+        <el-table-column prop="stock" label="库存" width="80" align="center" />
+        <el-table-column prop="categoryId" label="分类" width="100" align="center">
           <template #default="{ row }">
             {{ categoryMap[row.categoryId] || '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="employeeDiscountRate" label="员工折扣" width="100">
+        <el-table-column prop="employeeDiscountRate" label="员工折扣" width="100" align="center">
           <template #default="{ row }">{{ row.employeeDiscountRate ? (row.employeeDiscountRate * 100).toFixed(0) + '%' : '-' }}</template>
         </el-table-column>
         <el-table-column prop="description" label="描述" show-overflow-tooltip />
-        <el-table-column label="状态" prop="status" width="80">
+        <el-table-column label="状态" prop="status" width="80" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">{{ row.status === 1 ? '上架' : '下架' }}</el-tag>
           </template>

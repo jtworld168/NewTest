@@ -25,8 +25,8 @@
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="头像" width="80">
+        <el-table-column prop="id" label="ID" width="80" align="center" />
+        <el-table-column label="头像" width="80" align="center">
           <template #default="{ row }">
             <el-avatar v-if="row.avatar" :src="BASE_URL + row.avatar" :size="40" />
             <el-avatar v-else :size="40">{{ row.username?.charAt(0).toUpperCase() }}</el-avatar>
@@ -34,19 +34,19 @@
         </el-table-column>
         <el-table-column prop="username" label="用户名" />
         <el-table-column prop="phone" label="手机号" />
-        <el-table-column prop="role" label="角色">
+        <el-table-column prop="role" label="角色" align="center">
           <template #default="{ row }">
             <el-tag :type="row.role === 'ADMIN' ? 'danger' : row.role === 'EMPLOYEE' ? 'warning' : 'success'">
               {{ roleMap[row.role] }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="isHotelEmployee" label="酒店员工" width="100">
+        <el-table-column prop="isHotelEmployee" label="酒店员工" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.isHotelEmployee ? 'success' : 'info'">{{ row.isHotelEmployee ? '是' : '否' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column prop="createTime" label="创建时间" width="180" align="center" />
         <el-table-column label="操作" fixed="right" align="right" width="180">
           <template #default="{ row }">
             <el-button size="small" @click="openDialog(row)">编辑</el-button>

@@ -20,22 +20,22 @@
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="userId" label="用户" width="120">
           <template #default="{ row }">{{ userMap[row.userId] || '用户' + row.userId }}</template>
         </el-table-column>
         <el-table-column prop="couponId" label="优惠券" width="140">
           <template #default="{ row }">{{ couponMap[row.couponId] || '优惠券' + row.couponId }}</template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 'AVAILABLE' ? 'success' : row.status === 'USED' ? 'info' : 'danger'">
               {{ statusMap[row.status] }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="useTime" label="使用时间" width="180" />
-        <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column prop="useTime" label="使用时间" width="180" align="center" />
+        <el-table-column prop="createTime" label="创建时间" width="180" align="center" />
         <el-table-column label="操作" fixed="right" align="right" width="180">
           <template #default="{ row }">
             <el-button size="small" @click="openDialog(row)">编辑</el-button>

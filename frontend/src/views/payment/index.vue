@@ -25,22 +25,22 @@
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="orderId" label="订单ID" width="80" />
-        <el-table-column prop="amount" label="金额" width="100">
+        <el-table-column prop="id" label="ID" width="80" align="center" />
+        <el-table-column prop="orderId" label="订单ID" width="80" align="center" />
+        <el-table-column prop="amount" label="金额" width="100" align="center">
           <template #default="{ row }">¥{{ row.amount }}</template>
         </el-table-column>
-        <el-table-column prop="paymentMethod" label="支付方式" width="100">
+        <el-table-column prop="paymentMethod" label="支付方式" width="100" align="center">
           <template #default="{ row }">{{ methodMap[row.paymentMethod] }}</template>
         </el-table-column>
-        <el-table-column prop="paymentStatus" label="支付状态" width="100">
+        <el-table-column prop="paymentStatus" label="支付状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="payStatusType[row.paymentStatus]">{{ payStatusMap[row.paymentStatus] }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="transactionNo" label="交易号" width="180" />
-        <el-table-column prop="paymentTime" label="支付时间" width="180" />
-        <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column prop="paymentTime" label="支付时间" width="180" align="center" />
+        <el-table-column prop="createTime" label="创建时间" width="180" align="center" />
         <el-table-column label="操作" fixed="right" align="right" width="180">
           <template #default="{ row }">
             <el-button size="small" @click="openDialog(row)">编辑</el-button>

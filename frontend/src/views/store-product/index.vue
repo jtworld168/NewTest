@@ -17,24 +17,24 @@
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="storeId" label="店铺ID" width="80" />
+        <el-table-column prop="id" label="ID" width="80" align="center" />
+        <el-table-column prop="storeId" label="店铺ID" width="80" align="center" />
         <el-table-column label="店铺名称" width="140">
           <template #default="{ row }">
             {{ storeMap[row.storeId] || '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="productId" label="商品ID" width="80" />
+        <el-table-column prop="productId" label="商品ID" width="80" align="center" />
         <el-table-column label="商品名称" width="140">
           <template #default="{ row }">
             {{ productMap[row.productId] || '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="storePrice" label="店铺售价" width="100">
+        <el-table-column prop="storePrice" label="店铺售价" width="100" align="center">
           <template #default="{ row }">¥{{ row.storePrice }}</template>
         </el-table-column>
-        <el-table-column prop="storeStock" label="店铺库存" width="100" />
-        <el-table-column label="状态" prop="status" width="80">
+        <el-table-column prop="storeStock" label="店铺库存" width="100" align="center" />
+        <el-table-column label="状态" prop="status" width="80" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">{{ row.status === 1 ? '上架' : '下架' }}</el-tag>
           </template>

@@ -24,7 +24,7 @@
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="userId" label="用户" width="120">
           <template #default="{ row }">
             {{ userMap[row.userId] || '用户' + row.userId }}
@@ -44,19 +44,19 @@
             <template v-else>{{ row.productId ? '商品' + row.productId : '-' }}</template>
           </template>
         </el-table-column>
-        <el-table-column prop="quantity" label="数量" width="80" />
-        <el-table-column prop="priceAtPurchase" label="购买单价" width="100">
+        <el-table-column prop="quantity" label="数量" width="80" align="center" />
+        <el-table-column prop="priceAtPurchase" label="购买单价" width="100" align="center">
           <template #default="{ row }">{{ row.priceAtPurchase ? '¥' + row.priceAtPurchase : '-' }}</template>
         </el-table-column>
-        <el-table-column prop="totalAmount" label="总金额" width="100">
+        <el-table-column prop="totalAmount" label="总金额" width="100" align="center">
           <template #default="{ row }">¥{{ row.totalAmount }}</template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="statusType[row.status]">{{ statusMap[row.status] }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="180" />
+        <el-table-column prop="createTime" label="创建时间" width="180" align="center" />
         <el-table-column label="操作" fixed="right" align="right" width="180">
           <template #default="{ row }">
             <el-button size="small" @click="openDialog(row)">编辑</el-button>

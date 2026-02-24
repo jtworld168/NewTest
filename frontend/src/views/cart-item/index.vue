@@ -18,7 +18,7 @@
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="userId" label="用户" width="120">
           <template #default="{ row }">{{ userMap[row.userId] || '用户' + row.userId }}</template>
         </el-table-column>
@@ -31,9 +31,9 @@
             <template v-else>商品{{ row.productId }}</template>
           </template>
         </el-table-column>
-        <el-table-column prop="quantity" label="数量" width="100" />
-        <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column prop="updateTime" label="更新时间" width="180" />
+        <el-table-column prop="quantity" label="数量" width="100" align="center" />
+        <el-table-column prop="createTime" label="创建时间" width="180" align="center" />
+        <el-table-column prop="updateTime" label="更新时间" width="180" align="center" />
         <el-table-column label="操作" fixed="right" align="right" width="180">
           <template #default="{ row }">
             <el-button size="small" @click="openDialog(row)">编辑</el-button>

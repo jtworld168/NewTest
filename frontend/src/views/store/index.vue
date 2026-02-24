@@ -20,11 +20,11 @@
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="name" label="店铺名称" />
         <el-table-column prop="address" label="店铺地址" />
         <el-table-column prop="phone" label="联系电话" width="140" />
-        <el-table-column label="状态" prop="status" width="80">
+        <el-table-column label="状态" prop="status" width="80" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">{{ row.status === 1 ? '营业' : '关闭' }}</el-tag>
           </template>

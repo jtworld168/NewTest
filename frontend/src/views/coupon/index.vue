@@ -19,18 +19,18 @@
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="name" label="名称" />
-        <el-table-column prop="discount" label="折扣金额" width="100">
+        <el-table-column prop="discount" label="折扣金额" width="100" align="center">
           <template #default="{ row }">¥{{ row.discount }}</template>
         </el-table-column>
-        <el-table-column prop="minAmount" label="最低消费" width="100">
+        <el-table-column prop="minAmount" label="最低消费" width="100" align="center">
           <template #default="{ row }">¥{{ row.minAmount }}</template>
         </el-table-column>
-        <el-table-column prop="totalCount" label="总数量" width="90" />
-        <el-table-column prop="remainingCount" label="剩余数量" width="90" />
-        <el-table-column prop="startTime" label="开始时间" width="180" />
-        <el-table-column prop="endTime" label="结束时间" width="180" />
+        <el-table-column prop="totalCount" label="总数量" width="90" align="center" />
+        <el-table-column prop="remainingCount" label="剩余数量" width="90" align="center" />
+        <el-table-column prop="startTime" label="开始时间" width="180" align="center" />
+        <el-table-column prop="endTime" label="结束时间" width="180" align="center" />
         <el-table-column label="操作" fixed="right" align="right" width="180">
           <template #default="{ row }">
             <el-button size="small" @click="openDialog(row)">编辑</el-button>
