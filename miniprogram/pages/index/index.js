@@ -169,14 +169,15 @@ Page({
       return
     }
 
-    const cartItem = this.data.cartMap[productId]
+    const cartMap = Object.assign({}, this.data.cartMap)
+    const cartItem = cartMap[productId]
     try {
       if (cartItem) {
         await api.updateCartItem({ id: cartItem.id, userId: cartItem.userId, productId: cartItem.productId, quantity: cartItem.quantity + 1 })
-        cartItem.quantity += 1
+        cartMap[productId] = Object.assign({}, cartItem, { quantity: cartItem.quantity + 1 })
       } else {
         const res = await api.addCartItem({ userId: app.globalData.userInfo.id, productId, quantity: 1 })
-        this.data.cartMap[productId] = res.data || { userId: app.globalData.userInfo.id, productId, quantity: 1 }
+        cartMap[productId] = res.data || { userId: app.globalData.userInfo.id, productId, quantity: 1 }
       }
 
       // Get touch position for drop animation
@@ -186,14 +187,13 @@ Page({
       this.playDropAnimation(startX, startY)
 
       // Update product cart quantity locally (no full reload)
-      const products = this.data.products
-      for (let i = 0; i < products.length; i++) {
-        if (products[i].id === productId) {
-          products[i]._cartQty = (products[i]._cartQty || 0) + 1
-          break
+      const products = this.data.products.map(function(p) {
+        if (p.id === productId) {
+          return Object.assign({}, p, { _cartQty: (p._cartQty || 0) + 1 })
         }
-      }
-      this.setData({ products, cartMap: this.data.cartMap })
+        return p
+      })
+      this.setData({ products: products, cartMap: cartMap })
     } catch (err) {
       wx.showToast({ title: '操作失败', icon: 'error' })
     }
@@ -207,27 +207,27 @@ Page({
       return
     }
 
-    const cartItem = this.data.cartMap[productId]
+    const cartMap = Object.assign({}, this.data.cartMap)
+    const cartItem = cartMap[productId]
     if (!cartItem || cartItem.quantity <= 0) return
 
     try {
       if (cartItem.quantity <= 1) {
         await api.deleteCartItem(cartItem.id)
-        delete this.data.cartMap[productId]
+        delete cartMap[productId]
       } else {
         await api.updateCartItem({ id: cartItem.id, userId: cartItem.userId, productId: cartItem.productId, quantity: cartItem.quantity - 1 })
-        cartItem.quantity -= 1
+        cartMap[productId] = Object.assign({}, cartItem, { quantity: cartItem.quantity - 1 })
       }
 
       // Update product cart quantity locally (no full reload)
-      const products = this.data.products
-      for (let i = 0; i < products.length; i++) {
-        if (products[i].id === productId) {
-          products[i]._cartQty = Math.max(0, (products[i]._cartQty || 0) - 1)
-          break
+      const products = this.data.products.map(function(p) {
+        if (p.id === productId) {
+          return Object.assign({}, p, { _cartQty: Math.max(0, (p._cartQty || 0) - 1) })
         }
-      }
-      this.setData({ products, cartMap: this.data.cartMap })
+        return p
+      })
+      this.setData({ products: products, cartMap: cartMap })
     } catch (err) {
       wx.showToast({ title: '操作失败', icon: 'error' })
     }
@@ -246,21 +246,21 @@ Page({
 
       wx.showToast({ title: '已加入购物车', icon: 'success' })
 
-      // Update local cart state (no full reload)
-      const cartItem = this.data.cartMap[product.id]
+      // Update local cart state (no full reload, no direct mutation)
+      const cartMap = Object.assign({}, this.data.cartMap)
+      const cartItem = cartMap[product.id]
       if (cartItem) {
-        cartItem.quantity += 1
+        cartMap[product.id] = Object.assign({}, cartItem, { quantity: cartItem.quantity + 1 })
       } else {
-        this.data.cartMap[product.id] = { userId: app.globalData.userInfo.id, productId: product.id, quantity: 1 }
+        cartMap[product.id] = { userId: app.globalData.userInfo.id, productId: product.id, quantity: 1 }
       }
-      const products = this.data.products
-      for (let i = 0; i < products.length; i++) {
-        if (products[i].id === product.id) {
-          products[i]._cartQty = (products[i]._cartQty || 0) + 1
-          break
+      const products = this.data.products.map(function(p) {
+        if (p.id === product.id) {
+          return Object.assign({}, p, { _cartQty: (p._cartQty || 0) + 1 })
         }
-      }
-      this.setData({ products, cartMap: this.data.cartMap })
+        return p
+      })
+      this.setData({ products: products, cartMap: cartMap })
     } catch (err) {
       wx.showToast({ title: '添加失败', icon: 'error' })
     }
