@@ -213,8 +213,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     public boolean updateOrder(Order order) {
-        // If status changes to PAID/COMPLETED, remove the expire key
-        if (order.getStatus() == OrderStatus.PAID || order.getStatus() == OrderStatus.COMPLETED) {
+        // If status changes to PAID/COMPLETED/CANCELLED, remove the expire key
+        if (order.getStatus() == OrderStatus.PAID || order.getStatus() == OrderStatus.COMPLETED
+                || order.getStatus() == OrderStatus.CANCELLED) {
             removeOrderExpireKey(order.getId());
         }
         return updateById(order);

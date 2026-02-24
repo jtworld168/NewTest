@@ -9,8 +9,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 /**
@@ -51,13 +49,5 @@ public class OrderExpireListener implements MessageListener {
         } catch (NumberFormatException e) {
             log.warn("无效的订单过期 key: {}", expiredKey);
         }
-    }
-
-    /**
-     * 将自身注册为 MessageListenerAdapter Bean
-     */
-    @Bean
-    public MessageListenerAdapter orderExpireListenerAdapter(OrderExpireListener listener) {
-        return new MessageListenerAdapter(listener, "onMessage");
     }
 }

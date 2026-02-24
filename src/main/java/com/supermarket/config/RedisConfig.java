@@ -11,6 +11,8 @@ import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import com.supermarket.listener.OrderExpireListener;
+
 @Configuration
 @ConditionalOnBean(RedisConnectionFactory.class)
 public class RedisConfig {
@@ -24,6 +26,11 @@ public class RedisConfig {
         template.setHashKeySerializer(new StringRedisSerializer());
         template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
+    }
+
+    @Bean
+    public MessageListenerAdapter orderExpireListenerAdapter(OrderExpireListener listener) {
+        return new MessageListenerAdapter(listener, "onMessage");
     }
 
     /**
