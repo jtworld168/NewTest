@@ -37,6 +37,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     private static final String ORDER_EXPIRE_PREFIX = "order:expire:";
     private static final long ORDER_EXPIRE_MINUTES = 30;
+    private static final BigDecimal MIN_ORDER_AMOUNT = BigDecimal.ONE;
 
     private final UserService userService;
     private final ProductService productService;
@@ -278,7 +279,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             return totalAmount;
         }
         BigDecimal discounted = totalAmount.subtract(coupon.getDiscount());
-        return discounted.compareTo(BigDecimal.ONE) >= 0 ? discounted : BigDecimal.ONE;
+        return discounted.compareTo(MIN_ORDER_AMOUNT) >= 0 ? discounted : MIN_ORDER_AMOUNT;
     }
 
     /**
