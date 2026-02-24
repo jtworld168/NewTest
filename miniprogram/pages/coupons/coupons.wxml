@@ -20,6 +20,7 @@
           <text class="coupon-condition">满{{item.minAmount}}元可用</text>
           <text class="coupon-expire" wx:if="{{item.endTime}}">有效期至 {{item.endTime}}</text>
           <text class="coupon-status-tag" wx:if="{{item.status === 'USED'}}">已使用</text>
+          <text class="coupon-status-tag locked" wx:if="{{item.status === 'LOCKED'}}">已锁定</text>
           <text class="coupon-status-tag expired" wx:if="{{item.status === 'EXPIRED'}}">已过期</text>
         </view>
       </view>

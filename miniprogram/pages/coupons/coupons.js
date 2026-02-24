@@ -7,6 +7,7 @@ Page({
     currentTab: 'AVAILABLE',
     tabs: [
       { key: 'AVAILABLE', name: '可使用' },
+      { key: 'LOCKED', name: '已锁定' },
       { key: 'USED', name: '已使用' },
       { key: 'EXPIRED', name: '已过期' }
     ]

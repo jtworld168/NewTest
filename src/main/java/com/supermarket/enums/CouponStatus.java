@@ -8,7 +8,8 @@ public enum CouponStatus {
 
     AVAILABLE(0, "可用"),
     USED(1, "已使用"),
-    EXPIRED(2, "已过期");
+    EXPIRED(2, "已过期"),
+    LOCKED(3, "已锁定");
 
     @EnumValue
     private final int code;

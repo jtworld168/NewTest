@@ -314,18 +314,7 @@ Page({
 
       wx.hideLoading()
 
-      // Mark the user coupon as used (selectedCouponId is the UserCoupon record ID)
-      if (this.data.selectedCouponId) {
-        try {
-          await api.updateUserCoupon({
-            id: this.data.selectedCouponId,
-            status: 'USED',
-            useTime: new Date().toISOString().replace('T', ' ').substring(0, 19)
-          })
-        } catch (err) {
-          console.error('Failed to mark coupon as used:', err)
-        }
-      }
+      // Coupon is now LOCKED by backend; it will be USED when order is paid, or AVAILABLE if cancelled
 
       // Navigate to payment page with the order
       if (order && order.id) {

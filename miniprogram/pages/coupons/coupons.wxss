@@ -124,6 +124,10 @@
   color: #ee0a24;
 }
 
+.coupon-status-tag.locked {
+  color: #ff976a;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;

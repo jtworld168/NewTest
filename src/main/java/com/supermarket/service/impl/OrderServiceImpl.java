@@ -10,6 +10,7 @@ import com.supermarket.entity.OrderItem;
 import com.supermarket.entity.Product;
 import com.supermarket.entity.User;
 import com.supermarket.entity.UserCoupon;
+import com.supermarket.enums.CouponStatus;
 import com.supermarket.enums.OrderStatus;
 import com.supermarket.mapper.OrderMapper;
 import com.supermarket.service.CouponService;
@@ -144,6 +145,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         order.setStatus(OrderStatus.PENDING);
 
         save(order);
+        lockCoupon(userCouponId);
         setOrderExpireKey(order.getId());
         return order;
     }
@@ -223,6 +225,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             orderItemService.addOrderItem(orderItem);
         }
 
+        lockCoupon(userCouponId);
         setOrderExpireKey(order.getId());
 
         return order;
@@ -235,6 +238,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 || order.getStatus() == OrderStatus.CANCELLED) {
             removeOrderExpireKey(order.getId());
         }
+
+        // Handle coupon status based on order status change
+        Order existingOrder = getOrderById(order.getId());
+        if (existingOrder != null && existingOrder.getUserCouponId() != null) {
+            if (order.getStatus() == OrderStatus.PAID || order.getStatus() == OrderStatus.COMPLETED) {
+                // Order paid/completed → mark coupon as USED
+                markCouponUsed(existingOrder.getUserCouponId());
+            } else if (order.getStatus() == OrderStatus.CANCELLED) {
+                // Order cancelled → unlock coupon back to AVAILABLE
+                unlockCoupon(existingOrder.getUserCouponId());
+            }
+        }
+
         return updateById(order);
     }
 
@@ -267,7 +283,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             return totalAmount;
         }
         UserCoupon userCoupon = userCouponService.getUserCouponById(userCouponId);
-        if (userCoupon == null || userCoupon.getCouponId() == null) {
+        if (userCoupon == null || userCoupon.getCouponId() == null
+                || userCoupon.getStatus() != CouponStatus.AVAILABLE) {
             return totalAmount;
         }
         Coupon coupon = couponService.getCouponById(userCoupon.getCouponId());
@@ -280,6 +297,43 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
         BigDecimal discounted = totalAmount.subtract(coupon.getDiscount());
         return discounted.compareTo(MIN_ORDER_AMOUNT) >= 0 ? discounted : MIN_ORDER_AMOUNT;
+    }
+
+    /**
+     * 锁定优惠券（下单时 AVAILABLE → LOCKED）
+     */
+    private void lockCoupon(Long userCouponId) {
+        if (userCouponId == null) return;
+        UserCoupon uc = userCouponService.getUserCouponById(userCouponId);
+        if (uc != null && uc.getStatus() == CouponStatus.AVAILABLE) {
+            uc.setStatus(CouponStatus.LOCKED);
+            userCouponService.updateUserCoupon(uc);
+        }
+    }
+
+    /**
+     * 解锁优惠券（取消订单时 LOCKED → AVAILABLE）
+     */
+    private void unlockCoupon(Long userCouponId) {
+        if (userCouponId == null) return;
+        UserCoupon uc = userCouponService.getUserCouponById(userCouponId);
+        if (uc != null && uc.getStatus() == CouponStatus.LOCKED) {
+            uc.setStatus(CouponStatus.AVAILABLE);
+            userCouponService.updateUserCoupon(uc);
+        }
+    }
+
+    /**
+     * 标记优惠券已使用（支付成功时 LOCKED → USED）
+     */
+    private void markCouponUsed(Long userCouponId) {
+        if (userCouponId == null) return;
+        UserCoupon uc = userCouponService.getUserCouponById(userCouponId);
+        if (uc != null && uc.getStatus() == CouponStatus.LOCKED) {
+            uc.setStatus(CouponStatus.USED);
+            uc.setUseTime(java.time.LocalDateTime.now());
+            userCouponService.updateUserCoupon(uc);
+        }
     }
 
     /**

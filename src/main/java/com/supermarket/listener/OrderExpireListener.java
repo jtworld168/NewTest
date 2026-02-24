@@ -1,8 +1,11 @@
 package com.supermarket.listener;
 
 import com.supermarket.entity.Order;
+import com.supermarket.entity.UserCoupon;
+import com.supermarket.enums.CouponStatus;
 import com.supermarket.enums.OrderStatus;
 import com.supermarket.service.OrderService;
+import com.supermarket.service.UserCouponService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -27,6 +30,7 @@ public class OrderExpireListener implements MessageListener {
     private static final String ORDER_EXPIRE_PREFIX = "order:expire:";
 
     private final OrderService orderService;
+    private final UserCouponService userCouponService;
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
