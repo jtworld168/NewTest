@@ -18,18 +18,28 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements OrderService {
 
+    private static final String ORDER_EXPIRE_PREFIX = "order:expire:";
+    private static final long ORDER_EXPIRE_MINUTES = 30;
+
     private final UserService userService;
     private final ProductService productService;
     private final OrderItemService orderItemService;
+
+    @Autowired(required = false)
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public Order getOrderById(Long id) {
@@ -124,6 +134,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         order.setStatus(OrderStatus.PENDING);
 
         save(order);
+        setOrderExpireKey(order.getId());
         return order;
     }
 
@@ -195,12 +206,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         order.setPriceAtPurchase(firstUnitPrice);
         order.setTotalAmount(totalAmount);
         updateById(order);
+        setOrderExpireKey(order.getId());
 
         return order;
     }
 
     @Override
     public boolean updateOrder(Order order) {
+        // If status changes to PAID/COMPLETED, remove the expire key
+        if (order.getStatus() == OrderStatus.PAID || order.getStatus() == OrderStatus.COMPLETED) {
+            removeOrderExpireKey(order.getId());
+        }
         return updateById(order);
     }
 
@@ -219,5 +235,25 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByDesc(Order::getCreateTime);
         return list(wrapper);
+    }
+
+    /**
+     * 设置订单过期 Redis Key（30分钟后过期 → 自动取消订单）
+     */
+    private void setOrderExpireKey(Long orderId) {
+        if (redisTemplate != null && orderId != null) {
+            String key = ORDER_EXPIRE_PREFIX + orderId;
+            redisTemplate.opsForValue().set(key, orderId.toString(), ORDER_EXPIRE_MINUTES, TimeUnit.MINUTES);
+        }
+    }
+
+    /**
+     * 移除订单过期 Redis Key（订单已支付/已完成时调用）
+     */
+    private void removeOrderExpireKey(Long orderId) {
+        if (redisTemplate != null && orderId != null) {
+            String key = ORDER_EXPIRE_PREFIX + orderId;
+            redisTemplate.delete(key);
+        }
     }
 }

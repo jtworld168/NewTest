@@ -1,6 +1,11 @@
 # ============================================================
 # 开发环境配置 (Development)
 # 使用方式: mvn spring-boot:run -Dspring.profiles.active=dev
+#
+# Redis 订单超时取消需要开启键空间通知，请在 redis-cli 中执行:
+#   CONFIG SET notify-keyspace-events Ex
+# 或在 redis.conf 中设置:
+#   notify-keyspace-events Ex
 # ============================================================
 
 server:
