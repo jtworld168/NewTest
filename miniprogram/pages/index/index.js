@@ -5,6 +5,10 @@ Page({
   data: {
     products: [],
     categories: [],
+    stores: [],
+    storeNames: ['全部店铺'],
+    selectedStoreId: 0,
+    selectedStoreName: '全部店铺',
     loading: true,
     cartMap: {}, // productId -> cartItem
     showDropBall: false,
@@ -14,7 +18,35 @@ Page({
   },
 
   onShow() {
+    if (this.data.stores.length === 0) {
+      this.loadStores()
+    }
     this.loadData()
+  },
+
+  async loadStores() {
+    try {
+      const res = await api.getStoreList()
+      const stores = res.data || []
+      const storeNames = ['全部店铺'].concat(stores.map(function(s) { return s.name }))
+      this.setData({ stores, storeNames })
+    } catch (e) {
+      console.error('Failed to load stores:', e)
+    }
+  },
+
+  onStoreChange(e) {
+    const index = parseInt(e.detail.value)
+    if (index === 0) {
+      this.setData({ selectedStoreId: 0, selectedStoreName: '全部店铺' })
+    } else {
+      const store = this.data.stores[index - 1]
+      this.setData({ selectedStoreId: store.id, selectedStoreName: store.name })
+    }
+    // Save selected store globally
+    const app = getApp()
+    app.globalData.selectedStoreId = this.data.selectedStoreId
+    app.globalData.selectedStoreName = this.data.selectedStoreName
   },
 
   playDropAnimation(startX, startY) {

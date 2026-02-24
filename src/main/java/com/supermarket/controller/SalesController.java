@@ -33,6 +33,47 @@ public class SalesController {
     private final CategoryService categoryService;
     private final StoreProductService storeProductService;
 
+    @Operation(summary = "获取销量总览（按天统计）")
+    @GetMapping("/summary/daily")
+    public Result<List<Map<String, Object>>> getDailySales(
+            @Parameter(description = "年份") @RequestParam Integer year,
+            @Parameter(description = "月份") @RequestParam Integer month,
+            @Parameter(description = "店铺ID（可选，为空查全部）") @RequestParam(required = false) Long storeId) {
+        List<Order> orders = getCompletedOrders(storeId);
+
+        // Get days in month
+        java.time.YearMonth yearMonth = java.time.YearMonth.of(year, month);
+        int daysInMonth = yearMonth.lengthOfMonth();
+
+        Map<Integer, BigDecimal> dailyMap = new TreeMap<>();
+        Map<Integer, Integer> dailyCountMap = new TreeMap<>();
+        for (int i = 1; i <= daysInMonth; i++) {
+            dailyMap.put(i, BigDecimal.ZERO);
+            dailyCountMap.put(i, 0);
+        }
+
+        for (Order order : orders) {
+            if (order.getCreateTime() != null
+                    && order.getCreateTime().getYear() == year
+                    && order.getCreateTime().getMonthValue() == month) {
+                int day = order.getCreateTime().getDayOfMonth();
+                dailyMap.merge(day, order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO, BigDecimal::add);
+                dailyCountMap.merge(day, 1, Integer::sum);
+            }
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (int i = 1; i <= daysInMonth; i++) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("day", i);
+            item.put("dayLabel", month + "月" + i + "日");
+            item.put("totalAmount", dailyMap.get(i));
+            item.put("orderCount", dailyCountMap.get(i));
+            result.add(item);
+        }
+        return Result.success(result);
+    }
+
     @Operation(summary = "获取销量总览（按月统计）")
     @GetMapping("/summary/monthly")
     public Result<List<Map<String, Object>>> getMonthlySales(

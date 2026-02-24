@@ -98,10 +98,13 @@ function addOrder(userId, productId, quantity, userCouponId) {
   return request({ url: url, method: 'POST' })
 }
 
-function addMultiItemOrder(userId, items, userCouponId) {
+function addMultiItemOrder(userId, items, userCouponId, storeId) {
   var data = { userId: userId, items: items }
   if (userCouponId) {
     data.userCouponId = userCouponId
+  }
+  if (storeId) {
+    data.storeId = storeId
   }
   return request({ url: '/orders/addMultiItem', method: 'POST', data: data })
 }

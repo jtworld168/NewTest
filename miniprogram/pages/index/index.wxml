@@ -1,4 +1,15 @@
 <view class="container">
+  <!-- Store Selector -->
+  <view class="store-selector">
+    <picker mode="selector" range="{{storeNames}}" bindchange="onStoreChange">
+      <view class="store-picker">
+        <text class="store-icon">🏪</text>
+        <text class="store-name">{{selectedStoreName}}</text>
+        <text class="store-arrow">▼</text>
+      </view>
+    </picker>
+  </view>
+
   <!-- Search Bar with Scan Button -->
   <view class="search-bar">
     <view class="search-input" bindtap="goToCategory">

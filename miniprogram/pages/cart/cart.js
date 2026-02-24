@@ -304,7 +304,7 @@ Page({
         quantity: item.quantity
       }))
 
-      const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, couponId)
+      const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, couponId, app.globalData.selectedStoreId || null)
       const order = res.data
 
       // Delete cart items after order creation

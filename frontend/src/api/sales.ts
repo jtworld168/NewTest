@@ -1,5 +1,12 @@
 import request from './request'
 
+// 按天统计销量
+export const getDailySales = (year: number, month: number, storeId?: number) => {
+  const params: any = { year, month }
+  if (storeId) params.storeId = storeId
+  return request.get('/sales/summary/daily', { params })
+}
+
 // 按月统计销量
 export const getMonthlySales = (year?: number, storeId?: number) => {
   const params: any = {}

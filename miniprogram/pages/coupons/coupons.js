@@ -37,13 +37,26 @@ Page({
       ))
 
       // Merge coupon details into user coupons
-      const coupons = userCoupons.map(uc => ({
-        ...uc,
-        couponName: couponMap[uc.couponId] ? couponMap[uc.couponId].name : '优惠券',
-        discount: couponMap[uc.couponId] ? couponMap[uc.couponId].discount : 0,
-        minAmount: couponMap[uc.couponId] ? couponMap[uc.couponId].minAmount : 0,
-        endTime: couponMap[uc.couponId] ? couponMap[uc.couponId].endTime : ''
-      }))
+      const now = new Date()
+      const coupons = userCoupons.map(uc => {
+        const template = couponMap[uc.couponId]
+        // Check if coupon is expired on client side
+        let status = uc.status
+        if (status === 'AVAILABLE' && template && template.endTime) {
+          const endDate = new Date(template.endTime.replace(/-/g, '/'))
+          if (endDate < now) {
+            status = 'EXPIRED'
+          }
+        }
+        return {
+          ...uc,
+          status,
+          couponName: template ? template.name : '优惠券',
+          discount: template ? template.discount : 0,
+          minAmount: template ? template.minAmount : 0,
+          endTime: template ? template.endTime : ''
+        }
+      })
 
       this.setData({ coupons, loading: false })
     } catch (e) {
