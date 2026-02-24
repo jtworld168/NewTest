@@ -34,10 +34,12 @@ public class CouponExpireScheduler {
     public void expireUserCoupons() {
         LocalDateTime now = LocalDateTime.now();
 
-        // Find all coupon templates that have expired
-        List<Coupon> allCoupons = couponService.list();
-        Set<Long> expiredCouponIds = allCoupons.stream()
-                .filter(c -> c.getEndTime() != null && c.getEndTime().isBefore(now))
+        // Query only expired coupon templates directly from DB
+        LambdaQueryWrapper<Coupon> couponWrapper = new LambdaQueryWrapper<>();
+        couponWrapper.lt(Coupon::getEndTime, now);
+        List<Coupon> expiredCoupons = couponService.list(couponWrapper);
+
+        Set<Long> expiredCouponIds = expiredCoupons.stream()
                 .map(Coupon::getId)
                 .collect(Collectors.toSet());
 
@@ -51,15 +53,15 @@ public class CouponExpireScheduler {
         wrapper.in(UserCoupon::getCouponId, expiredCouponIds);
         List<UserCoupon> toExpire = userCouponService.list(wrapper);
 
-        int count = 0;
-        for (UserCoupon uc : toExpire) {
-            uc.setStatus(CouponStatus.EXPIRED);
-            userCouponService.updateById(uc);
-            count++;
+        if (toExpire.isEmpty()) {
+            return;
         }
 
-        if (count > 0) {
-            log.info("已将 {} 张过期优惠券标记为已过期", count);
+        for (UserCoupon uc : toExpire) {
+            uc.setStatus(CouponStatus.EXPIRED);
         }
+        userCouponService.updateBatchById(toExpire);
+
+        log.info("已将 {} 张过期优惠券标记为已过期", toExpire.size());
     }
 }
