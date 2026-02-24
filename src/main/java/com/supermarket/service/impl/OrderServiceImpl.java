@@ -112,6 +112,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
+    @Transactional
     public Order addOrder(Long userId, Long productId, Integer quantity, Long userCouponId) {
         User user = userService.getUserById(userId);
         if (user == null) {
@@ -122,6 +123,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         if (product == null) {
             return null;
         }
+
+        // Lock coupon before saving order to prevent double-booking
+        lockCoupon(userCouponId);
 
         BigDecimal unitPrice = product.getPrice();
 
@@ -145,7 +149,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         order.setStatus(OrderStatus.PENDING);
 
         save(order);
-        lockCoupon(userCouponId);
         setOrderExpireKey(order.getId());
         return order;
     }
@@ -202,6 +205,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         // Apply coupon discount if provided (employee discount and coupon cannot stack)
         totalAmount = applyCouponDiscount(totalAmount, userCouponId, user);
 
+        // Lock coupon before saving order to prevent double-booking
+        lockCoupon(userCouponId);
+
         // Create order with correct totalAmount (satisfies CHECK constraint)
         Order order = new Order();
         order.setUserId(userId);
@@ -225,7 +231,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             orderItemService.addOrderItem(orderItem);
         }
 
-        lockCoupon(userCouponId);
         setOrderExpireKey(order.getId());
 
         return order;
@@ -237,17 +242,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         if (order.getStatus() == OrderStatus.PAID || order.getStatus() == OrderStatus.COMPLETED
                 || order.getStatus() == OrderStatus.CANCELLED) {
             removeOrderExpireKey(order.getId());
-        }
 
-        // Handle coupon status based on order status change
-        Order existingOrder = getOrderById(order.getId());
-        if (existingOrder != null && existingOrder.getUserCouponId() != null) {
-            if (order.getStatus() == OrderStatus.PAID || order.getStatus() == OrderStatus.COMPLETED) {
-                // Order paid/completed → mark coupon as USED
-                markCouponUsed(existingOrder.getUserCouponId());
-            } else if (order.getStatus() == OrderStatus.CANCELLED) {
-                // Order cancelled → unlock coupon back to AVAILABLE
-                unlockCoupon(existingOrder.getUserCouponId());
+            // Handle coupon status based on order status change
+            Order existingOrder = getOrderById(order.getId());
+            if (existingOrder != null && existingOrder.getUserCouponId() != null) {
+                if (order.getStatus() == OrderStatus.PAID || order.getStatus() == OrderStatus.COMPLETED) {
+                    markCouponUsed(existingOrder.getUserCouponId());
+                } else if (order.getStatus() == OrderStatus.CANCELLED) {
+                    unlockCoupon(existingOrder.getUserCouponId());
+                }
             }
         }
 
