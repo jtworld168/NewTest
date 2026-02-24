@@ -86,9 +86,10 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
 
     @Override
     public IPage<StoreProduct> searchByProductName(String productName, Long storeId, int pageNum, int pageSize) {
-        // Find product IDs matching the name
+        // Find product IDs matching the name (select ID only)
         LambdaQueryWrapper<Product> productWrapper = new LambdaQueryWrapper<>();
-        productWrapper.like(Product::getName, productName);
+        productWrapper.like(Product::getName, productName)
+                      .select(Product::getId);
         List<Long> productIds = productService.list(productWrapper).stream()
                 .map(Product::getId).collect(Collectors.toList());
         if (productIds.isEmpty()) {
@@ -101,5 +102,14 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
         }
         wrapper.orderByDesc(StoreProduct::getCreateTime);
         return page(new Page<>(pageNum, pageSize), wrapper);
+    }
+
+    @Override
+    public List<StoreProduct> getLowStockByStoreId(Long storeId, int threshold) {
+        LambdaQueryWrapper<StoreProduct> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(StoreProduct::getStoreId, storeId)
+               .lt(StoreProduct::getStoreStock, threshold)
+               .orderByAsc(StoreProduct::getStoreStock);
+        return list(wrapper);
     }
 }

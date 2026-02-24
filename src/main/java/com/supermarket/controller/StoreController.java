@@ -109,9 +109,7 @@ public class StoreController {
             return Result.error("店铺不存在");
         }
         int threshold = store.getSafetyStock() != null ? store.getSafetyStock() : 10;
-        List<StoreProduct> list = storeProductService.getByStoreId(storeId).stream()
-                .filter(sp -> sp.getStoreStock() != null && sp.getStoreStock() < threshold)
-                .toList();
+        List<StoreProduct> list = storeProductService.getLowStockByStoreId(storeId, threshold);
         return Result.success(list);
     }
 }
