@@ -30,11 +30,14 @@
 
 /* Detail Card */
 .detail-card {
-  background-color: #fff;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20rpx) saturate(180%);
+  -webkit-backdrop-filter: blur(20rpx) saturate(180%);
+  border: 1rpx solid var(--glass-border);
   margin: 20rpx;
-  border-radius: 16rpx;
+  border-radius: var(--radius-md);
   padding: 24rpx;
-  box-shadow: 0 4rpx 16rpx rgba(60, 50, 38, 0.06);
+  box-shadow: var(--glass-shadow);
   animation: slideUp 0.35s ease-out backwards;
 }
 
@@ -81,9 +84,9 @@
 .product-image {
   width: 160rpx;
   height: 160rpx;
-  border-radius: 12rpx;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
-  background-color: #F5EDE0;
+  background-color: var(--color-bg);
   margin-right: 20rpx;
 }
 
@@ -173,7 +176,10 @@
   display: flex;
   padding: 20rpx 30rpx;
   padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-  background-color: #fff;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20rpx) saturate(180%);
+  -webkit-backdrop-filter: blur(20rpx) saturate(180%);
+  border-top: 1rpx solid var(--glass-border);
   box-shadow: 0 -2rpx 12rpx rgba(60, 50, 38, 0.06);
   gap: 20rpx;
 }
@@ -185,7 +191,7 @@
   background-color: #fff;
   color: var(--color-text-secondary);
   border: 1rpx solid var(--color-border);
-  border-radius: 40rpx;
+  border-radius: var(--radius-xl);
   line-height: 1.4;
   transition: opacity 0.15s;
 }
@@ -200,10 +206,10 @@
   flex: 1;
   font-size: 28rpx;
   padding: 20rpx;
-  background: linear-gradient(135deg, #C9A96E, #B8956A);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: #fff;
   border: none;
-  border-radius: 40rpx;
+  border-radius: var(--radius-xl);
   line-height: 1.4;
   transition: opacity 0.2s, transform 0.15s;
 }

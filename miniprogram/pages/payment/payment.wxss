@@ -5,11 +5,14 @@
 }
 
 .pay-card {
-  background-color: #fff;
-  border-radius: 20rpx;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20rpx) saturate(180%);
+  -webkit-backdrop-filter: blur(20rpx) saturate(180%);
+  border: 1rpx solid var(--glass-border);
+  border-radius: var(--radius-lg);
   padding: 60rpx 40rpx;
   text-align: center;
-  box-shadow: 0 4rpx 20rpx rgba(60, 50, 38, 0.06);
+  box-shadow: var(--glass-shadow);
   animation: scaleIn 0.4s ease-out;
 }
 
@@ -61,7 +64,7 @@
   align-items: center;
   padding: 24rpx 20rpx;
   border: 1rpx solid var(--color-border);
-  border-radius: 12rpx;
+  border-radius: var(--radius-sm);
   margin-bottom: 16rpx;
   transition: border-color 0.2s, background-color 0.2s;
 }
@@ -90,7 +93,7 @@
 
 .confirm-btn {
   margin-top: 60rpx;
-  background: linear-gradient(135deg, #C9A96E, #B8956A);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: #fff;
   font-size: 32rpx;
   border-radius: 44rpx;

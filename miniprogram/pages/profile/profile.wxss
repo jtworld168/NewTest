@@ -1,7 +1,7 @@
 .user-header {
   display: flex;
   align-items: center;
-  background: linear-gradient(135deg, #C9A96E, #B8956A);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   padding: 60rpx 40rpx;
   color: #fff;
 }
@@ -62,7 +62,7 @@
 .employee-info {
   margin: 20rpx;
   background: linear-gradient(135deg, #fff9e6, #fff3cc);
-  border-radius: 16rpx;
+  border-radius: var(--radius-md);
   padding: 24rpx;
   border: 1rpx solid #ffe58f;
 }
@@ -101,8 +101,11 @@
 /* Menu */
 .menu-list {
   margin-top: 20rpx;
-  background-color: #fff;
-  border-radius: 16rpx;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20rpx) saturate(180%);
+  -webkit-backdrop-filter: blur(20rpx) saturate(180%);
+  border: 1rpx solid var(--glass-border);
+  border-radius: var(--radius-md);
   margin: 20rpx;
   overflow: hidden;
 }
@@ -149,7 +152,7 @@
   background-color: #fff;
   color: var(--color-primary);
   border: 2rpx solid var(--color-primary);
-  border-radius: 12rpx;
+  border-radius: var(--radius-sm);
   padding: 20rpx 0;
   font-size: 32rpx;
   transition: opacity 0.2s, transform 0.15s;

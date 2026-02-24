@@ -1,17 +1,26 @@
-/* Theme Variables */
+/* Theme Variables — Light Champagne + Oasis Green + Tequila */
 page {
-  --color-primary: #C9A96E;
-  --color-primary-dark: #B8956A;
-  --color-primary-light: #D4BA8A;
-  --color-surface: #FDF8F0;
-  --color-bg: #F5EDE0;
+  --color-primary: #D4BC8B;
+  --color-primary-dark: #C9A96E;
+  --color-primary-light: #E8D9BD;
+  --color-surface: #FDF9F3;
+  --color-bg: #F7F0E6;
   --color-text: #3D3226;
   --color-text-secondary: #8C7B6B;
-  --color-accent: #D4634A;
-  --color-success: #6BAF7B;
+  --color-accent: #C75B3A;
+  --color-success: #5C8A5E;
+  --color-oasis: #6B9B6F;
+  --color-tequila: #D4976A;
   --color-warning: #D4A04A;
-  --color-border: #E8DDD0;
+  --color-border: rgba(200, 185, 160, 0.3);
   --color-white: #FFFFFF;
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.45);
+  --glass-shadow: 0 8rpx 32rpx rgba(60, 50, 38, 0.08);
+  --radius-sm: 16rpx;
+  --radius-md: 24rpx;
+  --radius-lg: 32rpx;
+  --radius-xl: 40rpx;
 
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
   font-size: 28rpx;
@@ -24,16 +33,26 @@ page {
   padding: 20rpx;
 }
 
+/* Liquid Glass Utility */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20rpx) saturate(180%);
+  -webkit-backdrop-filter: blur(20rpx) saturate(180%);
+  border: 1rpx solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
 /* Buttons */
 .btn-primary {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: #fff;
   border: none;
-  border-radius: 12rpx;
-  padding: 20rpx 0;
+  border-radius: var(--radius-xl);
+  padding: 22rpx 0;
   font-size: 32rpx;
   text-align: center;
   transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4rpx 16rpx rgba(212, 188, 139, 0.35);
 }
 
 .btn-primary:active {
@@ -46,11 +65,11 @@ page {
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #D4634A, #C0503A);
+  background: linear-gradient(135deg, #C75B3A, #B04A2E);
   color: #fff;
   border: none;
-  border-radius: 12rpx;
-  padding: 20rpx 0;
+  border-radius: var(--radius-xl);
+  padding: 22rpx 0;
   font-size: 32rpx;
   text-align: center;
   transition: opacity 0.2s, transform 0.15s;
@@ -61,13 +80,16 @@ page {
   transform: scale(0.97);
 }
 
-/* Cards */
+/* Cards — Liquid Glass */
 .card {
-  background-color: var(--color-white);
-  border-radius: 16rpx;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20rpx) saturate(180%);
+  -webkit-backdrop-filter: blur(20rpx) saturate(180%);
+  border: 1rpx solid var(--glass-border);
+  border-radius: var(--radius-md);
   padding: 24rpx;
   margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 16rpx rgba(60, 50, 38, 0.06);
+  box-shadow: var(--glass-shadow);
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -104,6 +126,23 @@ page {
 .price {
   color: var(--color-accent);
   font-weight: bold;
+}
+
+/* Tags */
+.tag-oasis {
+  background: rgba(107, 155, 111, 0.12);
+  color: var(--color-oasis);
+  padding: 4rpx 14rpx;
+  border-radius: var(--radius-sm);
+  font-size: 22rpx;
+}
+
+.tag-tequila {
+  background: rgba(212, 151, 106, 0.12);
+  color: var(--color-tequila);
+  padding: 4rpx 14rpx;
+  border-radius: var(--radius-sm);
+  font-size: 22rpx;
 }
 
 /* ===== Global Animations ===== */
@@ -145,4 +184,9 @@ page {
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
