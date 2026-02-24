@@ -49,8 +49,12 @@ public class StoreProductController {
     @GetMapping("/listPage")
     public Result<IPage<StoreProduct>> listPage(
             @Parameter(description = "店铺ID（可选）") @RequestParam(required = false) Long storeId,
+            @Parameter(description = "商品名称搜索（可选）") @RequestParam(required = false) String productName,
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize) {
+        if (productName != null && !productName.isBlank()) {
+            return Result.success(storeProductService.searchByProductName(productName.trim(), storeId, pageNum, pageSize));
+        }
         if (storeId != null) {
             return Result.success(storeProductService.listPageByStoreId(storeId, pageNum, pageSize));
         }

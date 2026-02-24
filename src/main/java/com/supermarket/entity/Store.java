@@ -37,6 +37,10 @@ public class Store {
     @ExcelProperty("店铺图片")
     private String image;
 
+    @Schema(description = "安全库存阈值")
+    @ExcelProperty("安全库存")
+    private Integer safetyStock;
+
     @Schema(description = "店铺状态：0-关闭，1-营业")
     @ExcelProperty("状态")
     private Integer status;

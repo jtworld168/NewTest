@@ -17,4 +17,5 @@ public interface StoreProductService extends IService<StoreProduct> {
     boolean deleteStoreProduct(Long id);
     boolean deleteBatchStoreProducts(List<Long> ids);
     List<StoreProduct> listAll();
+    IPage<StoreProduct> searchByProductName(String productName, Long storeId, int pageNum, int pageSize);
 }

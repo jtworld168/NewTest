@@ -14,6 +14,11 @@
         <el-select v-model="filterStoreId" placeholder="按店铺筛选" clearable style="width: 200px" @change="loadData">
           <el-option v-for="s in storeList" :key="s.id" :label="s.name" :value="s.id" />
         </el-select>
+        <el-input v-model="searchProductName" placeholder="按商品名称搜索" clearable style="width: 200px" @clear="loadData" @keyup.enter="loadData">
+          <template #append>
+            <el-button @click="loadData">搜索</el-button>
+          </template>
+        </el-input>
       </div>
       <el-table :data="tableData" @selection-change="handleSelectionChange" stripe border>
         <el-table-column type="selection" width="50" />
@@ -104,6 +109,7 @@ const storeList = ref<any[]>([])
 const productList = ref<any[]>([])
 const selectedIds = ref<number[]>([])
 const filterStoreId = ref<number | undefined>(undefined)
+const searchProductName = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref<FormInstance>()
@@ -135,7 +141,7 @@ const rules = {
 
 async function loadData() {
   const [res, storeRes, productRes] = await Promise.all([
-    listStoreProductsPage(pageNum.value, pageSize.value, filterStoreId.value),
+    listStoreProductsPage(pageNum.value, pageSize.value, filterStoreId.value, searchProductName.value.trim() || undefined),
     listStores(),
     listProducts()
   ])

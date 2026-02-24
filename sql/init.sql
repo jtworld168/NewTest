@@ -179,6 +179,7 @@ CREATE TABLE IF NOT EXISTS `store` (
     `address`     VARCHAR(500) DEFAULT NULL COMMENT '店铺地址',
     `phone`       VARCHAR(20)  DEFAULT NULL COMMENT '联系电话',
     `image`       VARCHAR(500) DEFAULT NULL COMMENT '店铺图片URL',
+    `safety_stock` INT         DEFAULT 10 COMMENT '安全库存阈值',
     `status`      INT          DEFAULT 1 COMMENT '店铺状态：0-关闭，1-营业',
     `create_time` DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

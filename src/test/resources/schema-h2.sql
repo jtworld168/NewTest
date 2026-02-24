@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS `store` (
     `address`     VARCHAR(500) DEFAULT NULL,
     `phone`       VARCHAR(20)  DEFAULT NULL,
     `image`       VARCHAR(500) DEFAULT NULL,
+    `safety_stock` INT         DEFAULT 10,
     `status`      INT          DEFAULT 1,
     `create_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     `update_time` TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,

@@ -2,6 +2,8 @@ package com.supermarket.controller;
 
 import com.supermarket.common.Result;
 import com.supermarket.entity.Store;
+import com.supermarket.entity.StoreProduct;
+import com.supermarket.service.StoreProductService;
 import com.supermarket.service.StoreService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +21,7 @@ import java.util.List;
 public class StoreController {
 
     private final StoreService storeService;
+    private final StoreProductService storeProductService;
 
     @Operation(summary = "根据ID查询店铺")
     @GetMapping("/get/{id}")
@@ -95,5 +98,20 @@ public class StoreController {
             return Result.badRequest("ID列表不能为空");
         }
         return storeService.deleteBatchStores(ids) ? Result.success() : Result.error("批量删除失败");
+    }
+
+    @Operation(summary = "查询店铺库存预警商品（库存低于安全库存）")
+    @GetMapping("/lowStock/{storeId}")
+    public Result<List<StoreProduct>> getLowStockProducts(
+            @Parameter(description = "店铺ID") @PathVariable Long storeId) {
+        Store store = storeService.getStoreById(storeId);
+        if (store == null) {
+            return Result.error("店铺不存在");
+        }
+        int threshold = store.getSafetyStock() != null ? store.getSafetyStock() : 10;
+        List<StoreProduct> list = storeProductService.getByStoreId(storeId).stream()
+                .filter(sp -> sp.getStoreStock() != null && sp.getStoreStock() < threshold)
+                .toList();
+        return Result.success(list);
     }
 }

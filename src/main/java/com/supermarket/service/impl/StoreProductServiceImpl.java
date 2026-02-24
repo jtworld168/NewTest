@@ -4,15 +4,22 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.supermarket.entity.Product;
 import com.supermarket.entity.StoreProduct;
 import com.supermarket.mapper.StoreProductMapper;
+import com.supermarket.service.ProductService;
 import com.supermarket.service.StoreProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, StoreProduct> implements StoreProductService {
+
+    private final ProductService productService;
 
     @Override
     public StoreProduct getStoreProductById(Long id) {
@@ -75,5 +82,24 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
         LambdaQueryWrapper<StoreProduct> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByDesc(StoreProduct::getCreateTime);
         return list(wrapper);
+    }
+
+    @Override
+    public IPage<StoreProduct> searchByProductName(String productName, Long storeId, int pageNum, int pageSize) {
+        // Find product IDs matching the name
+        LambdaQueryWrapper<Product> productWrapper = new LambdaQueryWrapper<>();
+        productWrapper.like(Product::getName, productName);
+        List<Long> productIds = productService.list(productWrapper).stream()
+                .map(Product::getId).collect(Collectors.toList());
+        if (productIds.isEmpty()) {
+            return new Page<>(pageNum, pageSize);
+        }
+        LambdaQueryWrapper<StoreProduct> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(StoreProduct::getProductId, productIds);
+        if (storeId != null) {
+            wrapper.eq(StoreProduct::getStoreId, storeId);
+        }
+        wrapper.orderByDesc(StoreProduct::getCreateTime);
+        return page(new Page<>(pageNum, pageSize), wrapper);
     }
 }

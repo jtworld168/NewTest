@@ -4,15 +4,18 @@
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   padding: 60rpx 40rpx;
   color: #fff;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .avatar {
   width: 140rpx;
   height: 140rpx;
-  border-radius: 50%;
+  border-radius: var(--radius-lg);
   border: 4rpx solid rgba(255, 255, 255, 0.5);
   margin-right: 30rpx;
-  background-color: rgba(255, 255, 255, 0.2);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10rpx);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
 }
 
 .user-info {
@@ -62,9 +65,11 @@
 .employee-info {
   margin: 20rpx;
   background: linear-gradient(135deg, #fff9e6, #fff3cc);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: 24rpx;
   border: 1rpx solid #ffe58f;
+  backdrop-filter: blur(10rpx);
+  box-shadow: 0 4rpx 16rpx rgba(212, 136, 6, 0.1);
 }
 
 .employee-info-header {
