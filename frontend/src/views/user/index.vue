@@ -112,7 +112,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listUsers, addUser, updateUser, deleteUser, deleteBatchUsers, searchUsers, getUsersByRole, listUsersPage } from '../../api/user'
+import { addUser, updateUser, deleteUser, deleteBatchUsers, searchUsers, getUsersByRole, listUsersPage } from '../../api/user'
 import { uploadImage } from '../../api/upload'
 import { BASE_URL } from '../../api/request'
 import { exportUsers } from '../../api/excel'

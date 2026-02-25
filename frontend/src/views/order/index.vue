@@ -38,8 +38,8 @@
         <el-table-column prop="productId" label="商品" width="160">
           <template #default="{ row }">
             <template v-if="row.productId && productMap[row.productId]">
-              {{ productMap[row.productId].name }}
-              <div style="font-size: 12px; color: #999;" v-if="productMap[row.productId].barcode">条码: {{ productMap[row.productId].barcode }}</div>
+              {{ productMap[row.productId]?.name }}
+              <div style="font-size: 12px; color: #999;" v-if="productMap[row.productId]?.barcode">条码: {{ productMap[row.productId]?.barcode }}</div>
             </template>
             <template v-else>{{ row.productId ? '商品' + row.productId : '-' }}</template>
           </template>
@@ -118,7 +118,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { listOrders, addOrder, updateOrder, deleteOrder, deleteBatchOrders, getOrdersByStatus, listOrdersPage, addMultiItemOrder } from '../../api/order'
+import { addOrder, updateOrder, deleteOrder, deleteBatchOrders, getOrdersByStatus, listOrdersPage } from '../../api/order'
 import { listStores } from '../../api/store'
 import { listUsers } from '../../api/user'
 import { listProducts } from '../../api/product'

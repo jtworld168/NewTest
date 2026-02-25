@@ -81,7 +81,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { listUserCoupons, getUserCouponsByStatus, addUserCoupon, updateUserCoupon, deleteUserCoupon, deleteBatchUserCoupons, listUserCouponsPage, distributeToAllUsers } from '../../api/userCoupon'
+import { getUserCouponsByStatus, addUserCoupon, updateUserCoupon, deleteUserCoupon, deleteBatchUserCoupons, listUserCouponsPage, distributeToAllUsers } from '../../api/userCoupon'
 import { listUsers } from '../../api/user'
 import { listCoupons } from '../../api/coupon'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -181,7 +181,7 @@ async function handleDistribute() {
     return
   }
   try {
-    const { value } = await ElMessageBox.prompt('请选择要发放的优惠券ID', '一键发放优惠券给所有用户', {
+    const result = await ElMessageBox.prompt('请选择要发放的优惠券ID', '一键发放优惠券给所有用户', {
       inputValue: coupons.value[0]?.id?.toString() || '',
       inputPlaceholder: '优惠券ID',
       confirmButtonText: '确定发放',
@@ -191,6 +191,7 @@ async function handleDistribute() {
         return true
       }
     })
+    const value = (result as any).value ?? result
     await distributeToAllUsers(Number(value))
     ElMessage.success('发放成功')
     loadData()

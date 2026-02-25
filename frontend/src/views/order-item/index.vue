@@ -17,8 +17,8 @@
         <el-table-column prop="productId" label="商品" width="160">
           <template #default="{ row }">
             <template v-if="productMap[row.productId]">
-              {{ productMap[row.productId].name }}
-              <div style="font-size: 12px; color: #999;" v-if="productMap[row.productId].barcode">条码: {{ productMap[row.productId].barcode }}</div>
+              {{ productMap[row.productId]?.name }}
+              <div style="font-size: 12px; color: #999;" v-if="productMap[row.productId]?.barcode">条码: {{ productMap[row.productId]?.barcode }}</div>
             </template>
             <template v-else>商品{{ row.productId }}</template>
           </template>
@@ -75,7 +75,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { listOrderItems, addOrderItem, updateOrderItem, deleteOrderItem, deleteBatchOrderItems, listOrderItemsPage } from '../../api/orderItem'
+import { addOrderItem, updateOrderItem, deleteOrderItem, deleteBatchOrderItems, listOrderItemsPage } from '../../api/orderItem'
 import { listProducts } from '../../api/product'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'

@@ -136,7 +136,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { listProducts, addProduct, updateProduct, deleteProduct, deleteBatchProducts, searchProducts, getProductsByCategoryId, listProductsPage } from '../../api/product'
+import { addProduct, updateProduct, deleteProduct, deleteBatchProducts, searchProducts, getProductsByCategoryId, listProductsPage } from '../../api/product'
 import { listCategories } from '../../api/category'
 import { uploadImage } from '../../api/upload'
 import { BASE_URL } from '../../api/request'

@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listCategories, addCategory, updateCategory, deleteCategory, deleteBatchCategories, searchCategories, listCategoriesPage } from '../../api/category'
+import { addCategory, updateCategory, deleteCategory, deleteBatchCategories, searchCategories, listCategoriesPage } from '../../api/category'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { Category } from '../../types'
