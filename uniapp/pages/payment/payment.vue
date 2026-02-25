@@ -38,55 +38,58 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { onLoad } from '@dcloudio/uni-app'
+<script>
 import * as api from '../../utils/api.js'
 
-const orderId = ref(null)
-const amount = ref('0.00')
-const paymentMethod = ref('WECHAT')
-const paying = ref(false)
+export default {
+  data() {
+    return {
+      orderId: null,
+      amount: '0.00',
+      paymentMethod: 'WECHAT',
+      paying: false
+    }
+  },
+  onLoad(options) {
+    this.orderId = options.orderId ? Number(options.orderId) : null
+    this.amount = options.amount || '0.00'
+  },
+  methods: {
+    selectMethod(method) {
+      this.paymentMethod = method
+    },
+    async confirmPay() {
+      if (this.paying) return
+      if (!this.orderId) {
+        uni.showToast({ title: '订单信息错误', icon: 'none' })
+        return
+      }
 
-onLoad((options) => {
-  orderId.value = options.orderId ? Number(options.orderId) : null
-  amount.value = options.amount || '0.00'
-})
+      this.paying = true
+      try {
+        const transactionNo = 'TXN' + Date.now() + Math.floor(Math.random() * 1000)
+        await api.addPayment({
+          orderId: this.orderId,
+          amount: parseFloat(this.amount),
+          paymentMethod: this.paymentMethod,
+          paymentStatus: 'SUCCESS',
+          transactionNo,
+          paymentTime: new Date().toISOString().replace('T', ' ').substring(0, 19)
+        })
 
-function selectMethod(method) {
-  paymentMethod.value = method
-}
+        await api.updateOrder({ id: this.orderId, status: 'PAID' })
 
-async function confirmPay() {
-  if (paying.value) return
-  if (!orderId.value) {
-    uni.showToast({ title: '订单信息错误', icon: 'none' })
-    return
-  }
-
-  paying.value = true
-  try {
-    const transactionNo = 'TXN' + Date.now() + Math.floor(Math.random() * 1000)
-    await api.addPayment({
-      orderId: orderId.value,
-      amount: parseFloat(amount.value),
-      paymentMethod: paymentMethod.value,
-      paymentStatus: 'SUCCESS',
-      transactionNo,
-      paymentTime: new Date().toISOString().replace('T', ' ').substring(0, 19)
-    })
-
-    await api.updateOrder({ id: orderId.value, status: 'PAID' })
-
-    uni.showToast({ title: '支付成功', icon: 'success' })
-    setTimeout(() => {
-      uni.switchTab({ url: '/pages/orders/orders' })
-    }, 1500)
-  } catch (err) {
-    console.error('Payment failed:', err)
-    uni.showToast({ title: '支付失败', icon: 'error' })
-  } finally {
-    paying.value = false
+        uni.showToast({ title: '支付成功', icon: 'success' })
+        setTimeout(() => {
+          uni.switchTab({ url: '/pages/orders/orders' })
+        }, 1500)
+      } catch (err) {
+        console.error('Payment failed:', err)
+        uni.showToast({ title: '支付失败', icon: 'error' })
+      } finally {
+        this.paying = false
+      }
+    }
   }
 }
 </script>
