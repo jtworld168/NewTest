@@ -22,10 +22,10 @@
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="userId" label="用户" width="120">
-          <template #default="{ row }">{{ userMap[row.userId] || '用户' + row.userId }}</template>
+          <template #default="{ row }">{{ row.userName || '用户' + row.userId }}</template>
         </el-table-column>
         <el-table-column prop="couponId" label="优惠券" width="140">
-          <template #default="{ row }">{{ couponMap[row.couponId] || '优惠券' + row.couponId }}</template>
+          <template #default="{ row }">{{ row.couponName || '优惠券' + row.couponId }}</template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
@@ -80,18 +80,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { getUserCouponsByStatus, addUserCoupon, updateUserCoupon, deleteUserCoupon, deleteBatchUserCoupons, listUserCouponsPage, distributeToAllUsers } from '../../api/userCoupon'
-import { listUsers } from '../../api/user'
 import { listCoupons } from '../../api/coupon'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import type { UserCoupon, User, Coupon } from '../../types'
+import type { UserCoupon, Coupon } from '../../types'
 
 const statusMap: Record<string, string> = { AVAILABLE: '可用', USED: '已使用', EXPIRED: '已过期' }
-const tableData = ref<UserCoupon[]>([])
+const tableData = ref<any[]>([])
 const selectedIds = ref<number[]>([])
-const users = ref<User[]>([])
 const coupons = ref<Coupon[]>([])
 const filterStatus = ref('')
 const dialogVisible = ref(false)
@@ -100,18 +98,6 @@ const formRef = ref<FormInstance>()
 const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
-
-const userMap = computed(() => {
-  const map: Record<number, string> = {}
-  users.value.forEach(u => { if (u.id) map[u.id] = u.username })
-  return map
-})
-
-const couponMap = computed(() => {
-  const map: Record<number, string> = {}
-  coupons.value.forEach(c => { if (c.id) map[c.id] = c.name })
-  return map
-})
 
 const defaultForm = (): UserCoupon => ({ userId: 1, couponId: 1, status: 'AVAILABLE' as any })
 const form = reactive<UserCoupon>(defaultForm())
@@ -202,8 +188,7 @@ async function handleDistribute() {
 
 onMounted(async () => {
   try {
-    const [userRes, couponRes] = await Promise.all([listUsers(), listCoupons()])
-    users.value = userRes.data || []
+    const couponRes = await listCoupons()
     coupons.value = couponRes.data || []
   } catch {}
   loadData()

@@ -8,15 +8,19 @@ import com.supermarket.entity.User;
 import com.supermarket.service.CouponService;
 import com.supermarket.service.UserCouponService;
 import com.supermarket.service.UserService;
+import com.supermarket.vo.UserCouponVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Tag(name = "用户优惠券管理", description = "用户拥有的具体优惠券增删改查接口")
 @RestController
@@ -28,6 +32,28 @@ public class UserCouponController {
     private final CouponService couponService;
     private final UserService userService;
 
+    private UserCouponVO toVO(UserCoupon uc, Map<Long, User> userMap, Map<Long, Coupon> couponMap) {
+        UserCouponVO vo = new UserCouponVO();
+        BeanUtils.copyProperties(uc, vo);
+        if (uc.getUserId() != null) {
+            User user = userMap.get(uc.getUserId());
+            if (user != null) vo.setUserName(user.getUsername());
+        }
+        if (uc.getCouponId() != null) {
+            Coupon coupon = couponMap.get(uc.getCouponId());
+            if (coupon != null) vo.setCouponName(coupon.getName());
+        }
+        return vo;
+    }
+
+    private List<UserCouponVO> toVOList(List<UserCoupon> list) {
+        Map<Long, User> userMap = userService.listAll().stream()
+                .collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
+        Map<Long, Coupon> couponMap = couponService.listAll().stream()
+                .collect(Collectors.toMap(Coupon::getId, c -> c, (a, b) -> a));
+        return list.stream().map(uc -> toVO(uc, userMap, couponMap)).collect(Collectors.toList());
+    }
+
     @Operation(summary = "根据ID查询用户优惠券")
     @GetMapping("/get/{id}")
     public Result<UserCoupon> getUserCouponById(@Parameter(description = "用户优惠券ID") @PathVariable Long id) {
@@ -37,42 +63,48 @@ public class UserCouponController {
 
     @Operation(summary = "查询所有用户优惠券")
     @GetMapping("/list")
-    public Result<List<UserCoupon>> getAllUserCoupons() {
-        return Result.success(userCouponService.listAll());
+    public Result<List<UserCouponVO>> getAllUserCoupons() {
+        return Result.success(toVOList(userCouponService.listAll()));
     }
 
     @Operation(summary = "根据用户ID查询用户优惠券")
     @GetMapping("/getByUserId/{userId}")
-    public Result<List<UserCoupon>> getUserCouponsByUserId(@Parameter(description = "用户ID") @PathVariable Long userId) {
-        return Result.success(userCouponService.getUserCouponsByUserId(userId));
+    public Result<List<UserCouponVO>> getUserCouponsByUserId(@Parameter(description = "用户ID") @PathVariable Long userId) {
+        return Result.success(toVOList(userCouponService.getUserCouponsByUserId(userId)));
     }
 
     @Operation(summary = "根据优惠券面额ID查询用户优惠券")
     @GetMapping("/getByCouponId/{couponId}")
-    public Result<List<UserCoupon>> getUserCouponsByCouponId(@Parameter(description = "优惠券面额ID") @PathVariable Long couponId) {
-        return Result.success(userCouponService.getUserCouponsByCouponId(couponId));
+    public Result<List<UserCouponVO>> getUserCouponsByCouponId(@Parameter(description = "优惠券面额ID") @PathVariable Long couponId) {
+        return Result.success(toVOList(userCouponService.getUserCouponsByCouponId(couponId)));
     }
 
     @Operation(summary = "根据状态查询用户优惠券")
     @GetMapping("/getByStatus/{status}")
-    public Result<List<UserCoupon>> getUserCouponsByStatus(@Parameter(description = "状态：AVAILABLE/USED/EXPIRED") @PathVariable CouponStatus status) {
-        return Result.success(userCouponService.getUserCouponsByStatus(status));
+    public Result<List<UserCouponVO>> getUserCouponsByStatus(@Parameter(description = "状态：AVAILABLE/USED/EXPIRED") @PathVariable CouponStatus status) {
+        return Result.success(toVOList(userCouponService.getUserCouponsByStatus(status)));
     }
 
     @Operation(summary = "根据用户ID和状态查询用户优惠券")
     @GetMapping("/getByUserIdAndStatus")
-    public Result<List<UserCoupon>> getUserCouponsByUserIdAndStatus(
+    public Result<List<UserCouponVO>> getUserCouponsByUserIdAndStatus(
             @Parameter(description = "用户ID") @RequestParam Long userId,
             @Parameter(description = "状态：AVAILABLE/USED/EXPIRED") @RequestParam CouponStatus status) {
-        return Result.success(userCouponService.getUserCouponsByUserIdAndStatus(userId, status));
+        return Result.success(toVOList(userCouponService.getUserCouponsByUserIdAndStatus(userId, status)));
     }
 
     @Operation(summary = "分页查询用户优惠券列表")
     @GetMapping("/listPage")
-    public Result<IPage<UserCoupon>> listPage(
+    public Result<IPage<UserCouponVO>> listPage(
             @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(userCouponService.listPage(pageNum, pageSize));
+        IPage<UserCoupon> page = userCouponService.listPage(pageNum, pageSize);
+        Map<Long, User> userMap = userService.listAll().stream()
+                .collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
+        Map<Long, Coupon> couponMap = couponService.listAll().stream()
+                .collect(Collectors.toMap(Coupon::getId, c -> c, (a, b) -> a));
+        IPage<UserCouponVO> voPage = page.convert(uc -> toVO(uc, userMap, couponMap));
+        return Result.success(voPage);
     }
 
     @Operation(summary = "添加用户优惠券（发放优惠券给用户）")

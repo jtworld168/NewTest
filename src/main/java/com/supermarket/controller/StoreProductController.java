@@ -1,17 +1,26 @@
 package com.supermarket.controller;
 
 import com.supermarket.common.Result;
+import com.supermarket.entity.Coupon;
+import com.supermarket.entity.Product;
+import com.supermarket.entity.Store;
 import com.supermarket.entity.StoreProduct;
+import com.supermarket.service.CouponService;
+import com.supermarket.service.ProductService;
 import com.supermarket.service.StoreProductService;
+import com.supermarket.service.StoreService;
+import com.supermarket.vo.StoreProductVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Tag(name = "店铺商品管理", description = "店铺商品增删改查接口")
 @RestController
@@ -20,6 +29,37 @@ import java.util.Map;
 public class StoreProductController {
 
     private final StoreProductService storeProductService;
+    private final StoreService storeService;
+    private final ProductService productService;
+    private final CouponService couponService;
+
+    private StoreProductVO toVO(StoreProduct sp, Map<Long, Store> storeMap, Map<Long, Product> productMap, Map<Long, Coupon> couponMap) {
+        StoreProductVO vo = new StoreProductVO();
+        BeanUtils.copyProperties(sp, vo);
+        if (sp.getStoreId() != null) {
+            Store store = storeMap.get(sp.getStoreId());
+            if (store != null) vo.setStoreName(store.getName());
+        }
+        if (sp.getProductId() != null) {
+            Product product = productMap.get(sp.getProductId());
+            if (product != null) vo.setProductName(product.getName());
+        }
+        if (sp.getCouponId() != null) {
+            Coupon coupon = couponMap.get(sp.getCouponId());
+            if (coupon != null) vo.setCouponName(coupon.getName());
+        }
+        return vo;
+    }
+
+    private List<StoreProductVO> toVOList(List<StoreProduct> list) {
+        Map<Long, Store> storeMap = storeService.listAll().stream()
+                .collect(Collectors.toMap(Store::getId, s -> s, (a, b) -> a));
+        Map<Long, Product> productMap = productService.listAll().stream()
+                .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
+        Map<Long, Coupon> couponMap = couponService.listAll().stream()
+                .collect(Collectors.toMap(Coupon::getId, c -> c, (a, b) -> a));
+        return list.stream().map(sp -> toVO(sp, storeMap, productMap, couponMap)).collect(Collectors.toList());
+    }
 
     @Operation(summary = "根据ID查询店铺商品")
     @GetMapping("/get/{id}")
@@ -30,36 +70,45 @@ public class StoreProductController {
 
     @Operation(summary = "查询所有店铺商品")
     @GetMapping("/list")
-    public Result<List<StoreProduct>> getAll() {
-        return Result.success(storeProductService.listAll());
+    public Result<List<StoreProductVO>> getAll() {
+        return Result.success(toVOList(storeProductService.listAll()));
     }
 
     @Operation(summary = "根据店铺ID查询商品")
     @GetMapping("/getByStoreId/{storeId}")
-    public Result<List<StoreProduct>> getByStoreId(@Parameter(description = "店铺ID") @PathVariable Long storeId) {
-        return Result.success(storeProductService.getByStoreId(storeId));
+    public Result<List<StoreProductVO>> getByStoreId(@Parameter(description = "店铺ID") @PathVariable Long storeId) {
+        return Result.success(toVOList(storeProductService.getByStoreId(storeId)));
     }
 
     @Operation(summary = "根据商品ID查询店铺商品")
     @GetMapping("/getByProductId/{productId}")
-    public Result<List<StoreProduct>> getByProductId(@Parameter(description = "商品ID") @PathVariable Long productId) {
-        return Result.success(storeProductService.getByProductId(productId));
+    public Result<List<StoreProductVO>> getByProductId(@Parameter(description = "商品ID") @PathVariable Long productId) {
+        return Result.success(toVOList(storeProductService.getByProductId(productId)));
     }
 
     @Operation(summary = "分页查询店铺商品")
     @GetMapping("/listPage")
-    public Result<IPage<StoreProduct>> listPage(
+    public Result<IPage<StoreProductVO>> listPage(
             @Parameter(description = "店铺ID（可选）") @RequestParam(required = false) Long storeId,
             @Parameter(description = "商品名称搜索（可选）") @RequestParam(required = false) String productName,
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize) {
+        IPage<StoreProduct> page;
         if (productName != null && !productName.isBlank()) {
-            return Result.success(storeProductService.searchByProductName(productName.trim(), storeId, pageNum, pageSize));
+            page = storeProductService.searchByProductName(productName.trim(), storeId, pageNum, pageSize);
+        } else if (storeId != null) {
+            page = storeProductService.listPageByStoreId(storeId, pageNum, pageSize);
+        } else {
+            page = storeProductService.listPage(pageNum, pageSize);
         }
-        if (storeId != null) {
-            return Result.success(storeProductService.listPageByStoreId(storeId, pageNum, pageSize));
-        }
-        return Result.success(storeProductService.listPage(pageNum, pageSize));
+        Map<Long, Store> storeMap = storeService.listAll().stream()
+                .collect(Collectors.toMap(Store::getId, s -> s, (a, b) -> a));
+        Map<Long, Product> productMap = productService.listAll().stream()
+                .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
+        Map<Long, Coupon> couponMap = couponService.listAll().stream()
+                .collect(Collectors.toMap(Coupon::getId, c -> c, (a, b) -> a));
+        IPage<StoreProductVO> voPage = page.convert(sp -> toVO(sp, storeMap, productMap, couponMap));
+        return Result.success(voPage);
     }
 
     @Operation(summary = "添加店铺商品")
@@ -107,9 +156,9 @@ public class StoreProductController {
 
     @Operation(summary = "获取店铺库存预警商品（库存低于安全库存）")
     @GetMapping("/lowStock/{storeId}")
-    public Result<List<StoreProduct>> getLowStock(
+    public Result<List<StoreProductVO>> getLowStock(
             @Parameter(description = "店铺ID") @PathVariable Long storeId) {
-        return Result.success(storeProductService.getLowStockByStoreIdUsingSafetyStock(storeId));
+        return Result.success(toVOList(storeProductService.getLowStockByStoreIdUsingSafetyStock(storeId)));
     }
 
     @Operation(summary = "按商品名称新增店铺商品（若商品不存在则自动创建）")

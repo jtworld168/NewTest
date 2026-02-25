@@ -2,15 +2,21 @@ package com.supermarket.controller;
 
 import com.supermarket.common.Result;
 import com.supermarket.entity.OrderItem;
+import com.supermarket.entity.Product;
 import com.supermarket.service.OrderItemService;
+import com.supermarket.service.ProductService;
+import com.supermarket.vo.OrderItemVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Tag(name = "订单商品明细管理", description = "订单商品明细增删改查接口")
 @RestController
@@ -19,6 +25,26 @@ import java.util.List;
 public class OrderItemController {
 
     private final OrderItemService orderItemService;
+    private final ProductService productService;
+
+    private OrderItemVO toVO(OrderItem item, Map<Long, Product> productMap) {
+        OrderItemVO vo = new OrderItemVO();
+        BeanUtils.copyProperties(item, vo);
+        if (item.getProductId() != null) {
+            Product product = productMap.get(item.getProductId());
+            if (product != null) {
+                vo.setProductName(product.getName());
+                vo.setProductBarcode(product.getBarcode());
+            }
+        }
+        return vo;
+    }
+
+    private List<OrderItemVO> toVOList(List<OrderItem> items) {
+        Map<Long, Product> productMap = productService.listAll().stream()
+                .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
+        return items.stream().map(item -> toVO(item, productMap)).collect(Collectors.toList());
+    }
 
     @Operation(summary = "根据ID查询订单商品明细")
     @GetMapping("/get/{id}")
@@ -29,28 +55,32 @@ public class OrderItemController {
 
     @Operation(summary = "查询所有订单商品明细")
     @GetMapping("/list")
-    public Result<List<OrderItem>> getAllOrderItems() {
-        return Result.success(orderItemService.listAll());
+    public Result<List<OrderItemVO>> getAllOrderItems() {
+        return Result.success(toVOList(orderItemService.listAll()));
     }
 
     @Operation(summary = "根据订单ID查询商品明细")
     @GetMapping("/getByOrderId/{orderId}")
-    public Result<List<OrderItem>> getOrderItemsByOrderId(@Parameter(description = "订单ID") @PathVariable Long orderId) {
-        return Result.success(orderItemService.getOrderItemsByOrderId(orderId));
+    public Result<List<OrderItemVO>> getOrderItemsByOrderId(@Parameter(description = "订单ID") @PathVariable Long orderId) {
+        return Result.success(toVOList(orderItemService.getOrderItemsByOrderId(orderId)));
     }
 
     @Operation(summary = "根据商品ID查询订单明细")
     @GetMapping("/getByProductId/{productId}")
-    public Result<List<OrderItem>> getOrderItemsByProductId(@Parameter(description = "商品ID") @PathVariable Long productId) {
-        return Result.success(orderItemService.getOrderItemsByProductId(productId));
+    public Result<List<OrderItemVO>> getOrderItemsByProductId(@Parameter(description = "商品ID") @PathVariable Long productId) {
+        return Result.success(toVOList(orderItemService.getOrderItemsByProductId(productId)));
     }
 
     @Operation(summary = "分页查询订单商品明细列表")
     @GetMapping("/listPage")
-    public Result<IPage<OrderItem>> listPage(
+    public Result<IPage<OrderItemVO>> listPage(
             @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(orderItemService.listPage(pageNum, pageSize));
+        IPage<OrderItem> page = orderItemService.listPage(pageNum, pageSize);
+        Map<Long, Product> productMap = productService.listAll().stream()
+                .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
+        IPage<OrderItemVO> voPage = page.convert(item -> toVO(item, productMap));
+        return Result.success(voPage);
     }
 
     @Operation(summary = "添加订单商品明细")

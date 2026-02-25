@@ -37,13 +37,13 @@
         <el-table-column prop="storeId" label="店铺ID" width="80" align="center" />
         <el-table-column label="店铺名称" width="140">
           <template #default="{ row }">
-            {{ storeMap[row.storeId] || '-' }}
+            {{ row.storeName || '-' }}
           </template>
         </el-table-column>
         <el-table-column prop="productId" label="商品ID" width="80" align="center" />
         <el-table-column label="商品名称" width="140">
           <template #default="{ row }">
-            {{ productMap[row.productId] || '-' }}
+            {{ row.productName || '-' }}
           </template>
         </el-table-column>
         <el-table-column prop="storePrice" label="店铺售价" width="100" align="center">
@@ -58,7 +58,7 @@
         </el-table-column>
         <el-table-column label="优惠券" width="120" align="center">
           <template #default="{ row }">
-            <span v-if="row.couponId">{{ couponMap[row.couponId] || row.couponId }}</span>
+            <span v-if="row.couponId">{{ row.couponName || row.couponId }}</span>
             <span v-else style="color: #999;">无</span>
           </template>
         </el-table-column>
@@ -166,7 +166,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { listStoreProductsPage, addStoreProduct, addStoreProductWithName, updateStoreProduct, deleteStoreProduct, deleteBatchStoreProducts, batchSetCoupon } from '../../api/storeProduct'
 import { listStores } from '../../api/store'
 import { listProducts } from '../../api/product'
@@ -192,24 +192,6 @@ const total = ref(0)
 
 const couponDialogVisible = ref(false)
 const selectedCouponId = ref<number | undefined>(undefined)
-
-const storeMap = computed(() => {
-  const map: Record<number, string> = {}
-  storeList.value.forEach((s: any) => { if (s.id) map[s.id] = s.name })
-  return map
-})
-
-const productMap = computed(() => {
-  const map: Record<number, string> = {}
-  productList.value.forEach((p: any) => { if (p.id) map[p.id] = p.name })
-  return map
-})
-
-const couponMap = computed(() => {
-  const map: Record<number, string> = {}
-  couponList.value.forEach((c: any) => { if (c.id) map[c.id] = c.name })
-  return map
-})
 
 const defaultForm = () => ({ storeId: undefined, productId: undefined, productName: '', storePrice: undefined as number | undefined, storeStock: 0, safetyStock: 10, status: 1 })
 const form = reactive<any>(defaultForm())
@@ -242,7 +224,7 @@ function handleSelectionChange(rows: any[]) {
 function openDialog(row?: any) {
   isEdit.value = !!row
   if (row) {
-    Object.assign(form, { ...row, productName: productMap.value[row.productId] || '' })
+    Object.assign(form, { ...row, productName: row.productName || '' })
   } else {
     Object.assign(form, defaultForm())
   }
