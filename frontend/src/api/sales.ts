@@ -35,3 +35,22 @@ export const getTotalSales = (storeId?: number) => {
   if (storeId) params.storeId = storeId
   return request.get('/sales/total', { params })
 }
+
+// 近7天销售趋势
+export const getWeeklySalesTrend = (storeId?: number) => {
+  const params: any = {}
+  if (storeId) params.storeId = storeId
+  return request.get('/sales/trend/weekly', { params })
+}
+
+// 用户增长趋势
+export const getUserGrowth = () => {
+  return request.get('/sales/user-growth')
+}
+
+// 热门商品TOP10
+export const getTopProducts = (storeId?: number) => {
+  const params: any = {}
+  if (storeId) params.storeId = storeId
+  return request.get('/sales/top-products', { params })
+}

@@ -7,20 +7,39 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.supermarket.entity.Product;
 import com.supermarket.mapper.ProductMapper;
 import com.supermarket.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> implements ProductService {
 
     private static final int DEFAULT_STOCK_ALERT_THRESHOLD = 10;
+    private static final String CACHE_PRODUCT_ALL = "cache:product:all";
+    private static final String CACHE_PRODUCT_ID = "cache:product:id:";
+    private static final String CACHE_PRODUCT_ON_SHELF = "cache:product:onShelf";
+    private static final long CACHE_TTL_MINUTES = 10;
+
+    @Autowired(required = false)
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public Product getProductById(Long id) {
+        if (redisTemplate != null) {
+            @SuppressWarnings("unchecked")
+            Product cached = (Product) redisTemplate.opsForValue().get(CACHE_PRODUCT_ID + id);
+            if (cached != null) return cached;
+        }
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Product::getId, id);
-        return getOne(wrapper);
+        Product product = getOne(wrapper);
+        if (product != null && redisTemplate != null) {
+            redisTemplate.opsForValue().set(CACHE_PRODUCT_ID + id, product, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+        }
+        return product;
     }
 
     @Override
@@ -71,37 +90,80 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
 
     @Override
     public boolean addProduct(Product product) {
-        return save(product);
+        boolean result = save(product);
+        if (result) evictProductCache();
+        return result;
     }
 
     @Override
     public boolean updateProduct(Product product) {
-        return updateById(product);
+        boolean result = updateById(product);
+        if (result) {
+            evictProductCache();
+            if (product.getId() != null && redisTemplate != null) {
+                redisTemplate.delete(CACHE_PRODUCT_ID + product.getId());
+            }
+        }
+        return result;
     }
 
     @Override
     public boolean deleteProduct(Long id) {
-        return removeById(id);
+        boolean result = removeById(id);
+        if (result) {
+            evictProductCache();
+            if (redisTemplate != null) {
+                redisTemplate.delete(CACHE_PRODUCT_ID + id);
+            }
+        }
+        return result;
     }
 
     @Override
     public boolean deleteBatchProducts(List<Long> ids) {
-        return removeByIds(ids);
+        boolean result = removeByIds(ids);
+        if (result) evictProductCache();
+        return result;
+    }
+
+    private void evictProductCache() {
+        if (redisTemplate != null) {
+            redisTemplate.delete(CACHE_PRODUCT_ALL);
+            redisTemplate.delete(CACHE_PRODUCT_ON_SHELF);
+        }
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Product> listAll() {
+        if (redisTemplate != null) {
+            List<Product> cached = (List<Product>) redisTemplate.opsForValue().get(CACHE_PRODUCT_ALL);
+            if (cached != null) return cached;
+        }
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByDesc(Product::getCreateTime);
-        return list(wrapper);
+        List<Product> products = list(wrapper);
+        if (redisTemplate != null) {
+            redisTemplate.opsForValue().set(CACHE_PRODUCT_ALL, products, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+        }
+        return products;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Product> getOnShelfProducts() {
+        if (redisTemplate != null) {
+            List<Product> cached = (List<Product>) redisTemplate.opsForValue().get(CACHE_PRODUCT_ON_SHELF);
+            if (cached != null) return cached;
+        }
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Product::getStatus, 1)
                .orderByDesc(Product::getCreateTime);
-        return list(wrapper);
+        List<Product> products = list(wrapper);
+        if (redisTemplate != null) {
+            redisTemplate.opsForValue().set(CACHE_PRODUCT_ON_SHELF, products, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+        }
+        return products;
     }
 
     @Override

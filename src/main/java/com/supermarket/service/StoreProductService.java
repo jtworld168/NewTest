@@ -25,4 +25,13 @@ public interface StoreProductService extends IService<StoreProduct> {
     StoreProduct addStoreProductWithName(String productName, StoreProduct storeProduct);
     StoreProduct getByStoreIdAndProductId(Long storeId, Long productId);
     boolean batchSetCoupon(List<Long> ids, Long couponId);
+
+    /**
+     * 扣减店铺商品库存，并同步总商品库存
+     * @param storeId 店铺ID
+     * @param productId 商品ID
+     * @param quantity 扣减数量
+     * @return 是否成功
+     */
+    boolean deductStoreStock(Long storeId, Long productId, int quantity);
 }

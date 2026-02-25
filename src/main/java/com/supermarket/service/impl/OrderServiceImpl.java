@@ -17,6 +17,7 @@ import com.supermarket.service.CouponService;
 import com.supermarket.service.OrderItemService;
 import com.supermarket.service.OrderService;
 import com.supermarket.service.ProductService;
+import com.supermarket.service.StoreProductService;
 import com.supermarket.service.UserCouponService;
 import com.supermarket.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private final OrderItemService orderItemService;
     private final UserCouponService userCouponService;
     private final CouponService couponService;
+    private final StoreProductService storeProductService;
 
     @Autowired(required = false)
     private RedisTemplate<String, Object> redisTemplate;
@@ -150,6 +152,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
         save(order);
         setOrderExpireKey(order.getId());
+
+        // Deduct store stock if storeId is present
+        if (order.getStoreId() != null) {
+            storeProductService.deductStoreStock(order.getStoreId(), productId, quantity);
+        }
+
         return order;
     }
 
@@ -229,6 +237,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             orderItem.setPriceAtPurchase((BigDecimal) calc[2]);
             orderItem.setSubtotal((BigDecimal) calc[3]);
             orderItemService.addOrderItem(orderItem);
+
+            // Deduct store stock for each item
+            if (storeId != null) {
+                storeProductService.deductStoreStock(storeId, (Long) calc[0], (Integer) calc[1]);
+            }
         }
 
         setOrderExpireKey(order.getId());

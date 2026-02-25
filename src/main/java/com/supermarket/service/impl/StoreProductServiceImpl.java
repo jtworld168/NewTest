@@ -223,4 +223,19 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
         }
         return updateBatchById(items);
     }
+
+    @Override
+    @Transactional
+    public boolean deductStoreStock(Long storeId, Long productId, int quantity) {
+        if (storeId == null || productId == null || quantity <= 0) return false;
+        StoreProduct sp = getByStoreIdAndProductId(storeId, productId);
+        if (sp == null) return false;
+        int currentStock = sp.getStoreStock() != null ? sp.getStoreStock() : 0;
+        sp.setStoreStock(Math.max(0, currentStock - quantity));
+        boolean result = updateById(sp);
+        if (result) {
+            syncProductTotalStock(productId);
+        }
+        return result;
+    }
 }
