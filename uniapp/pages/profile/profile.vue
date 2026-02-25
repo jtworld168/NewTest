@@ -82,120 +82,117 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+<script>
 import * as api from '../../utils/api.js'
 
 const ROLE_MAP = { ADMIN: '管理员', EMPLOYEE: '员工', CUSTOMER: '顾客' }
 
-const userInfo = ref(null)
-const isLoggedIn = ref(false)
-const roleText = ref('')
-const isEmployee = ref(false)
-const avatarUrl = ref('/static/default-avatar.png')
-
-async function refreshUserInfo(id) {
-  try {
-    const res = await api.getUserById(id)
-    if (res.data) {
-      const app = getApp()
-      app.globalData.userInfo = res.data
-      uni.setStorageSync('userInfo', res.data)
-      userInfo.value = res.data
-      roleText.value = ROLE_MAP[res.data.role] || res.data.role
-      isEmployee.value = Boolean(res.data.isHotelEmployee)
-      avatarUrl.value = res.data.avatar ? api.getFileUrl(res.data.avatar) : '/static/default-avatar.png'
+export default {
+  data() {
+    return {
+      userInfo: null,
+      isLoggedIn: false,
+      roleText: '',
+      isEmployee: false,
+      avatarUrl: '/static/default-avatar.png'
     }
-  } catch (e) {
-    console.error('Failed to refresh user info:', e)
-  }
-}
-
-function onPageShow() {
-  const app = getApp()
-  const info = app.globalData.userInfo
-  if (info) {
-    userInfo.value = info
-    isLoggedIn.value = true
-    roleText.value = ROLE_MAP[info.role] || info.role
-    isEmployee.value = Boolean(info.isHotelEmployee)
-    avatarUrl.value = info.avatar ? api.getFileUrl(info.avatar) : '/static/default-avatar.png'
-    refreshUserInfo(info.id)
-  } else {
-    userInfo.value = null
-    isLoggedIn.value = false
-    avatarUrl.value = '/static/default-avatar.png'
-  }
-}
-
-function goLogin() {
-  uni.navigateTo({ url: '/pages/login/login' })
-}
-
-function goRegister() {
-  uni.navigateTo({ url: '/pages/register/register' })
-}
-
-function goOrders() {
-  uni.switchTab({ url: '/pages/orders/orders' })
-}
-
-function goCart() {
-  uni.switchTab({ url: '/pages/cart/cart' })
-}
-
-function goCoupons() {
-  uni.navigateTo({ url: '/pages/coupons/coupons' })
-}
-
-function clearCache() {
-  uni.showModal({
-    title: '提示',
-    content: '确定要清除缓存吗？',
-    success: (res) => {
-      if (res.confirm) {
-        uni.clearStorageSync()
-        const app = getApp()
-        if (app.globalData.userInfo) {
-          uni.setStorageSync('userInfo', app.globalData.userInfo)
+  },
+  onShow() {
+    this.onPageShow()
+  },
+  methods: {
+    async refreshUserInfo(id) {
+      try {
+        const res = await api.getUserById(id)
+        if (res.data) {
+          const app = getApp()
+          app.globalData.userInfo = res.data
+          uni.setStorageSync('userInfo', res.data)
+          this.userInfo = res.data
+          this.roleText = ROLE_MAP[res.data.role] || res.data.role
+          this.isEmployee = Boolean(res.data.isHotelEmployee)
+          this.avatarUrl = res.data.avatar ? api.getFileUrl(res.data.avatar) : '/static/default-avatar.png'
         }
-        uni.showToast({ title: '缓存已清除', icon: 'success' })
+      } catch (e) {
+        console.error('Failed to refresh user info:', e)
       }
-    }
-  })
-}
-
-function showAbout() {
-  uni.showModal({
-    title: '关于我们',
-    content: '智慧零售小程序 v1.0.0\n\n无人超市智能购物系统，为您提供便捷的扫码购物体验。',
-    showCancel: false,
-    confirmText: '知道了'
-  })
-}
-
-function doLogout() {
-  uni.showModal({
-    title: '提示',
-    content: '确定要退出登录吗？',
-    success: async (res) => {
-      if (res.confirm) {
-        try { await api.logout() } catch (e) { /* ignore */ }
-        const app = getApp()
-        app.globalData.userInfo = null
-        uni.removeStorageSync('userInfo')
-        uni.removeStorageSync('satoken')
-        userInfo.value = null
-        isLoggedIn.value = false
-        avatarUrl.value = '/static/default-avatar.png'
-        uni.showToast({ title: '已退出登录', icon: 'success' })
+    },
+    onPageShow() {
+      const app = getApp()
+      const info = app.globalData.userInfo
+      if (info) {
+        this.userInfo = info
+        this.isLoggedIn = true
+        this.roleText = ROLE_MAP[info.role] || info.role
+        this.isEmployee = Boolean(info.isHotelEmployee)
+        this.avatarUrl = info.avatar ? api.getFileUrl(info.avatar) : '/static/default-avatar.png'
+        this.refreshUserInfo(info.id)
+      } else {
+        this.userInfo = null
+        this.isLoggedIn = false
+        this.avatarUrl = '/static/default-avatar.png'
       }
+    },
+    goLogin() {
+      uni.navigateTo({ url: '/pages/login/login' })
+    },
+    goRegister() {
+      uni.navigateTo({ url: '/pages/register/register' })
+    },
+    goOrders() {
+      uni.switchTab({ url: '/pages/orders/orders' })
+    },
+    goCart() {
+      uni.switchTab({ url: '/pages/cart/cart' })
+    },
+    goCoupons() {
+      uni.navigateTo({ url: '/pages/coupons/coupons' })
+    },
+    clearCache() {
+      uni.showModal({
+        title: '提示',
+        content: '确定要清除缓存吗？',
+        success: (res) => {
+          if (res.confirm) {
+            uni.clearStorageSync()
+            const app = getApp()
+            if (app.globalData.userInfo) {
+              uni.setStorageSync('userInfo', app.globalData.userInfo)
+            }
+            uni.showToast({ title: '缓存已清除', icon: 'success' })
+          }
+        }
+      })
+    },
+    showAbout() {
+      uni.showModal({
+        title: '关于我们',
+        content: '智慧零售小程序 v1.0.0\n\n无人超市智能购物系统，为您提供便捷的扫码购物体验。',
+        showCancel: false,
+        confirmText: '知道了'
+      })
+    },
+    doLogout() {
+      uni.showModal({
+        title: '提示',
+        content: '确定要退出登录吗？',
+        success: async (res) => {
+          if (res.confirm) {
+            try { await api.logout() } catch (e) { /* ignore */ }
+            const app = getApp()
+            app.globalData.userInfo = null
+            uni.removeStorageSync('userInfo')
+            uni.removeStorageSync('satoken')
+            this.userInfo = null
+            this.isLoggedIn = false
+            this.avatarUrl = '/static/default-avatar.png'
+            uni.showToast({ title: '已退出登录', icon: 'success' })
+          }
+        }
+      })
     }
-  })
+  }
 }
-
-onShow(() => { onPageShow() })
 </script>
 
 <style scoped>
