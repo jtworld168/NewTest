@@ -1,0 +1,43 @@
+# ============================================================
+# 开发环境配置 (Development)
+# 使用方式: mvn spring-boot:run -Dspring.profiles.active=dev
+#
+# Redis 订单超时取消需要开启键空间通知，请在 redis-cli 中执行:
+#   CONFIG SET notify-keyspace-events Ex
+# 或在 redis.conf 中设置:
+#   notify-keyspace-events Ex
+# ============================================================
+
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/unmanned_supermarket?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+  data:
+    redis:
+      host: localhost
+      port: 6379
+    mongodb:
+      uri: mongodb://localhost:27017/unmanned_supermarket
+
+file:
+  upload-dir: file
+
+# 开发环境开启 SQL 日志
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 开发环境开启 Sa-Token 日志
+sa-token:
+  is-log: true
+
+# 开发环境 Actuator 暴露全部端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

@@ -1,0 +1,214 @@
+.tabs {
+  display: flex;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20rpx) saturate(180%);
+  -webkit-backdrop-filter: blur(20rpx) saturate(180%);
+  padding: 0 10rpx;
+  border-bottom: 1rpx solid var(--glass-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 26rpx;
+  color: var(--color-text-secondary);
+  position: relative;
+  transition: color 0.2s;
+}
+
+.tab.active {
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 4rpx;
+  background-color: var(--color-primary);
+  border-radius: 2rpx;
+}
+
+.order-list {
+  padding: 20rpx;
+}
+
+.order-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20rpx) saturate(180%);
+  -webkit-backdrop-filter: blur(20rpx) saturate(180%);
+  border: 1rpx solid var(--glass-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: var(--glass-shadow);
+  animation: fadeIn 0.4s ease-out;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid var(--color-border);
+}
+
+.order-id {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+}
+
+.order-store {
+  font-size: 24rpx;
+  color: var(--color-primary);
+  background: var(--color-bg-light);
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.order-status {
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.order-body {
+  display: flex;
+  padding: 20rpx 24rpx;
+}
+
+.order-product-image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 8rpx;
+  flex-shrink: 0;
+  background-color: var(--color-bg);
+  margin-right: 20rpx;
+}
+
+.order-product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.order-product-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.order-quantity {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+}
+
+.order-price {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+}
+
+.order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 24rpx;
+  border-top: 1rpx solid var(--color-border);
+}
+
+.order-time {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+}
+
+.order-total {
+  font-size: 26rpx;
+}
+
+.order-total .price {
+  font-size: 32rpx;
+}
+
+.order-discount-tag {
+  font-size: 20rpx;
+  color: #d48806;
+  background-color: #fff9e6;
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+  margin-right: 8rpx;
+  border: 1rpx solid #ffe58f;
+}
+
+.order-coupon-tag {
+  font-size: 20rpx;
+  color: #ee0a24;
+  background-color: #fff1f0;
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+  margin-right: 8rpx;
+  border: 1rpx solid #ffccc7;
+}
+
+/* Status colors */
+.status-PENDING { color: #ff9800; }
+.status-PAID { color: #6BAF7B; }
+.status-COMPLETED { color: var(--color-text-secondary); }
+.status-CANCELLED { color: #ee0a24; }
+
+/* Order action buttons */
+.order-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16rpx 24rpx;
+  border-top: 1rpx solid var(--color-border);
+  gap: 16rpx;
+}
+
+.btn-cancel {
+  font-size: 24rpx;
+  padding: 12rpx 32rpx;
+  background-color: #fff;
+  color: var(--color-text-secondary);
+  border: 1rpx solid var(--color-border);
+  border-radius: var(--radius-xl);
+  line-height: 1.4;
+  transition: opacity 0.15s;
+}
+
+.btn-cancel:active {
+  opacity: 0.7;
+}
+
+.btn-cancel::after { border: none; }
+
+.btn-pay {
+  font-size: 24rpx;
+  padding: 12rpx 32rpx;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-xl);
+  line-height: 1.4;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.btn-pay:active {
+  opacity: 0.85;
+  transform: scale(0.97);
+}
+
+.btn-pay::after { border: none; }
+
+.order-barcode {
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
+  margin-top: 4rpx;
+}

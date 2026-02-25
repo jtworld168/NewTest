@@ -1,0 +1,11 @@
+.scan-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f5ede0;
+}
+.scan-tip {
+  color: #C9A96E;
+  font-size: 16px;
+}

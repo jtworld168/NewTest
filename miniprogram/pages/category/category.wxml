@@ -1,0 +1,44 @@
+<view class="category-page">
+  <!-- Search Bar -->
+  <view class="search-bar">
+    <input class="search-input" placeholder="搜索商品" value="{{searchKeyword}}" bindinput="onSearchInput" bindconfirm="doSearch" />
+    <view class="search-btn" bindtap="doSearch">搜索</view>
+  </view>
+
+  <view class="content">
+    <!-- Category Sidebar -->
+    <scroll-view class="category-sidebar" scroll-y="true">
+      <view class="sidebar-item {{selectedCategoryId === item.id ? 'active' : ''}}" wx:for="{{categories}}" wx:key="id" bindtap="selectCategory" data-id="{{item.id}}">
+        <text>{{item.name}}</text>
+      </view>
+    </scroll-view>
+
+    <!-- Product List -->
+    <scroll-view class="product-list" scroll-y="true">
+      <view wx:if="{{!loading && products.length > 0}}">
+        <view class="product-item" wx:for="{{products}}" wx:key="id" bindtap="goToProductDetail" data-id="{{item.id}}">
+          <image class="item-image" src="{{item._imageUrl || '/images/product-placeholder.png'}}" mode="aspectFill"></image>
+          <view class="item-info">
+            <text class="item-name">{{item.name}}</text>
+            <text class="item-desc" wx:if="{{item.description}}">{{item.description}}</text>
+            <view class="item-bottom">
+              <view class="price-area">
+                <text class="price">¥{{item._displayPrice}}</text>
+                <text class="original-price" wx:if="{{item._isEmployee}}">¥{{item.price}}</text>
+                <text class="employee-tag" wx:if="{{item._isEmployee}}">内购价</text>
+              </view>
+              <text class="item-stock">库存: {{item.stock}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="loading" wx:if="{{loading}}">
+        <text>加载中...</text>
+      </view>
+      <view class="empty-state" wx:if="{{!loading && products.length === 0}}">
+        <text class="empty-icon">📦</text>
+        <text class="empty-text">该分类暂无商品</text>
+      </view>
+    </scroll-view>
+  </view>
+</view>

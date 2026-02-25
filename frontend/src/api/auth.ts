@@ -1,0 +1,14 @@
+import request from './request'
+import type { Result, LoginParam, User } from '../types'
+
+export function login(data: LoginParam): Promise<Result<{user: User, token: string}>> {
+  return request.post('/auth/login', data)
+}
+
+export function register(data: { username: string; password: string; phone?: string }): Promise<Result<void>> {
+  return request.post('/auth/register', data)
+}
+
+export function logout(): Promise<Result<void>> {
+  return request.post('/auth/logout')
+}
