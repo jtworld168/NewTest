@@ -169,7 +169,7 @@ export default {
     async buyNow(product) {
       const app = getApp()
       try {
-        const res = await api.addOrder(app.globalData.userInfo.id, product.id, 1)
+        const res = await api.addOrder(app.globalData.userInfo.id, product.id, 1, null, app.globalData.selectedStoreId || null)
         if (res.data && res.data.id) {
           uni.navigateTo({ url: '/pages/payment/payment?orderId=' + res.data.id + '&amount=' + res.data.totalAmount })
         } else {

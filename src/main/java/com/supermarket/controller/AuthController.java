@@ -1,6 +1,7 @@
 package com.supermarket.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.supermarket.annotation.RateLimit;
 import com.supermarket.common.LoginParam;
 import com.supermarket.common.Result;
 import com.supermarket.entity.User;
@@ -25,6 +26,7 @@ public class AuthController {
 
     @Operation(summary = "用户登录")
     @PostMapping("/login")
+    @RateLimit(key = "auth:login", maxRequests = 10, windowSeconds = 60, message = "登录尝试过于频繁，请1分钟后再试")
     public Result<Object> login(@RequestBody LoginParam param, HttpServletResponse response) {
         if (param.getUsername() == null || param.getUsername().isBlank()) {
             return Result.error("用户名不能为空");

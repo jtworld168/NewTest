@@ -90,10 +90,13 @@ function getOrderById(id) {
   return request({ url: '/orders/get/' + id })
 }
 
-function addOrder(userId, productId, quantity, userCouponId) {
+function addOrder(userId, productId, quantity, userCouponId, storeId) {
   let url = '/orders/add?userId=' + userId + '&productId=' + productId + '&quantity=' + quantity
   if (userCouponId) {
     url += '&userCouponId=' + userCouponId
+  }
+  if (storeId) {
+    url += '&storeId=' + storeId
   }
   return request({ url: url, method: 'POST' })
 }
