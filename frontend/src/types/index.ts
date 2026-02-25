@@ -159,6 +159,8 @@ export interface StoreProduct {
   productId: number
   storePrice?: number
   storeStock?: number
+  safetyStock?: number
+  couponId?: number
   status?: number
   createTime?: string
   updateTime?: string

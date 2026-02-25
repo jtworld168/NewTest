@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -185,5 +186,41 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
                     return currentStock < safetyStock;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<StoreProduct> searchByProductNameList(String productName, Long storeId) {
+        LambdaQueryWrapper<Product> productWrapper = new LambdaQueryWrapper<>();
+        productWrapper.like(Product::getName, productName)
+                      .select(Product::getId);
+        List<Long> productIds = productService.list(productWrapper).stream()
+                .map(Product::getId).collect(Collectors.toList());
+        if (productIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        LambdaQueryWrapper<StoreProduct> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(StoreProduct::getProductId, productIds);
+        if (storeId != null) {
+            wrapper.eq(StoreProduct::getStoreId, storeId);
+        }
+        wrapper.orderByDesc(StoreProduct::getCreateTime);
+        return list(wrapper);
+    }
+
+    @Override
+    public StoreProduct getByStoreIdAndProductId(Long storeId, Long productId) {
+        LambdaQueryWrapper<StoreProduct> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(StoreProduct::getStoreId, storeId)
+               .eq(StoreProduct::getProductId, productId);
+        return getOne(wrapper);
+    }
+
+    @Override
+    public boolean batchSetCoupon(List<Long> ids, Long couponId) {
+        List<StoreProduct> items = listByIds(ids);
+        for (StoreProduct item : items) {
+            item.setCouponId(couponId);
+        }
+        return updateBatchById(items);
     }
 }

@@ -18,8 +18,11 @@ public interface StoreProductService extends IService<StoreProduct> {
     boolean deleteBatchStoreProducts(List<Long> ids);
     List<StoreProduct> listAll();
     IPage<StoreProduct> searchByProductName(String productName, Long storeId, int pageNum, int pageSize);
+    List<StoreProduct> searchByProductNameList(String productName, Long storeId);
     List<StoreProduct> getLowStockByStoreId(Long storeId, int threshold);
     List<StoreProduct> getLowStockByStoreIdUsingSafetyStock(Long storeId);
     void syncProductTotalStock(Long productId);
     StoreProduct addStoreProductWithName(String productName, StoreProduct storeProduct);
+    StoreProduct getByStoreIdAndProductId(Long storeId, Long productId);
+    boolean batchSetCoupon(List<Long> ids, Long couponId);
 }

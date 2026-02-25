@@ -31,6 +31,13 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
+    public Product getProductByBarcode(String barcode) {
+        LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Product::getBarcode, barcode);
+        return getOne(wrapper);
+    }
+
+    @Override
     public List<Product> searchProductsByName(String name) {
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(Product::getName, name)

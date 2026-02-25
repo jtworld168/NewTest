@@ -153,4 +153,21 @@ public class StoreProductController {
         }
         return storeProductService.deleteBatchStoreProducts(ids) ? Result.success() : Result.error("批量删除失败");
     }
+
+    @Operation(summary = "一键设置优惠券（批量）")
+    @PutMapping("/batchSetCoupon")
+    public Result<Void> batchSetCoupon(@RequestBody Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Number> idNumbers = (List<Number>) body.get("ids");
+        Object couponIdObj = body.get("couponId");
+        if (idNumbers == null || idNumbers.isEmpty()) {
+            return Result.badRequest("ID列表不能为空");
+        }
+        if (couponIdObj == null) {
+            return Result.badRequest("优惠券ID不能为空");
+        }
+        List<Long> ids = idNumbers.stream().map(Number::longValue).toList();
+        Long couponId = Long.valueOf(couponIdObj.toString());
+        return storeProductService.batchSetCoupon(ids, couponId) ? Result.success() : Result.error("设置优惠券失败");
+    }
 }

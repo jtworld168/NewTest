@@ -100,7 +100,7 @@ public class StoreController {
         return storeService.deleteBatchStores(ids) ? Result.success() : Result.error("批量删除失败");
     }
 
-    @Operation(summary = "查询店铺库存预警商品（库存低于安全库存）")
+    @Operation(summary = "查询店铺库存预警商品（库存低于各商品自身安全库存）")
     @GetMapping("/lowStock/{storeId}")
     public Result<List<StoreProduct>> getLowStockProducts(
             @Parameter(description = "店铺ID") @PathVariable Long storeId) {
@@ -108,8 +108,7 @@ public class StoreController {
         if (store == null) {
             return Result.error("店铺不存在");
         }
-        int threshold = store.getSafetyStock() != null ? store.getSafetyStock() : 10;
-        List<StoreProduct> list = storeProductService.getLowStockByStoreId(storeId, threshold);
+        List<StoreProduct> list = storeProductService.getLowStockByStoreIdUsingSafetyStock(storeId);
         return Result.success(list);
     }
 }

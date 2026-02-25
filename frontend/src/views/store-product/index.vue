@@ -6,7 +6,18 @@
           <span>店铺商品管理</span>
           <div>
             <el-button type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
-            <el-button type="primary" @click="openDialog()">新增店铺商品</el-button>
+            <el-button type="warning" :disabled="!selectedIds.length" @click="openCouponDialog">一键设置优惠券</el-button>
+            <el-button type="success" @click="handleExport">导出Excel</el-button>
+            <el-upload
+              action=""
+              :before-upload="handleImport"
+              :show-file-list="false"
+              accept=".xlsx,.xls"
+              style="display: inline-block; margin-left: 12px;"
+            >
+              <el-button type="info">导入Excel</el-button>
+            </el-upload>
+            <el-button type="primary" @click="openDialog()" style="margin-left: 12px;">新增店铺商品</el-button>
           </div>
         </div>
       </template>
@@ -43,6 +54,12 @@
           <template #default="{ row }">
             <el-tag v-if="row.storeStock < (row.safetyStock || 10)" type="danger" size="small">{{ row.safetyStock || 10 }}</el-tag>
             <span v-else>{{ row.safetyStock || 10 }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="优惠券" width="120" align="center">
+          <template #default="{ row }">
+            <span v-if="row.couponId">{{ couponMap[row.couponId] || row.couponId }}</span>
+            <span v-else style="color: #999;">无</span>
           </template>
         </el-table-column>
         <el-table-column label="状态" prop="status" width="80" align="center">
@@ -122,20 +139,47 @@
         <el-button type="primary" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="couponDialogVisible" title="一键设置优惠券" width="500">
+      <el-form label-width="120px">
+        <el-form-item label="优惠券模板">
+          <el-select v-model="selectedCouponId" placeholder="请选择优惠券模板" style="width: 100%" filterable>
+            <el-option v-for="c in couponList" :key="c.id" :label="c.name" :value="c.id">
+              <span>{{ c.name }}</span>
+              <span style="float: right; color: #999; font-size: 12px">ID: {{ c.id }}</span>
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="优惠券ID">
+          <el-input :model-value="selectedCouponId ? String(selectedCouponId) : ''" disabled />
+        </el-form-item>
+        <el-form-item label="已选商品数">
+          <el-input :model-value="String(selectedIds.length)" disabled />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="couponDialogVisible = false">取消</el-button>
+        <el-button type="primary" :disabled="!selectedCouponId" @click="handleBatchSetCoupon">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { listStoreProductsPage, addStoreProduct, addStoreProductWithName, updateStoreProduct, deleteStoreProduct, deleteBatchStoreProducts } from '../../api/storeProduct'
+import { listStoreProductsPage, addStoreProduct, addStoreProductWithName, updateStoreProduct, deleteStoreProduct, deleteBatchStoreProducts, batchSetCoupon } from '../../api/storeProduct'
 import { listStores } from '../../api/store'
 import { listProducts } from '../../api/product'
+import { listCoupons } from '../../api/coupon'
+import { BASE_URL } from '../../api/request'
+import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FormInstance } from 'element-plus'
+import type { FormInstance, UploadRawFile } from 'element-plus'
 
 const tableData = ref<any[]>([])
 const storeList = ref<any[]>([])
 const productList = ref<any[]>([])
+const couponList = ref<any[]>([])
 const selectedIds = ref<number[]>([])
 const filterStoreId = ref<number | undefined>(undefined)
 const searchProductName = ref('')
@@ -146,6 +190,9 @@ const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 
+const couponDialogVisible = ref(false)
+const selectedCouponId = ref<number | undefined>(undefined)
+
 const storeMap = computed(() => {
   const map: Record<number, string> = {}
   storeList.value.forEach((s: any) => { if (s.id) map[s.id] = s.name })
@@ -155,6 +202,12 @@ const storeMap = computed(() => {
 const productMap = computed(() => {
   const map: Record<number, string> = {}
   productList.value.forEach((p: any) => { if (p.id) map[p.id] = p.name })
+  return map
+})
+
+const couponMap = computed(() => {
+  const map: Record<number, string> = {}
+  couponList.value.forEach((c: any) => { if (c.id) map[c.id] = c.name })
   return map
 })
 
@@ -169,15 +222,17 @@ const rules = {
 }
 
 async function loadData() {
-  const [res, storeRes, productRes] = await Promise.all([
+  const [res, storeRes, productRes, couponRes] = await Promise.all([
     listStoreProductsPage(pageNum.value, pageSize.value, filterStoreId.value, searchProductName.value.trim() || undefined),
     listStores(),
-    listProducts()
+    listProducts(),
+    listCoupons()
   ])
   tableData.value = res.data?.records || []
   total.value = res.data?.total || 0
   storeList.value = storeRes.data || []
   productList.value = productRes.data || []
+  couponList.value = couponRes.data || []
 }
 
 function handleSelectionChange(rows: any[]) {
@@ -245,6 +300,56 @@ async function handleBatchDelete() {
   await ElMessageBox.confirm(`确定删除选中的 ${selectedIds.value.length} 个店铺商品？`, '提示', { type: 'warning' })
   await deleteBatchStoreProducts(selectedIds.value)
   ElMessage.success('批量删除成功')
+  loadData()
+}
+
+function handleExport() {
+  const token = localStorage.getItem('satoken')
+  const params: any = {}
+  if (filterStoreId.value) params.storeId = filterStoreId.value
+  if (searchProductName.value.trim()) params.productName = searchProductName.value.trim()
+  axios.get(BASE_URL + '/api/excel/export/store-products', {
+    params,
+    responseType: 'blob',
+    headers: token ? { satoken: token } : {}
+  }).then(res => {
+    const blob = new Blob([res.data])
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = '店铺商品数据.xlsx'
+    link.click()
+    URL.revokeObjectURL(link.href)
+  })
+}
+
+function handleImport(file: UploadRawFile) {
+  const token = localStorage.getItem('satoken')
+  const formData = new FormData()
+  formData.append('file', file)
+  axios.post(BASE_URL + '/api/excel/import/store-products', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      ...(token ? { satoken: token } : {})
+    }
+  }).then(res => {
+    ElMessage.success(res.data?.data || '导入成功')
+    loadData()
+  }).catch(() => {
+    ElMessage.error('导入失败')
+  })
+  return false
+}
+
+function openCouponDialog() {
+  selectedCouponId.value = undefined
+  couponDialogVisible.value = true
+}
+
+async function handleBatchSetCoupon() {
+  if (!selectedCouponId.value) return
+  await batchSetCoupon(selectedIds.value, selectedCouponId.value)
+  ElMessage.success('优惠券设置成功')
+  couponDialogVisible.value = false
   loadData()
 }
 
