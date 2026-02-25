@@ -21,6 +21,8 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import jakarta.annotation.PostConstruct;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -54,11 +56,29 @@ public class FileUploadController {
     private static final int THUMBNAIL_SIZE = 200;
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-    @Value("${file.upload-dir:uploads}")
+    private static final Map<String, String> MIME_TYPES = Map.of(
+            ".jpg", "image/jpeg",
+            ".jpeg", "image/jpeg",
+            ".png", "image/png",
+            ".gif", "image/gif",
+            ".webp", "image/webp"
+    );
+
+    @Value("${file.upload-dir:file}")
     private String uploadDir;
 
     @Value("${cdn.base-url:}")
     private String cdnBaseUrl;
+
+    private Path uploadPath;
+
+    @PostConstruct
+    public void init() throws IOException {
+        uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+    }
 
     @PostMapping("/upload")
     @Operation(summary = "上传图片（自动压缩）", description = "上传图片文件，自动压缩并生成缩略图，返回图片访问URL")
@@ -86,11 +106,6 @@ public class FileUploadController {
         }
 
         try {
-            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
             String baseName = UUID.randomUUID().toString().replace("-", "");
 
             // Read original image for compression
@@ -192,7 +207,6 @@ public class FileUploadController {
             return ResponseEntity.badRequest().build();
         }
         try {
-            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
             Path filePath = uploadPath.resolve(filename).normalize();
 
             if (!filePath.startsWith(uploadPath)) {
@@ -204,10 +218,7 @@ public class FileUploadController {
             }
 
             Resource resource = new UrlResource(filePath.toUri());
-            String contentType = Files.probeContentType(filePath);
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
+            String contentType = getContentType(filename);
 
             // HTTP Cache: images are immutable (UUID filenames), cache for 7 days
             return ResponseEntity.ok()
@@ -228,7 +239,6 @@ public class FileUploadController {
             return ResponseEntity.badRequest().build();
         }
         try {
-            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
             Path filePath = uploadPath.resolve(filename).normalize();
 
             if (!filePath.startsWith(uploadPath)) {
@@ -240,10 +250,7 @@ public class FileUploadController {
             }
 
             Resource resource = new UrlResource(filePath.toUri());
-            String contentType = Files.probeContentType(filePath);
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
+            String contentType = getContentType(filename);
 
             String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
 
@@ -261,7 +268,6 @@ public class FileUploadController {
     @Operation(summary = "获取文件列表", description = "获取已上传的所有文件名列表")
     public Result<List<String>> listFiles() {
         try {
-            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
             if (!Files.exists(uploadPath)) {
                 return Result.success(List.of());
             }
@@ -276,6 +282,23 @@ public class FileUploadController {
         } catch (IOException e) {
             return Result.error("获取文件列表失败：" + e.getMessage());
         }
+    }
+
+    /**
+     * Get content type by filename extension, with fallback to Files.probeContentType.
+     * Provides reliable MIME type detection across all OS (probeContentType returns null on some platforms).
+     */
+    private String getContentType(String filename) {
+        String ext = filename.substring(filename.lastIndexOf(".")).toLowerCase();
+        String mime = MIME_TYPES.get(ext);
+        if (mime != null) return mime;
+        try {
+            Path filePath = uploadPath.resolve(filename).normalize();
+            String detected = Files.probeContentType(filePath);
+            if (detected != null) return detected;
+        } catch (IOException ignored) {
+        }
+        return "application/octet-stream";
     }
 
     private boolean isValidImageContent(MultipartFile file) {
