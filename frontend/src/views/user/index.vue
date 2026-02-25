@@ -86,7 +86,10 @@
           <el-input v-model="form.username" />
         </el-form-item>
         <el-form-item label="密码" prop="password" v-if="!isEdit">
-          <el-input v-model="form.password" type="password" show-password />
+          <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
+        </el-form-item>
+        <el-form-item label="重置密码" v-if="isEdit">
+          <el-input v-model="form.password" type="password" show-password placeholder="留空则不修改密码" />
         </el-form-item>
         <el-form-item label="手机号" prop="phone">
           <el-input v-model="form.phone" />
@@ -181,7 +184,7 @@ function handleSelectionChange(rows: User[]) {
 
 function openDialog(row?: User) {
   isEdit.value = !!row
-  Object.assign(form, row ? { ...row } : defaultForm())
+  Object.assign(form, row ? { ...row, password: '' } : defaultForm())
   dialogVisible.value = true
 }
 
@@ -189,7 +192,11 @@ async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
   if (isEdit.value) {
-    await updateUser(form)
+    const updateData = { ...form }
+    if (!updateData.password) {
+      delete updateData.password
+    }
+    await updateUser(updateData)
     ElMessage.success('更新成功')
   } else {
     await addUser(form)
