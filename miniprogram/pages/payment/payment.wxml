@@ -1,0 +1,47 @@
+<view class="container">
+  <view class="pay-card">
+    <view class="pay-icon">💳</view>
+    <text class="pay-title">订单支付</text>
+    <text class="pay-order-id">订单号: {{orderId}}</text>
+    <text class="pay-amount">¥{{amount}}</text>
+    <text class="pay-countdown" wx:if="{{countdown > 0}}">剩余支付时间: {{countdownText}}</text>
+    <text class="pay-countdown expired" wx:if="{{countdown <= 0 && orderId}}">订单已超时</text>
+
+    <!-- Quick test payment -->
+    <view class="quick-pay-section">
+      <button class="quick-pay-btn" bindtap="quickTestPay" disabled="{{paying || countdown <= 0}}">
+        快速支付测试（现金）
+      </button>
+      <text class="quick-pay-hint">测试功能，默认使用现金支付</text>
+    </view>
+
+    <!-- Payment method selection -->
+    <view class="pay-methods">
+      <text class="pay-methods-title">选择支付方式</text>
+      <view class="pay-method {{paymentMethod === 'WECHAT' ? 'selected' : ''}}" bindtap="selectMethod" data-method="WECHAT">
+        <text class="method-icon">💚</text>
+        <text class="method-name">微信支付</text>
+        <text class="method-check" wx:if="{{paymentMethod === 'WECHAT'}}">✓</text>
+      </view>
+      <view class="pay-method {{paymentMethod === 'ALIPAY' ? 'selected' : ''}}" bindtap="selectMethod" data-method="ALIPAY">
+        <text class="method-icon">💙</text>
+        <text class="method-name">支付宝</text>
+        <text class="method-check" wx:if="{{paymentMethod === 'ALIPAY'}}">✓</text>
+      </view>
+      <view class="pay-method {{paymentMethod === 'CARD' ? 'selected' : ''}}" bindtap="selectMethod" data-method="CARD">
+        <text class="method-icon">💳</text>
+        <text class="method-name">银行卡</text>
+        <text class="method-check" wx:if="{{paymentMethod === 'CARD'}}">✓</text>
+      </view>
+      <view class="pay-method {{paymentMethod === 'CASH' ? 'selected' : ''}}" bindtap="selectMethod" data-method="CASH">
+        <text class="method-icon">💰</text>
+        <text class="method-name">现金</text>
+        <text class="method-check" wx:if="{{paymentMethod === 'CASH'}}">✓</text>
+      </view>
+    </view>
+  </view>
+
+  <button class="confirm-btn" bindtap="confirmPay" disabled="{{paying || countdown <= 0}}">
+    {{paying ? '支付中...' : '确认支付 ¥' + amount}}
+  </button>
+</view>

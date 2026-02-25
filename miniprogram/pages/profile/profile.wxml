@@ -1,0 +1,62 @@
+<view class="container">
+  <!-- User Header -->
+  <view class="user-header">
+    <block wx:if="{{isLoggedIn}}">
+      <image class="avatar" src="{{avatarUrl}}" mode="aspectFill"></image>
+      <view class="user-info">
+        <text class="username">{{userInfo.username}}</text>
+        <view class="role-row">
+          <text class="user-role">{{roleText}}</text>
+          <text class="employee-badge" wx:if="{{isEmployee}}">🏷️ 员工内部价</text>
+        </view>
+        <text class="user-phone" wx:if="{{userInfo.phone}}">📱 {{userInfo.phone}}</text>
+      </view>
+    </block>
+    <block wx:else>
+      <image class="avatar" src="/images/default-avatar.png" mode="aspectFill"></image>
+      <view class="user-info">
+        <text class="username" bindtap="goLogin">点击登录</text>
+        <text class="user-role">未登录</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- Menu List -->
+  <view class="menu-list" wx:if="{{isLoggedIn}}">
+    <view class="menu-item" bindtap="goOrders">
+      <text class="menu-icon">📋</text>
+      <text class="menu-text">我的订单</text>
+      <text class="menu-arrow">></text>
+    </view>
+    <view class="menu-item" bindtap="goCart">
+      <text class="menu-icon">🛒</text>
+      <text class="menu-text">购物车</text>
+      <text class="menu-arrow">></text>
+    </view>
+    <view class="menu-item" bindtap="goCoupons">
+      <text class="menu-icon">🎫</text>
+      <text class="menu-text">我的优惠券</text>
+      <text class="menu-arrow">></text>
+    </view>
+  </view>
+
+  <!-- Employee Discount Info -->
+  <view class="employee-info" wx:if="{{isLoggedIn && isEmployee}}">
+    <view class="employee-info-header">
+      <text class="employee-info-icon">💰</text>
+      <text class="employee-info-title">员工专享折扣</text>
+    </view>
+    <text class="employee-info-desc">您是内部员工，部分商品享有员工专享折扣价，下单时系统将自动按折扣价计算。</text>
+    <text class="employee-info-note">注意：员工折扣与优惠券不可叠加使用。</text>
+  </view>
+
+  <!-- Actions -->
+  <view class="actions" wx:if="{{!isLoggedIn}}">
+    <button class="btn-primary" bindtap="goLogin">登录</button>
+    <button class="btn-register" bindtap="goRegister">注册新账号</button>
+  </view>
+
+  <view class="actions" wx:if="{{isLoggedIn}}">
+    <button class="btn-danger logout-btn" bindtap="doLogout">退出登录</button>
+  </view>
+</view>

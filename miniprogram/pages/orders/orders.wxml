@@ -1,0 +1,58 @@
+<view class="container">
+  <!-- Tabs -->
+  <view class="tabs">
+    <view class="tab {{currentTab === item.key ? 'active' : ''}}" wx:for="{{tabs}}" wx:key="key" bindtap="switchTab" data-tab="{{item.key}}">
+      <text>{{item.name}}</text>
+    </view>
+  </view>
+
+  <!-- Order List -->
+  <view class="order-list" wx:if="{{!loading}}">
+    <block wx:for="{{orders}}" wx:key="id">
+      <view class="order-card" wx:if="{{currentTab === 'all' || item.status === currentTab}}" bindtap="goToOrderDetail" data-id="{{item.id}}">
+        <view class="order-header">
+          <text class="order-id">订单号: {{item.id}}</text>
+          <text class="order-store" wx:if="{{item._storeName}}">{{item._storeName}}</text>
+          <text class="order-status status-{{item.status}}">
+            {{item.status === 'PENDING' ? '待支付' : item.status === 'PAID' ? '已支付' : item.status === 'COMPLETED' ? '已完成' : '已取消'}}
+          </text>
+        </view>
+
+        <view class="order-body">
+          <image class="order-product-image" src="{{item._imageUrl || '/images/product-placeholder.png'}}" mode="aspectFill"></image>
+          <view class="order-product-info">
+            <text class="order-product-name">{{item._productName || '商品'}}</text>
+            <text class="order-quantity">x{{item.quantity}}</text>
+            <text class="order-price">单价: ¥{{item.priceAtPurchase}}</text>
+            <text class="order-barcode" wx:if="{{item._barcode}}">条形码: {{item._barcode}}</text>
+          </view>
+        </view>
+
+        <view class="order-footer">
+          <text class="order-time" wx:if="{{item.createTime}}">{{item.createTime}}</text>
+          <view class="order-total">
+            <text class="order-discount-tag" wx:if="{{item._hasEmployeeDiscount}}">员工折扣</text>
+            <text class="order-coupon-tag" wx:if="{{item.userCouponId}}">已用券</text>
+            <text>合计: </text>
+            <text class="price">¥{{item.totalAmount}}</text>
+          </view>
+        </view>
+
+        <!-- Action buttons for pending orders -->
+        <view class="order-actions" wx:if="{{item.status === 'PENDING'}}">
+          <button class="btn-cancel" catchtap="cancelOrder" data-id="{{item.id}}">取消订单</button>
+          <button class="btn-pay" catchtap="goToPay" data-id="{{item.id}}" data-amount="{{item.totalAmount}}">去支付</button>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <view class="empty-state" wx:if="{{!loading && orders.length === 0}}">
+    <text class="empty-icon">📋</text>
+    <text class="empty-text">暂无订单</text>
+  </view>
+</view>

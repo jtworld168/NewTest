@@ -1,0 +1,151 @@
+<script>
+export default {
+  globalData: {
+    userInfo: null,
+    baseUrl: 'http://localhost:8080/api'
+  },
+  onLaunch() {
+    const userInfo = uni.getStorageSync('userInfo')
+    if (userInfo) {
+      this.globalData.userInfo = userInfo
+    }
+  }
+}
+</script>
+
+<style>
+/* Theme Variables */
+page {
+  --color-primary: #C9A96E;
+  --color-primary-dark: #B8956A;
+  --color-primary-light: #D4BA8A;
+  --color-surface: #FDF8F0;
+  --color-bg: #F5EDE0;
+  --color-text: #3D3226;
+  --color-text-secondary: #8C7B6B;
+  --color-accent: #D4634A;
+  --color-success: #6BAF7B;
+  --color-warning: #D4A04A;
+  --color-border: #E8DDD0;
+  --color-white: #FFFFFF;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+  font-size: 28rpx;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  box-sizing: border-box;
+}
+
+.container {
+  padding: 20rpx;
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
+  border: none;
+  border-radius: 12rpx;
+  padding: 20rpx 0;
+  font-size: 32rpx;
+  text-align: center;
+}
+
+.btn-primary::after {
+  border: none;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #D4634A, #C0503A);
+  color: #fff;
+  border: none;
+  border-radius: 12rpx;
+  padding: 20rpx 0;
+  font-size: 32rpx;
+  text-align: center;
+}
+
+/* Cards */
+.card {
+  background-color: var(--color-white);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(60, 50, 38, 0.06);
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+  color: var(--color-text-secondary);
+}
+
+.empty-state .empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-state .empty-text {
+  font-size: 28rpx;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 40rpx;
+  color: var(--color-text-secondary);
+  font-size: 26rpx;
+}
+
+/* Price text */
+.price {
+  color: var(--color-accent);
+  font-weight: bold;
+}
+
+/* ===== Global Animations ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cartBounce {
+  0% { transform: scale(1); }
+  20% { transform: scale(1.35); }
+  50% { transform: scale(0.9); }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+</style>

@@ -1,0 +1,14 @@
+{
+  "name": "智慧零售",
+  "appid": "",
+  "description": "智慧零售小程序",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "wxe25d5363380f040d",
+    "setting": {
+      "urlCheck": false
+    }
+  }
+}

@@ -1,0 +1,192 @@
+/* Theme Variables — Light Champagne + Oasis Green + Tequila */
+page {
+  --color-primary: #D4BC8B;
+  --color-primary-dark: #C9A96E;
+  --color-primary-light: #E8D9BD;
+  --color-surface: #FDF9F3;
+  --color-bg: #F7F0E6;
+  --color-text: #3D3226;
+  --color-text-secondary: #8C7B6B;
+  --color-accent: #C75B3A;
+  --color-success: #5C8A5E;
+  --color-oasis: #6B9B6F;
+  --color-tequila: #D4976A;
+  --color-warning: #D4A04A;
+  --color-border: rgba(200, 185, 160, 0.3);
+  --color-white: #FFFFFF;
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.45);
+  --glass-shadow: 0 8rpx 32rpx rgba(60, 50, 38, 0.08);
+  --radius-sm: 16rpx;
+  --radius-md: 24rpx;
+  --radius-lg: 32rpx;
+  --radius-xl: 40rpx;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+  font-size: 28rpx;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  box-sizing: border-box;
+}
+
+.container {
+  padding: 20rpx;
+}
+
+/* Liquid Glass Utility */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20rpx) saturate(180%);
+  -webkit-backdrop-filter: blur(20rpx) saturate(180%);
+  border: 1rpx solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-xl);
+  padding: 22rpx 0;
+  font-size: 32rpx;
+  text-align: center;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4rpx 16rpx rgba(212, 188, 139, 0.35);
+}
+
+.btn-primary:active {
+  opacity: 0.85;
+  transform: scale(0.97);
+}
+
+.btn-primary::after {
+  border: none;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #C75B3A, #B04A2E);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-xl);
+  padding: 22rpx 0;
+  font-size: 32rpx;
+  text-align: center;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.btn-danger:active {
+  opacity: 0.85;
+  transform: scale(0.97);
+}
+
+/* Cards — Liquid Glass */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20rpx) saturate(180%);
+  -webkit-backdrop-filter: blur(20rpx) saturate(180%);
+  border: 1rpx solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: var(--glass-shadow);
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+  color: var(--color-text-secondary);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.empty-state .empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-state .empty-text {
+  font-size: 28rpx;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 40rpx;
+  color: var(--color-text-secondary);
+  font-size: 26rpx;
+}
+
+/* Price text */
+.price {
+  color: var(--color-accent);
+  font-weight: bold;
+}
+
+/* Tags */
+.tag-oasis {
+  background: rgba(107, 155, 111, 0.12);
+  color: var(--color-oasis);
+  padding: 4rpx 14rpx;
+  border-radius: var(--radius-sm);
+  font-size: 22rpx;
+}
+
+.tag-tequila {
+  background: rgba(212, 151, 106, 0.12);
+  color: var(--color-tequila);
+  padding: 4rpx 14rpx;
+  border-radius: var(--radius-sm);
+  font-size: 22rpx;
+}
+
+/* ===== Global Animations ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cartBounce {
+  0% { transform: scale(1); }
+  20% { transform: scale(1.35); }
+  50% { transform: scale(0.9); }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
