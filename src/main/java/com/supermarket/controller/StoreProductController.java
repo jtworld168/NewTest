@@ -94,6 +94,23 @@ public class StoreProductController {
         return storeProductService.deleteStoreProduct(id) ? Result.success() : Result.error("删除失败");
     }
 
+    @Operation(summary = "获取商品总库存（各店铺库存之和）")
+    @GetMapping("/totalStock/{productId}")
+    public Result<Integer> getTotalStock(@Parameter(description = "商品ID") @PathVariable Long productId) {
+        List<StoreProduct> storeProducts = storeProductService.getByProductId(productId);
+        int totalStock = storeProducts.stream()
+                .mapToInt(sp -> sp.getStoreStock() != null ? sp.getStoreStock() : 0)
+                .sum();
+        return Result.success(totalStock);
+    }
+
+    @Operation(summary = "获取店铺库存预警商品（库存低于安全库存）")
+    @GetMapping("/lowStock/{storeId}")
+    public Result<List<StoreProduct>> getLowStock(
+            @Parameter(description = "店铺ID") @PathVariable Long storeId) {
+        return Result.success(storeProductService.getLowStockByStoreIdUsingSafetyStock(storeId));
+    }
+
     @Operation(summary = "批量删除店铺商品")
     @DeleteMapping("/deleteBatch")
     public Result<Void> deleteBatchStoreProducts(@RequestBody List<Long> ids) {

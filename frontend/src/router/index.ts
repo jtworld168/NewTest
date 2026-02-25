@@ -107,6 +107,12 @@ const router = createRouter({
           name: 'StoreProducts',
           component: () => import('../views/store-product/index.vue'),
           meta: { title: '店铺商品' }
+        },
+        {
+          path: 'sales',
+          name: 'Sales',
+          component: () => import('../views/sales/index.vue'),
+          meta: { title: '销量管理' }
         }
       ]
     }

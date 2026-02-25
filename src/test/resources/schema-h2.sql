@@ -111,6 +111,7 @@ CREATE TABLE IF NOT EXISTS `store_product` (
     `product_id`  BIGINT         NOT NULL,
     `store_price` DECIMAL(10,2)  DEFAULT NULL,
     `store_stock` INT            DEFAULT 0,
+    `safety_stock` INT           DEFAULT 10,
     `status`      INT            DEFAULT 1,
     `create_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
     `update_time` TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,

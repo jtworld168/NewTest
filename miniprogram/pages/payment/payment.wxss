@@ -41,7 +41,58 @@
   font-size: 72rpx;
   font-weight: bold;
   color: var(--color-accent);
-  margin-bottom: 40rpx;
+  margin-bottom: 20rpx;
+}
+
+.pay-countdown {
+  display: block;
+  font-size: 26rpx;
+  color: #e74c3c;
+  margin-bottom: 30rpx;
+  font-weight: 500;
+}
+
+.pay-countdown.expired {
+  color: #999;
+}
+
+/* Quick pay test */
+.quick-pay-section {
+  margin-bottom: 30rpx;
+  padding-bottom: 30rpx;
+  border-bottom: 1rpx solid var(--color-border);
+}
+
+.quick-pay-btn {
+  background: linear-gradient(135deg, #6B9B6F, #5A8A5E);
+  color: #fff;
+  font-size: 30rpx;
+  border-radius: 40rpx;
+  padding: 20rpx 0;
+  border: none;
+  width: 100%;
+  margin-bottom: 12rpx;
+}
+
+.quick-pay-btn:active {
+  opacity: 0.85;
+  transform: scale(0.97);
+}
+
+.quick-pay-btn::after {
+  border: none;
+}
+
+.quick-pay-btn[disabled] {
+  background: #ccc;
+  color: #fff;
+}
+
+.quick-pay-hint {
+  display: block;
+  text-align: center;
+  font-size: 22rpx;
+  color: var(--color-text-secondary);
 }
 
 /* Payment methods */

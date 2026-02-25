@@ -19,4 +19,5 @@ public interface StoreProductService extends IService<StoreProduct> {
     List<StoreProduct> listAll();
     IPage<StoreProduct> searchByProductName(String productName, Long storeId, int pageNum, int pageSize);
     List<StoreProduct> getLowStockByStoreId(Long storeId, int threshold);
+    List<StoreProduct> getLowStockByStoreIdUsingSafetyStock(Long storeId);
 }

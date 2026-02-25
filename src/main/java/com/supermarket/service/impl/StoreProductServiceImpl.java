@@ -112,4 +112,16 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
                .orderByAsc(StoreProduct::getStoreStock);
         return list(wrapper);
     }
+
+    @Override
+    public List<StoreProduct> getLowStockByStoreIdUsingSafetyStock(Long storeId) {
+        List<StoreProduct> storeProducts = getByStoreId(storeId);
+        return storeProducts.stream()
+                .filter(sp -> {
+                    int safetyStock = sp.getSafetyStock() != null ? sp.getSafetyStock() : 10;
+                    int currentStock = sp.getStoreStock() != null ? sp.getStoreStock() : 0;
+                    return currentStock < safetyStock;
+                })
+                .collect(Collectors.toList());
+    }
 }

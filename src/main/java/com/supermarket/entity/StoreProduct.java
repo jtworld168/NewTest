@@ -38,6 +38,10 @@ public class StoreProduct {
     @ExcelProperty("店铺库存")
     private Integer storeStock;
 
+    @Schema(description = "安全库存阈值")
+    @ExcelProperty("安全库存")
+    private Integer safetyStock;
+
     @Schema(description = "上架状态：0-下架，1-上架")
     @ExcelProperty("上架状态")
     private Integer status;

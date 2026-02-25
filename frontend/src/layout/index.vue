@@ -101,6 +101,10 @@
             <span>店铺商品</span>
           </el-menu-item>
         </el-sub-menu>
+        <el-menu-item index="/sales">
+          <el-icon><TrendCharts /></el-icon>
+          <span>销量管理</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>

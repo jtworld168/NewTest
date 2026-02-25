@@ -10,3 +10,5 @@ export const addStoreProduct = (data: any) => request.post('/store-products/add'
 export const updateStoreProduct = (data: any) => request.put('/store-products/update', data)
 export const deleteStoreProduct = (id: number) => request.delete(`/store-products/delete/${id}`)
 export const deleteBatchStoreProducts = (ids: number[]) => request.delete('/store-products/deleteBatch', { data: ids })
+export const getTotalStockByProductId = (productId: number) => request.get(`/store-products/totalStock/${productId}`)
+export const getLowStockByStoreId = (storeId: number) => request.get(`/store-products/lowStock/${storeId}`)

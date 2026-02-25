@@ -4,6 +4,16 @@
     <text class="pay-title">订单支付</text>
     <text class="pay-order-id">订单号: {{orderId}}</text>
     <text class="pay-amount">¥{{amount}}</text>
+    <text class="pay-countdown" wx:if="{{countdown > 0}}">剩余支付时间: {{countdownText}}</text>
+    <text class="pay-countdown expired" wx:if="{{countdown <= 0 && orderId}}">订单已超时</text>
+
+    <!-- Quick test payment -->
+    <view class="quick-pay-section">
+      <button class="quick-pay-btn" bindtap="quickTestPay" disabled="{{paying || countdown <= 0}}">
+        快速支付测试（现金）
+      </button>
+      <text class="quick-pay-hint">测试功能，默认使用现金支付</text>
+    </view>
 
     <!-- Payment method selection -->
     <view class="pay-methods">
@@ -31,7 +41,7 @@
     </view>
   </view>
 
-  <button class="confirm-btn" bindtap="confirmPay" disabled="{{paying}}">
+  <button class="confirm-btn" bindtap="confirmPay" disabled="{{paying || countdown <= 0}}">
     {{paying ? '支付中...' : '确认支付 ¥' + amount}}
   </button>
 </view>

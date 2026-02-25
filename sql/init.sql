@@ -195,6 +195,7 @@ CREATE TABLE IF NOT EXISTS `store_product` (
     `product_id`  BIGINT         NOT NULL COMMENT '商品ID（关联总商品表）',
     `store_price` DECIMAL(10,2)  DEFAULT NULL COMMENT '店铺售价（可与总商品表价格不同）',
     `store_stock` INT            DEFAULT 0 COMMENT '店铺库存',
+    `safety_stock` INT           DEFAULT 10 COMMENT '安全库存阈值',
     `status`      INT            DEFAULT 1 COMMENT '上架状态：0-下架，1-上架',
     `create_time` DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
