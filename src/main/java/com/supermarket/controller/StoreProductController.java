@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "店铺商品管理", description = "店铺商品增删改查接口")
 @RestController
@@ -109,6 +110,35 @@ public class StoreProductController {
     public Result<List<StoreProduct>> getLowStock(
             @Parameter(description = "店铺ID") @PathVariable Long storeId) {
         return Result.success(storeProductService.getLowStockByStoreIdUsingSafetyStock(storeId));
+    }
+
+    @Operation(summary = "按商品名称新增店铺商品（若商品不存在则自动创建）")
+    @PostMapping("/addWithName")
+    public Result<StoreProduct> addStoreProductWithName(@RequestBody Map<String, Object> body) {
+        String productName = (String) body.get("productName");
+        if (productName == null || productName.isBlank()) {
+            return Result.badRequest("商品名称不能为空");
+        }
+        Object storeIdObj = body.get("storeId");
+        if (storeIdObj == null) {
+            return Result.badRequest("店铺ID不能为空");
+        }
+        StoreProduct sp = new StoreProduct();
+        sp.setStoreId(Long.valueOf(storeIdObj.toString()));
+        if (body.get("storePrice") != null) {
+            sp.setStorePrice(new java.math.BigDecimal(body.get("storePrice").toString()));
+        }
+        if (body.get("storeStock") != null) {
+            sp.setStoreStock(Integer.valueOf(body.get("storeStock").toString()));
+        }
+        if (body.get("safetyStock") != null) {
+            sp.setSafetyStock(Integer.valueOf(body.get("safetyStock").toString()));
+        }
+        if (body.get("status") != null) {
+            sp.setStatus(Integer.valueOf(body.get("status").toString()));
+        }
+        StoreProduct result = storeProductService.addStoreProductWithName(productName.trim(), sp);
+        return Result.success(result);
     }
 
     @Operation(summary = "批量删除店铺商品")

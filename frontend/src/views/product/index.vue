@@ -40,7 +40,13 @@
         <el-table-column prop="price" label="价格" width="100" align="center">
           <template #default="{ row }">¥{{ row.price }}</template>
         </el-table-column>
-        <el-table-column prop="stock" label="库存" width="80" align="center" />
+        <el-table-column prop="stock" label="总库存" width="100" align="center">
+          <template #default="{ row }">
+            <el-tooltip content="总库存 = 各店铺库存之和" placement="top">
+              <span>{{ row.stock }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column prop="categoryId" label="分类" width="100" align="center">
           <template #default="{ row }">
             {{ categoryMap[row.categoryId] || '-' }}

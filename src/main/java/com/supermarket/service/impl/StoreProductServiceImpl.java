@@ -11,7 +11,9 @@ import com.supermarket.service.ProductService;
 import com.supermarket.service.StoreProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,22 +61,80 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
 
     @Override
     public boolean addStoreProduct(StoreProduct storeProduct) {
-        return save(storeProduct);
+        boolean result = save(storeProduct);
+        if (result && storeProduct.getProductId() != null) {
+            syncProductTotalStock(storeProduct.getProductId());
+        }
+        return result;
     }
 
     @Override
     public boolean updateStoreProduct(StoreProduct storeProduct) {
-        return updateById(storeProduct);
+        boolean result = updateById(storeProduct);
+        if (result && storeProduct.getProductId() != null) {
+            syncProductTotalStock(storeProduct.getProductId());
+        }
+        return result;
     }
 
     @Override
     public boolean deleteStoreProduct(Long id) {
-        return removeById(id);
+        StoreProduct sp = getById(id);
+        boolean result = removeById(id);
+        if (result && sp != null && sp.getProductId() != null) {
+            syncProductTotalStock(sp.getProductId());
+        }
+        return result;
     }
 
     @Override
     public boolean deleteBatchStoreProducts(List<Long> ids) {
-        return removeByIds(ids);
+        List<StoreProduct> items = listByIds(ids);
+        boolean result = removeByIds(ids);
+        if (result) {
+            items.stream()
+                 .map(StoreProduct::getProductId)
+                 .distinct()
+                 .forEach(this::syncProductTotalStock);
+        }
+        return result;
+    }
+
+    @Override
+    public void syncProductTotalStock(Long productId) {
+        if (productId == null) return;
+        List<StoreProduct> storeProducts = getByProductId(productId);
+        int totalStock = storeProducts.stream()
+                .mapToInt(sp -> sp.getStoreStock() != null ? sp.getStoreStock() : 0)
+                .sum();
+        Product product = productService.getProductById(productId);
+        if (product != null) {
+            product.setStock(totalStock);
+            productService.updateProduct(product);
+        }
+    }
+
+    @Override
+    @Transactional
+    public StoreProduct addStoreProductWithName(String productName, StoreProduct storeProduct) {
+        Product existingProduct = productService.getProductByName(productName);
+        if (existingProduct != null) {
+            storeProduct.setProductId(existingProduct.getId());
+            if (storeProduct.getStorePrice() == null) {
+                storeProduct.setStorePrice(existingProduct.getPrice());
+            }
+        } else {
+            Product newProduct = new Product();
+            newProduct.setName(productName);
+            newProduct.setPrice(storeProduct.getStorePrice() != null ? storeProduct.getStorePrice() : BigDecimal.ZERO);
+            newProduct.setStock(storeProduct.getStoreStock() != null ? storeProduct.getStoreStock() : 0);
+            newProduct.setStatus(1);
+            productService.addProduct(newProduct);
+            storeProduct.setProductId(newProduct.getId());
+        }
+        save(storeProduct);
+        syncProductTotalStock(storeProduct.getProductId());
+        return storeProduct;
     }
 
     @Override

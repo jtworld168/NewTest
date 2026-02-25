@@ -76,10 +76,30 @@
             <el-option v-for="s in storeList" :key="s.id" :label="s.name" :value="s.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="商品" prop="productId">
-          <el-select v-model="form.productId" placeholder="请选择商品" style="width: 100%">
-            <el-option v-for="p in productList" :key="p.id" :label="p.name" :value="p.id" />
-          </el-select>
+        <el-form-item label="商品" :prop="isEdit ? '' : 'productName'">
+          <template v-if="isEdit">
+            <el-select v-model="form.productId" placeholder="请选择商品" style="width: 100%" disabled>
+              <el-option v-for="p in productList" :key="p.id" :label="p.name" :value="p.id" />
+            </el-select>
+          </template>
+          <template v-else>
+            <el-autocomplete
+              v-model="form.productName"
+              :fetch-suggestions="queryProductSuggestions"
+              placeholder="输入商品名称（可新建）"
+              style="width: 100%"
+              @select="handleProductSelect"
+              clearable
+            >
+              <template #default="{ item }">
+                <span>{{ item.value }}</span>
+                <span style="float: right; color: #999; font-size: 12px">ID: {{ item.id }}</span>
+              </template>
+            </el-autocomplete>
+            <div v-if="form.productName && !form.productId" style="color: #E6A23C; font-size: 12px; margin-top: 4px;">
+              未找到该商品，提交后将自动创建
+            </div>
+          </template>
         </el-form-item>
         <el-form-item label="店铺售价" prop="storePrice">
           <el-input-number v-model="form.storePrice" :min="0" :precision="2" style="width: 100%" />
@@ -107,7 +127,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { listStoreProductsPage, addStoreProduct, updateStoreProduct, deleteStoreProduct, deleteBatchStoreProducts } from '../../api/storeProduct'
+import { listStoreProductsPage, addStoreProduct, addStoreProductWithName, updateStoreProduct, deleteStoreProduct, deleteBatchStoreProducts } from '../../api/storeProduct'
 import { listStores } from '../../api/store'
 import { listProducts } from '../../api/product'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -138,12 +158,12 @@ const productMap = computed(() => {
   return map
 })
 
-const defaultForm = () => ({ storeId: undefined, productId: undefined, storePrice: undefined as number | undefined, storeStock: 0, safetyStock: 10, status: 1 })
+const defaultForm = () => ({ storeId: undefined, productId: undefined, productName: '', storePrice: undefined as number | undefined, storeStock: 0, safetyStock: 10, status: 1 })
 const form = reactive<any>(defaultForm())
 
 const rules = {
   storeId: [{ required: true, message: '请选择店铺', trigger: 'change' }],
-  productId: [{ required: true, message: '请选择商品', trigger: 'change' }],
+  productName: [{ required: true, message: '请输入商品名称', trigger: 'blur' }],
   storePrice: [{ required: true, message: '请输入店铺售价', trigger: 'blur' }],
   storeStock: [{ required: true, message: '请输入店铺库存', trigger: 'blur' }]
 }
@@ -166,8 +186,27 @@ function handleSelectionChange(rows: any[]) {
 
 function openDialog(row?: any) {
   isEdit.value = !!row
-  Object.assign(form, row ? { ...row } : defaultForm())
+  if (row) {
+    Object.assign(form, { ...row, productName: productMap.value[row.productId] || '' })
+  } else {
+    Object.assign(form, defaultForm())
+  }
   dialogVisible.value = true
+}
+
+function queryProductSuggestions(queryString: string, cb: (results: any[]) => void) {
+  const results = productList.value
+    .filter((p: any) => p.name.toLowerCase().includes(queryString.toLowerCase()))
+    .map((p: any) => ({ value: p.name, id: p.id, price: p.price }))
+  cb(results)
+}
+
+function handleProductSelect(item: any) {
+  form.productId = item.id
+  form.productName = item.value
+  if (!form.storePrice && item.price) {
+    form.storePrice = item.price
+  }
 }
 
 async function handleSubmit() {
@@ -177,7 +216,18 @@ async function handleSubmit() {
     await updateStoreProduct(form)
     ElMessage.success('更新成功')
   } else {
-    await addStoreProduct(form)
+    if (form.productId) {
+      await addStoreProduct(form)
+    } else {
+      await addStoreProductWithName({
+        productName: form.productName,
+        storeId: form.storeId,
+        storePrice: form.storePrice,
+        storeStock: form.storeStock,
+        safetyStock: form.safetyStock,
+        status: form.status
+      })
+    }
     ElMessage.success('新增成功')
   }
   dialogVisible.value = false
