@@ -2,6 +2,8 @@ package com.supermarket.controller;
 
 import com.supermarket.annotation.RateLimit;
 import com.supermarket.common.Result;
+import com.supermarket.dto.MultiItemOrderCreateDTO;
+import com.supermarket.dto.OrderCreateDTO;
 import com.supermarket.entity.Order;
 import com.supermarket.entity.Product;
 import com.supermarket.entity.Store;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -134,23 +137,18 @@ public class OrderController {
     @Operation(summary = "添加订单（自动计算员工折扣价和总金额）")
     @PostMapping("/add")
     @RateLimit(key = "order:add", maxRequests = 5, windowSeconds = 1, message = "下单过于频繁，请稍后再试")
-    public Result<Order> addOrder(
-            @Parameter(description = "用户ID") @RequestParam Long userId,
-            @Parameter(description = "商品ID") @RequestParam Long productId,
-            @Parameter(description = "购买数量") @RequestParam Integer quantity,
-            @Parameter(description = "用户优惠券ID（可选）") @RequestParam(required = false) Long userCouponId,
-            @Parameter(description = "店铺ID（可选）") @RequestParam(required = false) Long storeId) {
-        if (userId == null) {
+    public Result<Order> addOrder(@RequestBody OrderCreateDTO dto) {
+        if (dto.getUserId() == null) {
             return Result.badRequest("用户ID不能为空");
         }
-        if (productId == null) {
+        if (dto.getProductId() == null) {
             return Result.badRequest("商品ID不能为空");
         }
-        if (quantity == null || quantity <= 0) {
+        if (dto.getQuantity() == null || dto.getQuantity() <= 0) {
             return Result.badRequest("购买数量必须大于0");
         }
         try {
-            Order order = orderService.addOrder(userId, productId, quantity, userCouponId, storeId);
+            Order order = orderService.addOrder(dto.getUserId(), dto.getProductId(), dto.getQuantity(), dto.getUserCouponId(), dto.getStoreId());
             return order != null ? Result.success(order) : Result.error("添加订单失败");
         } catch (RuntimeException e) {
             return Result.error(e.getMessage());
@@ -160,22 +158,21 @@ public class OrderController {
     @Operation(summary = "添加多商品订单（一个订单包含多个商品）")
     @PostMapping("/addMultiItem")
     @RateLimit(key = "order:addMulti", maxRequests = 5, windowSeconds = 1, message = "下单过于频繁，请稍后再试")
-    public Result<Order> addMultiItemOrder(@RequestBody Map<String, Object> request) {
-        Long userId = request.get("userId") != null ? ((Number) request.get("userId")).longValue() : null;
-        Long storeId = request.get("storeId") != null ? ((Number) request.get("storeId")).longValue() : null;
-        Long userCouponId = request.get("userCouponId") != null ? ((Number) request.get("userCouponId")).longValue() : null;
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> items = (List<Map<String, Object>>) request.get("items");
-
-        if (userId == null) {
+    public Result<Order> addMultiItemOrder(@RequestBody MultiItemOrderCreateDTO dto) {
+        if (dto.getUserId() == null) {
             return Result.badRequest("用户ID不能为空");
         }
-        if (items == null || items.isEmpty()) {
+        if (dto.getItems() == null || dto.getItems().isEmpty()) {
             return Result.badRequest("商品列表不能为空");
         }
 
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (MultiItemOrderCreateDTO.OrderItemDTO item : dto.getItems()) {
+            items.add(Map.of("productId", item.getProductId(), "quantity", item.getQuantity()));
+        }
+
         try {
-            Order order = orderService.addMultiItemOrder(userId, storeId, items, userCouponId);
+            Order order = orderService.addMultiItemOrder(dto.getUserId(), dto.getStoreId(), items, dto.getUserCouponId());
             return order != null ? Result.success(order) : Result.error("添加订单失败");
         } catch (RuntimeException e) {
             return Result.error(e.getMessage());

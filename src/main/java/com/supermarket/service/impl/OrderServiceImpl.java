@@ -14,6 +14,7 @@ import com.supermarket.enums.CouponStatus;
 import com.supermarket.enums.OrderStatus;
 import com.supermarket.mapper.OrderMapper;
 import com.supermarket.service.CouponService;
+import com.supermarket.service.NotificationService;
 import com.supermarket.service.OrderItemService;
 import com.supermarket.service.OrderService;
 import com.supermarket.service.ProductService;
@@ -47,6 +48,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private final UserCouponService userCouponService;
     private final CouponService couponService;
     private final StoreProductService storeProductService;
+
+    @Autowired(required = false)
+    private NotificationService notificationService;
 
     @Autowired(required = false)
     private RedisTemplate<String, Object> redisTemplate;
@@ -181,6 +185,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 storeProductService.deductStoreStock(storeId, productId, quantity);
             }
 
+            // Push notification for new order
+            if (notificationService != null) {
+                notificationService.notifyOrderStatusChange(userId, order.getId(), OrderStatus.PENDING);
+            }
+
             return order;
         } finally {
             releaseLock(lockKey);
@@ -306,6 +315,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
             setOrderExpireKey(order.getId());
 
+            // Push notification for new multi-item order
+            if (notificationService != null) {
+                notificationService.notifyOrderStatusChange(userId, order.getId(), OrderStatus.PENDING);
+            }
+
             return order;
         } finally {
             for (String key : lockKeys) releaseLock(key);
@@ -327,6 +341,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 } else if (order.getStatus() == OrderStatus.CANCELLED) {
                     unlockCoupon(existingOrder.getUserCouponId());
                 }
+            }
+
+            // Push notification for order status change
+            if (notificationService != null && existingOrder != null) {
+                notificationService.notifyOrderStatusChange(existingOrder.getUserId(), order.getId(), order.getStatus());
             }
         }
 

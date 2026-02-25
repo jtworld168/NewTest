@@ -1,6 +1,8 @@
 package com.supermarket.controller;
 
 import com.supermarket.common.Result;
+import com.supermarket.dto.ProductCreateDTO;
+import com.supermarket.dto.ProductUpdateDTO;
 import com.supermarket.entity.Category;
 import com.supermarket.entity.Product;
 import com.supermarket.service.CategoryService;
@@ -96,43 +98,47 @@ public class ProductController {
 
     @Operation(summary = "添加商品")
     @PostMapping("/add")
-    public Result<Void> addProduct(@RequestBody Product product) {
-        if (product.getName() == null || product.getName().isBlank()) {
+    public Result<Void> addProduct(@RequestBody ProductCreateDTO dto) {
+        if (dto.getName() == null || dto.getName().isBlank()) {
             return Result.badRequest("商品名称不能为空");
         }
-        if (product.getPrice() == null) {
+        if (dto.getPrice() == null) {
             return Result.badRequest("商品价格不能为空");
         }
-        if (product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+        if (dto.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             return Result.badRequest("商品价格必须大于0");
         }
-        if (product.getStock() == null) {
+        if (dto.getStock() == null) {
             return Result.badRequest("库存数量不能为空");
         }
-        if (product.getStock() < 0) {
+        if (dto.getStock() < 0) {
             return Result.badRequest("库存数量不能为负数");
         }
+        Product product = new Product();
+        BeanUtils.copyProperties(dto, product);
         return productService.addProduct(product) ? Result.success() : Result.error("添加商品失败");
     }
 
     @Operation(summary = "更新商品")
     @PutMapping("/update")
-    public Result<Void> updateProduct(@RequestBody Product product) {
-        if (product.getId() == null) {
+    public Result<Void> updateProduct(@RequestBody ProductUpdateDTO dto) {
+        if (dto.getId() == null) {
             return Result.badRequest("商品ID不能为空");
         }
-        if (productService.getProductById(product.getId()) == null) {
+        if (productService.getProductById(dto.getId()) == null) {
             return Result.badRequest("商品不存在");
         }
-        if (product.getPrice() != null && product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+        if (dto.getPrice() != null && dto.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             return Result.badRequest("商品价格必须大于0");
         }
-        if (product.getStock() != null && product.getStock() < 0) {
+        if (dto.getStock() != null && dto.getStock() < 0) {
             return Result.badRequest("库存数量不能为负数");
         }
-        if (product.getName() != null && product.getName().isBlank()) {
+        if (dto.getName() != null && dto.getName().isBlank()) {
             return Result.badRequest("商品名称不能为空字符串");
         }
+        Product product = new Product();
+        BeanUtils.copyProperties(dto, product);
         return productService.updateProduct(product) ? Result.success() : Result.error("更新商品失败");
     }
 
