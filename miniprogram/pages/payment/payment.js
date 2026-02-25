@@ -1,10 +1,12 @@
 const api = require('../../utils/api')
 
+var COUNTDOWN_SECONDS = 1800
+
 Page({
   data: {
     orderId: null,
     amount: '0.00',
-    paymentMethod: 'CASH',
+    paymentMethod: 'WECHAT',
     paying: false,
     countdown: 1800,
     countdownText: '30:00'
@@ -28,7 +30,7 @@ Page({
   },
 
   startCountdown() {
-    let seconds = 1800
+    var seconds = COUNTDOWN_SECONDS
     this.setData({ countdown: seconds, countdownText: '30:00' })
     this._timer = setInterval(() => {
       seconds--
