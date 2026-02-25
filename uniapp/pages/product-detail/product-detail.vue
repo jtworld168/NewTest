@@ -51,84 +51,86 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { onLoad } from '@dcloudio/uni-app'
+<script>
 import * as api from '../../utils/api.js'
 
-const product = ref(null)
-const loading = ref(true)
-
-async function loadProduct(id) {
-  loading.value = true
-  try {
-    const res = await api.getProductById(id)
-    const p = res.data
-    if (p) {
-      const app = getApp()
-      const isEmployee = app.globalData.userInfo && Boolean(app.globalData.userInfo.isHotelEmployee)
-      p._imageUrl = p.image ? api.getFileUrl(p.image) : ''
-      if (isEmployee && p.employeeDiscountRate) {
-        p._isEmployee = true
-        p._displayPrice = (p.price * p.employeeDiscountRate).toFixed(2)
-      } else {
-        p._isEmployee = false
-        p._displayPrice = p.price ? p.price.toFixed(2) : '0.00'
-      }
-      product.value = p
+export default {
+  data() {
+    return {
+      product: null,
+      loading: true
     }
-  } catch (e) {
-    console.error('Failed to load product:', e)
-  }
-  loading.value = false
-}
-
-async function addToCart() {
-  const app = getApp()
-  if (!app.globalData.userInfo) {
-    uni.navigateTo({ url: '/pages/login/login' })
-    return
-  }
-  try {
-    await api.addCartItem({ userId: app.globalData.userInfo.id, productId: product.value.id, quantity: 1 })
-    uni.showToast({ title: '已加入购物车', icon: 'success' })
-  } catch (err) {
-    uni.showToast({ title: '添加失败', icon: 'error' })
-  }
-}
-
-async function buyNow() {
-  const app = getApp()
-  if (!app.globalData.userInfo) {
-    uni.navigateTo({ url: '/pages/login/login' })
-    return
-  }
-  const storeId = app.globalData.selectedStoreId
-  if (!storeId) {
-    uni.showToast({ title: '请先在首页选择店铺', icon: 'none' })
-    return
-  }
-  try {
-    const items = [{ productId: product.value.id, quantity: 1 }]
-    const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, null, storeId)
-    if (res.data && res.data.id) {
-      uni.navigateTo({ url: '/pages/payment/payment?orderId=' + res.data.id + '&amount=' + res.data.totalAmount })
+  },
+  onLoad(options) {
+    if (options.id) {
+      this.loadProduct(options.id)
     } else {
-      uni.showToast({ title: '下单成功', icon: 'success' })
-      setTimeout(() => uni.switchTab({ url: '/pages/orders/orders' }), 1500)
+      this.loading = false
     }
-  } catch (err) {
-    uni.showToast({ title: '下单失败', icon: 'error' })
+  },
+  methods: {
+    async loadProduct(id) {
+      this.loading = true
+      try {
+        const res = await api.getProductById(id)
+        const p = res.data
+        if (p) {
+          const app = getApp()
+          const isEmployee = app.globalData.userInfo && Boolean(app.globalData.userInfo.isHotelEmployee)
+          p._imageUrl = p.image ? api.getFileUrl(p.image) : ''
+          if (isEmployee && p.employeeDiscountRate) {
+            p._isEmployee = true
+            p._displayPrice = (p.price * p.employeeDiscountRate).toFixed(2)
+          } else {
+            p._isEmployee = false
+            p._displayPrice = p.price ? p.price.toFixed(2) : '0.00'
+          }
+          this.product = p
+        }
+      } catch (e) {
+        console.error('Failed to load product:', e)
+      }
+      this.loading = false
+    },
+    async addToCart() {
+      const app = getApp()
+      if (!app.globalData.userInfo) {
+        uni.navigateTo({ url: '/pages/login/login' })
+        return
+      }
+      try {
+        await api.addCartItem({ userId: app.globalData.userInfo.id, productId: this.product.id, quantity: 1 })
+        uni.showToast({ title: '已加入购物车', icon: 'success' })
+      } catch (err) {
+        uni.showToast({ title: '添加失败', icon: 'error' })
+      }
+    },
+    async buyNow() {
+      const app = getApp()
+      if (!app.globalData.userInfo) {
+        uni.navigateTo({ url: '/pages/login/login' })
+        return
+      }
+      const storeId = app.globalData.selectedStoreId
+      if (!storeId) {
+        uni.showToast({ title: '请先在首页选择店铺', icon: 'none' })
+        return
+      }
+      try {
+        const items = [{ productId: this.product.id, quantity: 1 }]
+        const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, null, storeId)
+        if (res.data && res.data.id) {
+          uni.navigateTo({ url: '/pages/payment/payment?orderId=' + res.data.id + '&amount=' + res.data.totalAmount })
+        } else {
+          uni.showToast({ title: '下单成功', icon: 'success' })
+          setTimeout(() => uni.switchTab({ url: '/pages/orders/orders' }), 1500)
+        }
+      } catch (err) {
+        uni.showToast({ title: '下单失败', icon: 'error' })
+      }
+    }
   }
 }
-
-onLoad((options) => {
-  if (options.id) {
-    loadProduct(options.id)
-  } else {
-    loading.value = false
-  }
-})
 </script>
 
 <style scoped>
