@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, StoreProduct> implements StoreProductService {
 
+    private static final int STATUS_ON_SHELF = 1;
+
     private final ProductService productService;
 
     @Override
@@ -128,7 +130,7 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
             newProduct.setName(productName);
             newProduct.setPrice(storeProduct.getStorePrice() != null ? storeProduct.getStorePrice() : BigDecimal.ZERO);
             newProduct.setStock(storeProduct.getStoreStock() != null ? storeProduct.getStoreStock() : 0);
-            newProduct.setStatus(1);
+            newProduct.setStatus(STATUS_ON_SHELF);
             productService.addProduct(newProduct);
             storeProduct.setProductId(newProduct.getId());
         }
