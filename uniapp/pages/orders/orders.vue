@@ -65,100 +65,108 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { onShow, onPullDownRefresh } from '@dcloudio/uni-app'
+<script>
 import * as api from '../../utils/api.js'
-  { key: 'all', name: '全部' },
-  { key: 'PENDING', name: '待支付' },
-  { key: 'PAID', name: '已支付' },
-  { key: 'COMPLETED', name: '已完成' },
-  { key: 'CANCELLED', name: '已取消' }
-])
 
-function statusText(status) {
-  const map = { PENDING: '待支付', PAID: '已支付', COMPLETED: '已完成', CANCELLED: '已取消' }
-  return map[status] || status
-}
-
-async function loadOrders() {
-  const app = getApp()
-  if (!app.globalData.userInfo) {
-    loading.value = false
-    orders.value = []
-    return
-  }
-  loading.value = true
-  try {
-    const res = await api.getOrdersByUserId(app.globalData.userInfo.id)
-    const orderList = res.data || []
-
-    const productIds = [...new Set(orderList.map(o => o.productId).filter(Boolean))]
-    const productMap = {}
-    await Promise.all(productIds.map(id =>
-      api.getProductById(id).then(pRes => {
-        if (pRes.data) productMap[id] = pRes.data
-      }).catch(() => {})
-    ))
-
-    const storeIds = [...new Set(orderList.map(o => o.storeId).filter(Boolean))]
-    const storeMap = {}
-    await Promise.all(storeIds.map(id =>
-      api.getStoreById(id).then(sRes => {
-        if (sRes.data) storeMap[id] = sRes.data
-      }).catch(() => {})
-    ))
-
-    orderList.forEach(order => {
-      const product = productMap[order.productId]
-      order._productName = product ? product.name : '商品 #' + order.productId
-      order._imageUrl = product && product.image ? api.getFileUrl(product.image) : ''
-      order._barcode = product ? (product.barcode || '') : ''
-      order._hasEmployeeDiscount = product && order.priceAtPurchase && order.priceAtPurchase < product.price
-      const store = order.storeId ? storeMap[order.storeId] : null
-      order._storeName = store ? store.name : ''
-    })
-
-    orders.value = orderList
-    loading.value = false
-  } catch (e) {
-    console.error('Failed to load orders:', e)
-    loading.value = false
-  }
-}
-
-function switchTab(tab) {
-  currentTab.value = tab
-}
-
-function goToOrderDetail(id) {
-  uni.navigateTo({ url: '/pages/order-detail/order-detail?id=' + id })
-}
-
-function goToPay(id, amount) {
-  uni.navigateTo({ url: '/pages/payment/payment?orderId=' + id + '&amount=' + amount })
-}
-
-function cancelOrder(id) {
-  uni.showModal({
-    title: '提示',
-    content: '确定要取消该订单吗？',
-    success: async (res) => {
-      if (res.confirm) {
-        try {
-          await api.updateOrder({ id, status: 'CANCELLED' })
-          uni.showToast({ title: '已取消', icon: 'success' })
-          loadOrders()
-        } catch (err) {
-          uni.showToast({ title: '取消失败', icon: 'error' })
-        }
-      }
+export default {
+  data() {
+    return {
+      orders: [],
+      loading: true,
+      currentTab: 'all',
+      tabs: [
+        { key: 'all', name: '全部' },
+        { key: 'PENDING', name: '待支付' },
+        { key: 'PAID', name: '已支付' },
+        { key: 'COMPLETED', name: '已完成' },
+        { key: 'CANCELLED', name: '已取消' }
+      ]
     }
-  })
-}
+  },
+  onShow() {
+    this.loadOrders()
+  },
+  onPullDownRefresh() {
+    this.loadOrders().then(() => uni.stopPullDownRefresh())
+  },
+  methods: {
+    statusText(status) {
+      const map = { PENDING: '待支付', PAID: '已支付', COMPLETED: '已完成', CANCELLED: '已取消' }
+      return map[status] || status
+    },
+    async loadOrders() {
+      const app = getApp()
+      if (!app.globalData.userInfo) {
+        this.loading = false
+        this.orders = []
+        return
+      }
+      this.loading = true
+      try {
+        const res = await api.getOrdersByUserId(app.globalData.userInfo.id)
+        const orderList = res.data || []
 
-onShow(() => { loadOrders() })
-onPullDownRefresh(() => { loadOrders().then(() => uni.stopPullDownRefresh()) })
+        const productIds = [...new Set(orderList.map(o => o.productId).filter(Boolean))]
+        const productMap = {}
+        await Promise.all(productIds.map(id =>
+          api.getProductById(id).then(pRes => {
+            if (pRes.data) productMap[id] = pRes.data
+          }).catch(() => {})
+        ))
+
+        const storeIds = [...new Set(orderList.map(o => o.storeId).filter(Boolean))]
+        const storeMap = {}
+        await Promise.all(storeIds.map(id =>
+          api.getStoreById(id).then(sRes => {
+            if (sRes.data) storeMap[id] = sRes.data
+          }).catch(() => {})
+        ))
+
+        orderList.forEach(order => {
+          const product = productMap[order.productId]
+          order._productName = product ? product.name : '商品 #' + order.productId
+          order._imageUrl = product && product.image ? api.getFileUrl(product.image) : ''
+          order._barcode = product ? (product.barcode || '') : ''
+          order._hasEmployeeDiscount = product && order.priceAtPurchase && order.priceAtPurchase < product.price
+          const store = order.storeId ? storeMap[order.storeId] : null
+          order._storeName = store ? store.name : ''
+        })
+
+        this.orders = orderList
+        this.loading = false
+      } catch (e) {
+        console.error('Failed to load orders:', e)
+        this.loading = false
+      }
+    },
+    switchTab(tab) {
+      this.currentTab = tab
+    },
+    goToOrderDetail(id) {
+      uni.navigateTo({ url: '/pages/order-detail/order-detail?id=' + id })
+    },
+    goToPay(id, amount) {
+      uni.navigateTo({ url: '/pages/payment/payment?orderId=' + id + '&amount=' + amount })
+    },
+    cancelOrder(id) {
+      uni.showModal({
+        title: '提示',
+        content: '确定要取消该订单吗？',
+        success: async (res) => {
+          if (res.confirm) {
+            try {
+              await api.updateOrder({ id, status: 'CANCELLED' })
+              uni.showToast({ title: '已取消', icon: 'success' })
+              this.loadOrders()
+            } catch (err) {
+              uni.showToast({ title: '取消失败', icon: 'error' })
+            }
+          }
+        }
+      })
+    }
+  }
+}
 </script>
 
 <style scoped>
