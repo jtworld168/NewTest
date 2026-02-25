@@ -1,28 +1,52 @@
 const api = require('../../utils/api')
 
 Page({
+  data: {
+    scanResult: false,
+    scanCode: '',
+    foundProduct: null,
+    flashMode: 'off'
+  },
+
   onShow() {
-    wx.scanCode({
-      onlyFromCamera: true,
-      success: (res) => {
-        const code = res.result
-        wx.showLoading({ title: '查找商品...' })
-        api.searchProducts(code).then(searchRes => {
-          wx.hideLoading()
-          const products = searchRes.data || []
-          if (products.length > 0) {
-            wx.showToast({ title: '找到商品: ' + products[0].name, icon: 'none', duration: 2000 })
-          } else {
-            wx.showToast({ title: '未找到该商品', icon: 'none' })
-          }
-        }).catch(() => {
-          wx.hideLoading()
-          wx.showToast({ title: '查找失败', icon: 'error' })
-        })
-      },
-      fail: () => {
-        wx.switchTab({ url: '/pages/index/index' })
+    // Reset state when page shows
+    this.setData({ scanResult: false, scanCode: '', foundProduct: null })
+  },
+
+  // Camera scanCode event handler
+  onScanCode(e) {
+    if (this.data.scanResult) return // Prevent duplicate scans
+    const code = e.detail.result
+    if (!code) return
+
+    this.setData({ scanCode: code })
+    wx.showLoading({ title: '查找商品...' })
+
+    api.searchProducts(code).then(searchRes => {
+      wx.hideLoading()
+      const products = searchRes.data || []
+      if (products.length > 0) {
+        this.setData({ scanResult: true, foundProduct: products[0] })
+      } else {
+        this.setData({ scanResult: true, foundProduct: null })
       }
+    }).catch(() => {
+      wx.hideLoading()
+      this.setData({ scanResult: true, foundProduct: null })
     })
+  },
+
+  toggleFlash() {
+    this.setData({
+      flashMode: this.data.flashMode === 'torch' ? 'off' : 'torch'
+    })
+  },
+
+  rescan() {
+    this.setData({ scanResult: false, scanCode: '', foundProduct: null })
+  },
+
+  goBack() {
+    wx.switchTab({ url: '/pages/index/index' })
   }
 })

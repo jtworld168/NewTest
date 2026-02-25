@@ -1,3 +1,56 @@
 <view class="scan-page">
-  <view class="scan-tip">正在打开摄像头...</view>
+  <!-- 相机组件：使用scanCode模式实现扫码 -->
+  <camera wx:if="{{!scanResult}}" mode="scanCode" bindscancode="onScanCode" flash="{{flashMode}}" class="scan-camera">
+    <!-- 扫码遮罩层 -->
+    <view class="scan-overlay">
+      <!-- 顶部遮罩 -->
+      <view class="overlay-top"></view>
+      <!-- 中间行 -->
+      <view class="overlay-middle">
+        <!-- 左侧遮罩 -->
+        <view class="overlay-side"></view>
+        <!-- 扫码框 -->
+        <view class="scan-frame">
+          <!-- 四个角标 -->
+          <view class="corner corner-tl"></view>
+          <view class="corner corner-tr"></view>
+          <view class="corner corner-bl"></view>
+          <view class="corner corner-br"></view>
+          <!-- 扫描线动画 -->
+          <view class="scan-line"></view>
+        </view>
+        <!-- 右侧遮罩 -->
+        <view class="overlay-side"></view>
+      </view>
+      <!-- 底部遮罩 -->
+      <view class="overlay-bottom">
+        <text class="scan-tip">将二维码/条形码放入框内，即可自动扫描</text>
+        <!-- 手电筒按钮 -->
+        <view class="flash-btn" bindtap="toggleFlash">
+          <text class="flash-icon">{{flashMode === 'torch' ? '🔦' : '💡'}}</text>
+          <text class="flash-text">{{flashMode === 'torch' ? '关闭手电筒' : '打开手电筒'}}</text>
+        </view>
+      </view>
+    </view>
+  </camera>
+
+  <!-- 扫码结果展示 -->
+  <view wx:if="{{scanResult}}" class="result-container">
+    <view class="result-card" wx:if="{{foundProduct}}">
+      <image wx:if="{{foundProduct.imageUrl}}" src="{{foundProduct.imageUrl}}" class="product-img" mode="aspectFit" />
+      <view class="product-placeholder" wx:else>📦</view>
+      <text class="product-name">{{foundProduct.name}}</text>
+      <text class="product-price">¥{{foundProduct.price}}</text>
+      <text class="product-barcode">条码：{{scanCode}}</text>
+    </view>
+    <view class="result-card not-found" wx:else>
+      <text class="not-found-icon">❌</text>
+      <text class="not-found-text">未找到商品</text>
+      <text class="not-found-code">扫码结果：{{scanCode}}</text>
+    </view>
+    <view class="result-actions">
+      <button class="btn-rescan" bindtap="rescan">重新扫码</button>
+      <button class="btn-back" bindtap="goBack">返回首页</button>
+    </view>
+  </view>
 </view>

@@ -1,11 +1,226 @@
 .scan-page {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  background: #000;
+}
+
+/* 相机填满全屏 */
+.scan-camera {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+/* 遮罩层覆盖在相机上 */
+.scan-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
+  flex-direction: column;
+}
+
+/* 顶部不透明遮罩 */
+.overlay-top {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* 中间行：左遮罩 + 扫码框 + 右遮罩 */
+.overlay-middle {
+  display: flex;
+  flex-direction: row;
+  height: 500rpx;
+}
+
+/* 左右不透明遮罩 */
+.overlay-side {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* 透明扫码框 */
+.scan-frame {
+  width: 500rpx;
+  height: 500rpx;
+  position: relative;
+  background: transparent;
+}
+
+/* 四个角标 */
+.corner {
+  position: absolute;
+  width: 40rpx;
+  height: 40rpx;
+}
+.corner-tl {
+  top: 0; left: 0;
+  border-top: 6rpx solid #C9A96E;
+  border-left: 6rpx solid #C9A96E;
+}
+.corner-tr {
+  top: 0; right: 0;
+  border-top: 6rpx solid #C9A96E;
+  border-right: 6rpx solid #C9A96E;
+}
+.corner-bl {
+  bottom: 0; left: 0;
+  border-bottom: 6rpx solid #C9A96E;
+  border-left: 6rpx solid #C9A96E;
+}
+.corner-br {
+  bottom: 0; right: 0;
+  border-bottom: 6rpx solid #C9A96E;
+  border-right: 6rpx solid #C9A96E;
+}
+
+/* 扫描线动画 */
+.scan-line {
+  position: absolute;
+  left: 10rpx;
+  right: 10rpx;
+  height: 4rpx;
+  background: linear-gradient(90deg, transparent, #C9A96E, transparent);
+  animation: scanMove 2s linear infinite;
+}
+
+@keyframes scanMove {
+  0% { top: 10rpx; }
+  100% { top: 480rpx; }
+}
+
+/* 底部遮罩 + 提示文字 */
+.overlay-bottom {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40rpx;
+}
+
+.scan-tip {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 26rpx;
+}
+
+/* 手电筒按钮 */
+.flash-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40rpx;
+}
+
+.flash-icon {
+  font-size: 48rpx;
+}
+
+.flash-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 22rpx;
+  margin-top: 8rpx;
+}
+
+/* 扫码结果页 */
+.result-container {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: #f5ede0;
+  background: #F5EDE0;
+  padding: 40rpx;
 }
-.scan-tip {
+
+.result-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 60rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+.product-img {
+  width: 300rpx;
+  height: 300rpx;
+  border-radius: 16rpx;
+  margin-bottom: 30rpx;
+}
+
+.product-placeholder {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+}
+
+.product-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.product-price {
+  font-size: 40rpx;
   color: #C9A96E;
-  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12rpx;
+}
+
+.product-barcode {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.not-found {
+  padding: 80rpx 40rpx;
+}
+
+.not-found-icon {
+  font-size: 100rpx;
+  margin-bottom: 20rpx;
+}
+
+.not-found-text {
+  font-size: 32rpx;
+  color: #999;
+  margin-bottom: 12rpx;
+}
+
+.not-found-code {
+  font-size: 24rpx;
+  color: #ccc;
+}
+
+.result-actions {
+  display: flex;
+  gap: 30rpx;
+  margin-top: 60rpx;
+  width: 80%;
+}
+
+.btn-rescan {
+  flex: 1;
+  background: #C9A96E;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+}
+
+.btn-back {
+  flex: 1;
+  background: #eee;
+  color: #666;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  height: 80rpx;
+  line-height: 80rpx;
 }

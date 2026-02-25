@@ -28,6 +28,9 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
         if (userId != null) {
             SESSIONS.put(userId, session);
             log.info("WebSocket连接建立: userId={}", userId);
+        } else {
+            log.warn("WebSocket连接建立但未获取到userId，拒绝连接");
+            try { session.close(); } catch (IOException ignored) {}
         }
     }
 
@@ -84,6 +87,12 @@ public class NotificationWebSocketHandler extends TextWebSocketHandler {
     }
 
     private String getUserId(WebSocketSession session) {
+        // Prefer authenticated userId set by WebSocketAuthInterceptor
+        Object userId = session.getAttributes().get("userId");
+        if (userId != null) {
+            return userId.toString();
+        }
+        // Fallback to query parameter (for backward compatibility)
         String query = session.getUri() != null ? session.getUri().getQuery() : null;
         if (query != null && query.contains("userId=")) {
             for (String param : query.split("&")) {

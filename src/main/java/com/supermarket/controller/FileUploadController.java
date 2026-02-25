@@ -52,6 +52,7 @@ public class FileUploadController {
     private static final int MAX_IMAGE_HEIGHT = 1920;
     private static final float JPEG_QUALITY = 0.8f;
     private static final int THUMBNAIL_SIZE = 200;
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
@@ -64,6 +65,10 @@ public class FileUploadController {
     public Result<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return Result.error("请选择要上传的文件");
+        }
+
+        if (file.getSize() > MAX_FILE_SIZE) {
+            return Result.error("文件大小不能超过10MB");
         }
 
         String originalFilename = file.getOriginalFilename();
@@ -183,6 +188,9 @@ public class FileUploadController {
     @Operation(summary = "预览图片", description = "根据文件名预览图片（带HTTP缓存头）")
     public ResponseEntity<Resource> previewFile(
             @Parameter(description = "文件名") @PathVariable String filename) {
+        if (!isValidFilename(filename)) {
+            return ResponseEntity.badRequest().build();
+        }
         try {
             Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
             Path filePath = uploadPath.resolve(filename).normalize();
@@ -216,6 +224,9 @@ public class FileUploadController {
     @Operation(summary = "下载文件", description = "根据文件名下载已上传的文件")
     public ResponseEntity<Resource> downloadFile(
             @Parameter(description = "文件名") @PathVariable String filename) {
+        if (!isValidFilename(filename)) {
+            return ResponseEntity.badRequest().build();
+        }
         try {
             Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
             Path filePath = uploadPath.resolve(filename).normalize();
@@ -292,5 +303,15 @@ public class FileUploadController {
             }
         }
         return true;
+    }
+
+    /**
+     * Validate filename to prevent directory traversal and injection attacks.
+     * Only allows alphanumeric, dash, underscore, dot characters.
+     */
+    private boolean isValidFilename(String filename) {
+        if (filename == null || filename.isBlank()) return false;
+        if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) return false;
+        return filename.matches("^[a-zA-Z0-9_\\-]+\\.[a-zA-Z0-9]+$");
     }
 }
