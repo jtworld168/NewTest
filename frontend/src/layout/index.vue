@@ -116,7 +116,7 @@
             <el-option label="English" value="en" />
           </el-select>
           <template v-if="userStore.currentUser">
-            <el-avatar v-if="userStore.currentUser.avatar" :src="BASE_URL + '/api' + userStore.currentUser.avatar" :size="32" />
+            <el-avatar v-if="userStore.currentUser.avatar" :src="'/api' + userStore.currentUser.avatar" :size="32" />
             <el-avatar v-else :size="32">{{ userStore.currentUser.username?.charAt(0).toUpperCase() }}</el-avatar>
             <span class="username">{{ userStore.currentUser.username }}</span>
           </template>
@@ -136,7 +136,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '../stores/user'
 import { logout } from '../api/auth'
-import { BASE_URL } from '../api/request'
 import { ElMessage } from 'element-plus'
 import {
   HomeFilled, User, Menu, Goods, Document, List, Ticket, CreditCard, Present, ShoppingCart,

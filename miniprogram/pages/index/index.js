@@ -4,7 +4,11 @@ const sysInfo = wx.getSystemInfoSync()
 Page({
   data: {
     products: [],
-    bannerProducts: [],
+    banners: [
+      { id: 1, image: '/images/banner1.png', title: '智慧零售 · 智能购物', subtitle: '随时随地，扫码即购' },
+      { id: 2, image: '/images/banner2.png', title: '新品上架', subtitle: '每日精选，品质保证' },
+      { id: 3, image: '/images/banner3.png', title: '优惠活动', subtitle: '限时特惠，不容错过' }
+    ],
     categories: [],
     stores: [],
     storeNames: ['全部店铺'],
@@ -112,9 +116,6 @@ Page({
         }
       }
 
-      // Pick up to 3 products with images for the banner carousel
-      const bannerProducts = products.filter(p => p._imageUrl).slice(0, 3)
-
       // Set cart quantity on products
       products.forEach(p => {
         p._cartQty = cartMap[p.id] ? cartMap[p.id].quantity : 0
@@ -122,7 +123,6 @@ Page({
 
       this.setData({
         products,
-        bannerProducts,
         categories: categoryRes.data || [],
         loading: false,
         cartMap

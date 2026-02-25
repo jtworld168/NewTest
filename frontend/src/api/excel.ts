@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { BASE_URL } from './request'
 
 function downloadFile(url: string, filename: string) {
   const token = localStorage.getItem('satoken')
@@ -17,9 +16,9 @@ function downloadFile(url: string, filename: string) {
 }
 
 export function exportProducts() {
-  downloadFile(BASE_URL + '/api/excel/export/products', '商品数据.xlsx')
+  downloadFile('/api/excel/export/products', '商品数据.xlsx')
 }
 
 export function exportUsers() {
-  downloadFile(BASE_URL + '/api/excel/export/users', '用户数据.xlsx')
+  downloadFile('/api/excel/export/users', '用户数据.xlsx')
 }

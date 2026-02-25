@@ -77,7 +77,6 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { listStoresPage, addStore, updateStore, deleteStore, deleteBatchStores, searchStores } from '../../api/store'
-import { BASE_URL } from '../../api/request'
 import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
@@ -155,7 +154,7 @@ async function handleBatchDelete() {
 
 function handleExport() {
   const token = localStorage.getItem('satoken')
-  axios.get(BASE_URL + '/api/excel/export/stores', {
+  axios.get('/api/excel/export/stores', {
     responseType: 'blob',
     headers: token ? { satoken: token } : {}
   }).then(res => {

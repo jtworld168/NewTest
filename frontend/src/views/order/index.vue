@@ -124,7 +124,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { Order, Store } from '../../types'
 import axios from 'axios'
-import { BASE_URL } from '../../api/request'
 
 const statusMap: Record<string, string> = { PENDING: '待支付', PAID: '已支付', COMPLETED: '已完成', CANCELLED: '已取消' }
 const statusType: Record<string, string> = { PENDING: 'warning', PAID: 'success', COMPLETED: '', CANCELLED: 'danger' }
@@ -177,7 +176,7 @@ async function handleFilter() {
 async function handleExport() {
   try {
     const token = localStorage.getItem('satoken')
-    const response = await axios.get(`${BASE_URL}/api/excel/export/orders`, {
+    const response = await axios.get('/api/excel/export/orders', {
       responseType: 'blob',
       headers: token ? { satoken: token } : {}
     })

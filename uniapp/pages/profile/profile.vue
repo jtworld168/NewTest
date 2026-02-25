@@ -59,11 +59,6 @@
 
     <!-- Settings Section -->
     <view class="menu-list" v-if="isLoggedIn">
-      <view class="menu-item" @click="clearCache">
-        <text class="menu-icon">🗑️</text>
-        <text class="menu-text">清除缓存</text>
-        <text class="menu-arrow">></text>
-      </view>
       <view class="menu-item" @click="showAbout">
         <text class="menu-icon">ℹ️</text>
         <text class="menu-text">关于我们</text>
@@ -147,22 +142,6 @@ export default {
     },
     goCoupons() {
       uni.navigateTo({ url: '/pages/coupons/coupons' })
-    },
-    clearCache() {
-      uni.showModal({
-        title: '提示',
-        content: '确定要清除缓存吗？',
-        success: (res) => {
-          if (res.confirm) {
-            uni.clearStorageSync()
-            const app = getApp()
-            if (app.globalData.userInfo) {
-              uni.setStorageSync('userInfo', app.globalData.userInfo)
-            }
-            uni.showToast({ title: '缓存已清除', icon: 'success' })
-          }
-        }
-      })
     },
     showAbout() {
       uni.showModal({

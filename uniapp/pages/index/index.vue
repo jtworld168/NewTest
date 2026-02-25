@@ -22,22 +22,16 @@
       </view>
     </view>
 
-    <!-- Swiper Banner (uses product images) -->
+    <!-- Swiper Banner (local images) -->
     <view class="swiper-section">
       <swiper class="banner-swiper" indicator-dots autoplay :interval="3000" circular>
-        <swiper-item v-for="item in bannerProducts" :key="item.id">
-          <view class="banner-item" @click="goToProductDetail(item.id)">
-            <image class="banner-image" :src="item._imageUrl || '/static/product-placeholder.png'" mode="aspectFill" />
+        <swiper-item v-for="item in banners" :key="item.id">
+          <view class="banner-item" @click="goToCategory">
+            <image class="banner-image" :src="item.image" mode="aspectFill" />
             <view class="banner-overlay">
-              <text class="banner-text">{{ item.name }}</text>
-              <text class="banner-sub">¥{{ item._displayPrice }}</text>
+              <text class="banner-text">{{ item.title }}</text>
+              <text class="banner-sub">{{ item.subtitle }}</text>
             </view>
-          </view>
-        </swiper-item>
-        <swiper-item v-if="bannerProducts.length === 0">
-          <view class="banner-item banner-1">
-            <text class="banner-text">智慧零售 · 智能购物</text>
-            <text class="banner-sub">随时随地，扫码即购</text>
           </view>
         </swiper-item>
       </swiper>
@@ -101,7 +95,11 @@ export default {
   data() {
     return {
       products: [],
-      bannerProducts: [],
+      banners: [
+        { id: 1, image: '/static/banner1.png', title: '智慧零售 · 智能购物', subtitle: '随时随地，扫码即购' },
+        { id: 2, image: '/static/banner2.png', title: '新品上架', subtitle: '每日精选，品质保证' },
+        { id: 3, image: '/static/banner3.png', title: '优惠活动', subtitle: '限时特惠，不容错过' }
+      ],
       categories: [],
       loading: true,
       cartMap: {},
@@ -179,7 +177,6 @@ export default {
         })
 
         this.products = rawProducts
-        this.bannerProducts = rawProducts.filter(p => p._imageUrl).slice(0, 3)
         this.categories = categoryRes.data || []
         this.cartMap = map
         this.loading = false

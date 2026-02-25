@@ -11,6 +11,11 @@ const request = axios.create({
 })
 
 request.interceptors.request.use((config) => {
+  // Safeguard: prevent [object Object] in URLs
+  if (config.url && config.url.includes('[object')) {
+    console.error('[API] Invalid URL detected:', config.url)
+    return Promise.reject(new Error('Invalid API URL: object was used where string expected'))
+  }
   const token = localStorage.getItem('satoken')
   if (token) {
     config.headers['satoken'] = token

@@ -73,26 +73,6 @@ Page({
     wx.navigateTo({ url: '/pages/coupons/coupons' })
   },
 
-  clearCache() {
-    wx.showModal({
-      title: '提示',
-      content: '确定要清除缓存吗？',
-      success: (res) => {
-        if (res.confirm) {
-          wx.clearStorageSync()
-          // Preserve login state
-          const app = getApp()
-          if (app.globalData.userInfo) {
-            wx.setStorageSync('userInfo', app.globalData.userInfo)
-            const token = app.globalData.satoken
-            if (token) wx.setStorageSync('satoken', token)
-          }
-          wx.showToast({ title: '缓存已清除', icon: 'success' })
-        }
-      }
-    })
-  },
-
   showAbout() {
     wx.showModal({
       title: '关于我们',

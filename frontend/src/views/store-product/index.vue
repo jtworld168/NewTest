@@ -178,7 +178,6 @@ import { listStoreProducts, listStoreProductsPage, addStoreProduct, addStoreProd
 import { listStores } from '../../api/store'
 import { listProducts } from '../../api/product'
 import { listCoupons } from '../../api/coupon'
-import { BASE_URL } from '../../api/request'
 import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, UploadRawFile } from 'element-plus'
@@ -313,7 +312,7 @@ function handleExport() {
   const params: any = {}
   if (filterStoreId.value) params.storeId = filterStoreId.value
   if (searchProductName.value.trim()) params.productName = searchProductName.value.trim()
-  axios.get(BASE_URL + '/api/excel/export/store-products', {
+  axios.get('/api/excel/export/store-products', {
     params,
     responseType: 'blob',
     headers: token ? { satoken: token } : {}
@@ -331,7 +330,7 @@ function handleImport(file: UploadRawFile) {
   const token = localStorage.getItem('satoken')
   const formData = new FormData()
   formData.append('file', file)
-  axios.post(BASE_URL + '/api/excel/import/store-products', formData, {
+  axios.post('/api/excel/import/store-products', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
       ...(token ? { satoken: token } : {})
