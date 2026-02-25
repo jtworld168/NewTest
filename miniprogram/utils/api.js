@@ -182,6 +182,24 @@ function getStoreById(id) {
   return request({ url: '/stores/get/' + id })
 }
 
+// ==================== Message ====================
+
+function getUserMessages(userId) {
+  return request({ url: '/messages/user/' + userId, method: 'GET' })
+}
+
+function getUnreadCount(userId) {
+  return request({ url: '/messages/unread/' + userId, method: 'GET' })
+}
+
+function markMessageAsRead(id) {
+  return request({ url: '/messages/read/' + id, method: 'PUT' })
+}
+
+function markAllMessagesAsRead(userId) {
+  return request({ url: '/messages/readAll/' + userId, method: 'PUT' })
+}
+
 // ==================== File ====================
 
 function getFileUrl(filename) {
@@ -224,5 +242,9 @@ module.exports = {
   getPaymentsByOrderId,
   getFileUrl,
   getStoreList,
-  getStoreById
+  getStoreById,
+  getUserMessages,
+  getUnreadCount,
+  markMessageAsRead,
+  markAllMessagesAsRead
 }

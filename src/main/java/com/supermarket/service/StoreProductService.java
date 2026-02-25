@@ -24,8 +24,6 @@ public interface StoreProductService extends IService<StoreProduct> {
     void syncProductTotalStock(Long productId);
     StoreProduct addStoreProductWithName(String productName, StoreProduct storeProduct);
     StoreProduct getByStoreIdAndProductId(Long storeId, Long productId);
-    boolean batchSetCoupon(List<Long> ids, Long couponId);
-
     /**
      * 扣减店铺商品库存，并同步总商品库存
      * @param storeId 店铺ID

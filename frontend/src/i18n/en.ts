@@ -20,6 +20,7 @@ export default {
     storeMgmt: 'Stores',
     storeList: 'Store List',
     storeProduct: 'Store Products',
+    messageMgmt: 'Messages',
     salesMgmt: 'Sales'
   },
   dashboard: {

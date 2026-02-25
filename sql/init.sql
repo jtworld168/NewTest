@@ -195,7 +195,6 @@ CREATE TABLE IF NOT EXISTS `store_product` (
     `store_price` DECIMAL(10,2)  DEFAULT NULL COMMENT '店铺售价（可与总商品表价格不同）',
     `store_stock` INT            DEFAULT 0 COMMENT '店铺库存',
     `safety_stock` INT           DEFAULT 10 COMMENT '安全库存阈值',
-    `coupon_id`   BIGINT         DEFAULT NULL COMMENT '关联优惠券模板ID',
     `status`      INT            DEFAULT 1 COMMENT '上架状态：0-下架，1-上架',
     `create_time` DATETIME       DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -209,8 +208,25 @@ CREATE TABLE IF NOT EXISTS `store_product` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='店铺商品表';
 
 -- 订单表
+
+-- ============================
+-- 7. 消息表
+-- ============================
+CREATE TABLE IF NOT EXISTS `message` (
+    `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '消息ID',
+    `user_id`     BIGINT       DEFAULT NULL COMMENT '接收用户ID（null表示广播）',
+    `title`       VARCHAR(200) NOT NULL COMMENT '消息标题',
+    `content`     TEXT         NOT NULL COMMENT '消息内容',
+    `type`        VARCHAR(20)  DEFAULT 'SYSTEM' COMMENT '消息类型：SYSTEM/ORDER/COUPON',
+    `is_read`     INT          DEFAULT 0 COMMENT '是否已读：0-未读，1-已读',
+    `create_time` DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `deleted`     INT          DEFAULT 0 COMMENT '逻辑删除：0-未删除，1-已删除',
+    PRIMARY KEY (`id`),
+    KEY `idx_msg_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='消息表';
+
+-- 订单表
 CREATE TABLE IF NOT EXISTS `order` (
-    `id`                BIGINT         NOT NULL AUTO_INCREMENT COMMENT '订单ID',
     `user_id`           BIGINT         NOT NULL COMMENT '用户ID',
     `store_id`          BIGINT         DEFAULT NULL COMMENT '店铺ID',
     `product_id`        BIGINT         DEFAULT NULL COMMENT '商品ID（兼容单商品订单）',

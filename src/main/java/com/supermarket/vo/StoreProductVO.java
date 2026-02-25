@@ -16,6 +16,4 @@ public class StoreProductVO extends StoreProduct {
     @Schema(description = "商品名称")
     private String productName;
 
-    @Schema(description = "优惠券名称")
-    private String couponName;
 }

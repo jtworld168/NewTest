@@ -109,6 +109,12 @@ const router = createRouter({
           meta: { title: '店铺商品' }
         },
         {
+          path: 'messages',
+          name: 'Messages',
+          component: () => import('../views/message/index.vue'),
+          meta: { title: '消息管理' }
+        },
+        {
           path: 'sales',
           name: 'Sales',
           component: () => import('../views/sales/index.vue'),

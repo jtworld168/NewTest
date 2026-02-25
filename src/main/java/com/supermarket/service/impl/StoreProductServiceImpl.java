@@ -216,15 +216,6 @@ public class StoreProductServiceImpl extends ServiceImpl<StoreProductMapper, Sto
     }
 
     @Override
-    public boolean batchSetCoupon(List<Long> ids, Long couponId) {
-        List<StoreProduct> items = listByIds(ids);
-        for (StoreProduct item : items) {
-            item.setCouponId(couponId);
-        }
-        return updateBatchById(items);
-    }
-
-    @Override
     @Transactional
     public boolean deductStoreStock(Long storeId, Long productId, int quantity) {
         if (storeId == null || productId == null || quantity <= 0) return false;

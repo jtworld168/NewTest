@@ -1,11 +1,9 @@
 package com.supermarket.controller;
 
 import com.supermarket.common.Result;
-import com.supermarket.entity.Coupon;
 import com.supermarket.entity.Product;
 import com.supermarket.entity.Store;
 import com.supermarket.entity.StoreProduct;
-import com.supermarket.service.CouponService;
 import com.supermarket.service.ProductService;
 import com.supermarket.service.StoreProductService;
 import com.supermarket.service.StoreService;
@@ -31,9 +29,8 @@ public class StoreProductController {
     private final StoreProductService storeProductService;
     private final StoreService storeService;
     private final ProductService productService;
-    private final CouponService couponService;
 
-    private StoreProductVO toVO(StoreProduct sp, Map<Long, Store> storeMap, Map<Long, Product> productMap, Map<Long, Coupon> couponMap) {
+    private StoreProductVO toVO(StoreProduct sp, Map<Long, Store> storeMap, Map<Long, Product> productMap) {
         StoreProductVO vo = new StoreProductVO();
         BeanUtils.copyProperties(sp, vo);
         if (sp.getStoreId() != null) {
@@ -44,10 +41,6 @@ public class StoreProductController {
             Product product = productMap.get(sp.getProductId());
             if (product != null) vo.setProductName(product.getName());
         }
-        if (sp.getCouponId() != null) {
-            Coupon coupon = couponMap.get(sp.getCouponId());
-            if (coupon != null) vo.setCouponName(coupon.getName());
-        }
         return vo;
     }
 
@@ -56,9 +49,7 @@ public class StoreProductController {
                 .collect(Collectors.toMap(Store::getId, s -> s, (a, b) -> a));
         Map<Long, Product> productMap = productService.listAll().stream()
                 .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
-        Map<Long, Coupon> couponMap = couponService.listAll().stream()
-                .collect(Collectors.toMap(Coupon::getId, c -> c, (a, b) -> a));
-        return list.stream().map(sp -> toVO(sp, storeMap, productMap, couponMap)).collect(Collectors.toList());
+        return list.stream().map(sp -> toVO(sp, storeMap, productMap)).collect(Collectors.toList());
     }
 
     @Operation(summary = "根据ID查询店铺商品")
@@ -105,9 +96,7 @@ public class StoreProductController {
                 .collect(Collectors.toMap(Store::getId, s -> s, (a, b) -> a));
         Map<Long, Product> productMap = productService.listAll().stream()
                 .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
-        Map<Long, Coupon> couponMap = couponService.listAll().stream()
-                .collect(Collectors.toMap(Coupon::getId, c -> c, (a, b) -> a));
-        IPage<StoreProductVO> voPage = page.convert(sp -> toVO(sp, storeMap, productMap, couponMap));
+        IPage<StoreProductVO> voPage = page.convert(sp -> toVO(sp, storeMap, productMap));
         return Result.success(voPage);
     }
 
@@ -203,20 +192,4 @@ public class StoreProductController {
         return storeProductService.deleteBatchStoreProducts(ids) ? Result.success() : Result.error("批量删除失败");
     }
 
-    @Operation(summary = "一键设置优惠券（批量）")
-    @PutMapping("/batchSetCoupon")
-    public Result<Void> batchSetCoupon(@RequestBody Map<String, Object> body) {
-        @SuppressWarnings("unchecked")
-        List<Number> idNumbers = (List<Number>) body.get("ids");
-        Object couponIdObj = body.get("couponId");
-        if (idNumbers == null || idNumbers.isEmpty()) {
-            return Result.badRequest("ID列表不能为空");
-        }
-        if (couponIdObj == null) {
-            return Result.badRequest("优惠券ID不能为空");
-        }
-        List<Long> ids = idNumbers.stream().map(Number::longValue).toList();
-        Long couponId = Long.valueOf(couponIdObj.toString());
-        return storeProductService.batchSetCoupon(ids, couponId) ? Result.success() : Result.error("设置优惠券失败");
-    }
 }

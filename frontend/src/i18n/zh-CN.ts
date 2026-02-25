@@ -20,6 +20,7 @@ export default {
     storeMgmt: '店铺管理',
     storeList: '店铺列表',
     storeProduct: '店铺商品',
+    messageMgmt: '消息管理',
     salesMgmt: '销量管理'
   },
   dashboard: {

@@ -11,7 +11,8 @@
     "pages/coupons/coupons",
     "pages/payment/payment",
     "pages/order-detail/order-detail",
-    "pages/product-detail/product-detail"
+    "pages/product-detail/product-detail",
+    "pages/messages/messages"
   ],
   "window": {
     "navigationBarBackgroundColor": "#D4BC8B",

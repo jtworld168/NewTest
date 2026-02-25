@@ -13,4 +13,3 @@ export const deleteBatchStoreProducts = (ids: number[]) => request.delete('/stor
 export const getTotalStockByProductId = (productId: number) => request.get(`/store-products/totalStock/${productId}`)
 export const getLowStockByStoreId = (storeId: number) => request.get(`/store-products/lowStock/${storeId}`)
 export const addStoreProductWithName = (data: any) => request.post('/store-products/addWithName', data)
-export const batchSetCoupon = (ids: number[], couponId: number) => request.put('/store-products/batchSetCoupon', { ids, couponId })

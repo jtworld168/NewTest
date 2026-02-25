@@ -101,6 +101,10 @@
             <span>{{ $t('menu.storeProduct') }}</span>
           </el-menu-item>
         </el-sub-menu>
+        <el-menu-item index="/messages">
+          <el-icon><ChatDotRound /></el-icon>
+          <span>{{ $t('menu.messageMgmt') }}</span>
+        </el-menu-item>
         <el-menu-item index="/sales">
           <el-icon><TrendCharts /></el-icon>
           <span>{{ $t('menu.salesMgmt') }}</span>
@@ -139,7 +143,7 @@ import { logout } from '../api/auth'
 import { ElMessage } from 'element-plus'
 import {
   HomeFilled, User, Menu, Goods, Document, List, Ticket, CreditCard, Present, ShoppingCart,
-  DataLine, PieChart, TrendCharts, Histogram, OfficeBuilding
+  DataLine, PieChart, TrendCharts, Histogram, OfficeBuilding, ChatDotRound
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

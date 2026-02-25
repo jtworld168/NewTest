@@ -42,10 +42,6 @@ public class StoreProduct {
     @ExcelProperty("安全库存")
     private Integer safetyStock;
 
-    @Schema(description = "关联优惠券模板ID")
-    @ExcelProperty("优惠券ID")
-    private Long couponId;
-
     @Schema(description = "上架状态：0-下架，1-上架")
     @ExcelProperty("上架状态")
     private Integer status;

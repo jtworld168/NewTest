@@ -39,6 +39,12 @@
         <text class="menu-text">我的优惠券</text>
         <text class="menu-arrow">></text>
       </view>
+      <view class="menu-item" @click="goMessages">
+        <text class="menu-icon">🔔</text>
+        <text class="menu-text">消息通知</text>
+        <view class="badge" v-if="unreadCount > 0">{{ unreadCount }}</view>
+        <text class="menu-arrow">></text>
+      </view>
     </view>
 
     <!-- Employee Discount Info -->
@@ -89,7 +95,8 @@ export default {
       isLoggedIn: false,
       roleText: '',
       isEmployee: false,
-      avatarUrl: '/static/default-avatar.png'
+      avatarUrl: '/static/default-avatar.png',
+      unreadCount: 0
     }
   },
   onShow() {
@@ -122,6 +129,7 @@ export default {
         this.isEmployee = Boolean(info.isHotelEmployee)
         this.avatarUrl = info.avatar ? api.getFileUrl(info.avatar) : '/static/default-avatar.png'
         this.refreshUserInfo(info.id)
+        this.loadUnreadCount(info.id)
       } else {
         this.userInfo = null
         this.isLoggedIn = false
@@ -142,6 +150,17 @@ export default {
     },
     goCoupons() {
       uni.navigateTo({ url: '/pages/coupons/coupons' })
+    },
+    goMessages() {
+      uni.navigateTo({ url: '/pages/messages/messages' })
+    },
+    async loadUnreadCount(userId) {
+      try {
+        const res = await api.getUnreadCount(userId)
+        this.unreadCount = (res.data && res.data.count) || 0
+      } catch (e) {
+        console.error('Failed to load unread count:', e)
+      }
     },
     showAbout() {
       uni.showModal({
@@ -337,5 +356,18 @@ export default {
 
 .logout-btn {
   margin-top: 40rpx;
+}
+
+.badge {
+  background-color: #ff4d4f;
+  color: #fff;
+  font-size: 20rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  line-height: 32rpx;
+  border-radius: 16rpx;
+  text-align: center;
+  padding: 0 8rpx;
+  margin-right: 10rpx;
 }
 </style>

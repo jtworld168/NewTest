@@ -76,6 +76,26 @@
         <el-button type="primary" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="distributeDialogVisible" title="一键发放优惠券给所有用户" width="500">
+      <el-form label-width="120px">
+        <el-form-item label="优惠券模板">
+          <el-select v-model="selectedDistributeCouponId" placeholder="请选择优惠券模板" style="width: 100%" filterable>
+            <el-option v-for="c in coupons" :key="c.id" :label="c.name" :value="c.id">
+              <span>{{ c.name }}</span>
+              <span style="float: right; color: #999; font-size: 12px">ID: {{ c.id }}</span>
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="优惠券ID">
+          <el-input :model-value="selectedDistributeCouponId ? String(selectedDistributeCouponId) : ''" disabled />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="distributeDialogVisible = false">取消</el-button>
+        <el-button type="primary" :disabled="!selectedDistributeCouponId" @click="handleConfirmDistribute">确定发放</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -98,6 +118,9 @@ const formRef = ref<FormInstance>()
 const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+
+const distributeDialogVisible = ref(false)
+const selectedDistributeCouponId = ref<number | undefined>(undefined)
 
 const defaultForm = (): UserCoupon => ({ userId: 1, couponId: 1, status: 'AVAILABLE' as any })
 const form = reactive<UserCoupon>(defaultForm())
@@ -166,24 +189,16 @@ async function handleDistribute() {
     ElMessage.warning('暂无优惠券模板')
     return
   }
-  try {
-    const result = await ElMessageBox.prompt('请选择要发放的优惠券ID', '一键发放优惠券给所有用户', {
-      inputValue: coupons.value[0]?.id?.toString() || '',
-      inputPlaceholder: '优惠券ID',
-      confirmButtonText: '确定发放',
-      cancelButtonText: '取消',
-      inputValidator: (v: string) => {
-        if (!v || isNaN(Number(v))) return '请输入有效的优惠券ID'
-        return true
-      }
-    })
-    const value = (result as any).value ?? result
-    await distributeToAllUsers(Number(value))
-    ElMessage.success('发放成功')
-    loadData()
-  } catch {
-    // cancelled
-  }
+  distributeDialogVisible.value = true
+  selectedDistributeCouponId.value = undefined
+}
+
+async function handleConfirmDistribute() {
+  if (!selectedDistributeCouponId.value) return
+  await distributeToAllUsers(selectedDistributeCouponId.value)
+  ElMessage.success('发放成功')
+  distributeDialogVisible.value = false
+  loadData()
 }
 
 onMounted(async () => {
