@@ -56,6 +56,25 @@
     <button class="btn-register" bindtap="goRegister">注册新账号</button>
   </view>
 
+  <!-- Settings Section -->
+  <view class="menu-list" wx:if="{{isLoggedIn}}">
+    <view class="menu-item" bindtap="clearCache">
+      <text class="menu-icon">🗑️</text>
+      <text class="menu-text">清除缓存</text>
+      <text class="menu-arrow">></text>
+    </view>
+    <view class="menu-item" bindtap="showAbout">
+      <text class="menu-icon">ℹ️</text>
+      <text class="menu-text">关于我们</text>
+      <text class="menu-arrow">></text>
+    </view>
+    <view class="menu-item">
+      <text class="menu-icon">📱</text>
+      <text class="menu-text">版本信息</text>
+      <text class="menu-version">v1.0.0</text>
+    </view>
+  </view>
+
   <view class="actions" wx:if="{{isLoggedIn}}">
     <button class="btn-danger logout-btn" bindtap="doLogout">退出登录</button>
   </view>

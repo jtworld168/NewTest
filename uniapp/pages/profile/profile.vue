@@ -57,6 +57,25 @@
       <button class="btn-register" @click="goRegister">注册新账号</button>
     </view>
 
+    <!-- Settings Section -->
+    <view class="menu-list" v-if="isLoggedIn">
+      <view class="menu-item" @click="clearCache">
+        <text class="menu-icon">🗑️</text>
+        <text class="menu-text">清除缓存</text>
+        <text class="menu-arrow">></text>
+      </view>
+      <view class="menu-item" @click="showAbout">
+        <text class="menu-icon">ℹ️</text>
+        <text class="menu-text">关于我们</text>
+        <text class="menu-arrow">></text>
+      </view>
+      <view class="menu-item">
+        <text class="menu-icon">📱</text>
+        <text class="menu-text">版本信息</text>
+        <text class="menu-version">v1.0.0</text>
+      </view>
+    </view>
+
     <view class="actions" v-if="isLoggedIn">
       <button class="btn-danger logout-btn" @click="doLogout">退出登录</button>
     </view>
@@ -128,6 +147,32 @@ function goCart() {
 
 function goCoupons() {
   uni.navigateTo({ url: '/pages/coupons/coupons' })
+}
+
+function clearCache() {
+  uni.showModal({
+    title: '提示',
+    content: '确定要清除缓存吗？',
+    success: (res) => {
+      if (res.confirm) {
+        uni.clearStorageSync()
+        const app = getApp()
+        if (app.globalData.userInfo) {
+          uni.setStorageSync('userInfo', app.globalData.userInfo)
+        }
+        uni.showToast({ title: '缓存已清除', icon: 'success' })
+      }
+    }
+  })
+}
+
+function showAbout() {
+  uni.showModal({
+    title: '关于我们',
+    content: '智慧零售小程序 v1.0.0\n\n无人超市智能购物系统，为您提供便捷的扫码购物体验。',
+    showCancel: false,
+    confirmText: '知道了'
+  })
 }
 
 function doLogout() {
@@ -288,6 +333,11 @@ onShow(() => { onPageShow() })
 .menu-arrow {
   font-size: 28rpx;
   color: #ccc;
+}
+
+.menu-version {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
 }
 
 /* Actions */

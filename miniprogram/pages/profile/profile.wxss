@@ -147,6 +147,11 @@
   color: #ccc;
 }
 
+.menu-version {
+  font-size: 24rpx;
+  color: var(--color-text-secondary);
+}
+
 /* Actions */
 .actions {
   padding: 40rpx;

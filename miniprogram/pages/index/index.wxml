@@ -21,25 +21,22 @@
     </view>
   </view>
 
-  <!-- Swiper Banner -->
+  <!-- Swiper Banner (uses product images) -->
   <view class="swiper-section">
     <swiper class="banner-swiper" indicator-dots autoplay interval="{{3000}}" circular>
-      <swiper-item>
+      <swiper-item wx:for="{{bannerProducts}}" wx:key="id">
+        <view class="banner-item" bindtap="goToProductDetail" data-id="{{item.id}}">
+          <image class="banner-image" src="{{item._imageUrl || '/images/product-placeholder.png'}}" mode="aspectFill"></image>
+          <view class="banner-overlay">
+            <text class="banner-text">{{item.name}}</text>
+            <text class="banner-sub">¥{{item._displayPrice}}</text>
+          </view>
+        </view>
+      </swiper-item>
+      <swiper-item wx:if="{{bannerProducts.length === 0}}">
         <view class="banner-item banner-1">
           <text class="banner-text">智慧零售 · 智能购物</text>
           <text class="banner-sub">随时随地，扫码即购</text>
-        </view>
-      </swiper-item>
-      <swiper-item>
-        <view class="banner-item banner-2">
-          <text class="banner-text">新品上架</text>
-          <text class="banner-sub">更多优质好物等你来发现</text>
-        </view>
-      </swiper-item>
-      <swiper-item>
-        <view class="banner-item banner-3">
-          <text class="banner-text">员工专享折扣</text>
-          <text class="banner-sub">内部员工享受更优价格</text>
         </view>
       </swiper-item>
     </swiper>

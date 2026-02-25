@@ -1,0 +1,50 @@
+<view class="container">
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <block wx:if="{{!loading && product}}">
+    <!-- Product Image -->
+    <view class="product-image-section">
+      <image class="product-main-image" src="{{product._imageUrl || '/images/product-placeholder.png'}}" mode="aspectFill"></image>
+    </view>
+
+    <!-- Product Info -->
+    <view class="product-info-card">
+      <view class="price-row">
+        <text class="price">¥{{product._displayPrice}}</text>
+        <text class="original-price" wx:if="{{product._isEmployee}}">¥{{product.price}}</text>
+        <text class="employee-tag" wx:if="{{product._isEmployee}}">员工内购价</text>
+      </view>
+      <text class="product-title">{{product.name}}</text>
+      <text class="product-barcode" wx:if="{{product.barcode}}">条码: {{product.barcode}}</text>
+      <view class="product-stock-row">
+        <text class="stock-text">库存: {{product.stock}}件</text>
+        <text class="status-tag {{product.status === 1 ? 'on-shelf' : 'off-shelf'}}">{{product.status === 1 ? '在售' : '已下架'}}</text>
+      </view>
+    </view>
+
+    <!-- Description -->
+    <view class="detail-card" wx:if="{{product.description}}">
+      <text class="detail-title">商品介绍</text>
+      <text class="detail-content">{{product.description}}</text>
+    </view>
+
+    <!-- Category -->
+    <view class="detail-card" wx:if="{{product.categoryName}}">
+      <text class="detail-title">商品分类</text>
+      <text class="detail-content">{{product.categoryName}}</text>
+    </view>
+
+    <!-- Bottom Action Bar -->
+    <view class="bottom-action-bar">
+      <button class="action-btn cart-btn" bindtap="addToCart">🛒 加入购物车</button>
+      <button class="action-btn buy-btn" bindtap="buyNow">立即购买</button>
+    </view>
+  </block>
+
+  <view class="empty-state" wx:if="{{!loading && !product}}">
+    <text class="empty-icon">😕</text>
+    <text class="empty-text">商品不存在</text>
+  </view>
+</view>

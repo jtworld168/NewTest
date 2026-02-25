@@ -3,7 +3,14 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>店铺商品管理</span>
+          <div class="card-header-left">
+            <span>店铺商品管理</span>
+            <div class="stats-badges">
+              <el-tag type="info" size="small">共计: {{ stats.total }}</el-tag>
+              <el-tag type="success" size="small">上架: {{ stats.onShelf }}</el-tag>
+              <el-tag type="danger" size="small">下架: {{ stats.offShelf }}</el-tag>
+            </div>
+          </div>
           <div>
             <el-button type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
             <el-button type="warning" :disabled="!selectedIds.length" @click="openCouponDialog">一键设置优惠券</el-button>
@@ -167,7 +174,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listStoreProductsPage, addStoreProduct, addStoreProductWithName, updateStoreProduct, deleteStoreProduct, deleteBatchStoreProducts, batchSetCoupon } from '../../api/storeProduct'
+import { listStoreProducts, listStoreProductsPage, addStoreProduct, addStoreProductWithName, updateStoreProduct, deleteStoreProduct, deleteBatchStoreProducts, batchSetCoupon, getStoreProductsByStoreId } from '../../api/storeProduct'
 import { listStores } from '../../api/store'
 import { listProducts } from '../../api/product'
 import { listCoupons } from '../../api/coupon'
@@ -193,6 +200,8 @@ const total = ref(0)
 const couponDialogVisible = ref(false)
 const selectedCouponId = ref<number | undefined>(undefined)
 
+const stats = reactive({ total: 0, onShelf: 0, offShelf: 0 })
+
 const defaultForm = () => ({ storeId: undefined, productId: undefined, productName: '', storePrice: undefined as number | undefined, storeStock: 0, safetyStock: 10, status: 1 })
 const form = reactive<any>(defaultForm())
 
@@ -212,6 +221,20 @@ async function loadData() {
   ])
   tableData.value = res.data?.records || []
   total.value = res.data?.total || 0
+
+  // Compute accurate stats using full data (not paginated)
+  let allProducts: any[] = []
+  if (filterStoreId.value) {
+    const allRes = await getStoreProductsByStoreId(filterStoreId.value)
+    allProducts = allRes.data || []
+  } else {
+    const allRes = await listStoreProducts()
+    allProducts = allRes.data || []
+  }
+  stats.total = allProducts.length
+  stats.onShelf = allProducts.filter((r: any) => r.status === 1).length
+  stats.offShelf = allProducts.filter((r: any) => r.status !== 1).length
+
   storeList.value = storeRes.data || []
   productList.value = productRes.data || []
   couponList.value = couponRes.data || []
@@ -340,5 +363,7 @@ onMounted(loadData)
 
 <style scoped>
 .card-header { display: flex; justify-content: space-between; align-items: center; }
+.card-header-left { display: flex; align-items: center; gap: 12px; }
+.stats-badges { display: flex; gap: 8px; }
 .search-bar { margin-bottom: 16px; display: flex; gap: 12px; }
 </style>

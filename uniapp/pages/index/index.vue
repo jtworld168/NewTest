@@ -1,5 +1,16 @@
 <template>
   <view class="container">
+    <!-- Store Selector -->
+    <view class="store-selector">
+      <picker mode="selector" :range="storeNames" @change="onStoreChange">
+        <view class="store-picker">
+          <text class="store-icon">🏪</text>
+          <text class="store-name">{{ selectedStoreName }}</text>
+          <text class="store-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+
     <!-- Search Bar with Scan Button -->
     <view class="search-bar">
       <view class="search-input" @click="goToCategory">
@@ -11,25 +22,22 @@
       </view>
     </view>
 
-    <!-- Swiper Banner -->
+    <!-- Swiper Banner (uses product images) -->
     <view class="swiper-section">
       <swiper class="banner-swiper" indicator-dots autoplay :interval="3000" circular>
-        <swiper-item>
+        <swiper-item v-for="item in bannerProducts" :key="item.id">
+          <view class="banner-item" @click="goToProductDetail(item.id)">
+            <image class="banner-image" :src="item._imageUrl || '/static/product-placeholder.png'" mode="aspectFill" />
+            <view class="banner-overlay">
+              <text class="banner-text">{{ item.name }}</text>
+              <text class="banner-sub">¥{{ item._displayPrice }}</text>
+            </view>
+          </view>
+        </swiper-item>
+        <swiper-item v-if="bannerProducts.length === 0">
           <view class="banner-item banner-1">
             <text class="banner-text">智慧零售 · 智能购物</text>
             <text class="banner-sub">随时随地，扫码即购</text>
-          </view>
-        </swiper-item>
-        <swiper-item>
-          <view class="banner-item banner-2">
-            <text class="banner-text">新品上架</text>
-            <text class="banner-sub">更多优质好物等你来发现</text>
-          </view>
-        </swiper-item>
-        <swiper-item>
-          <view class="banner-item banner-3">
-            <text class="banner-text">员工专享折扣</text>
-            <text class="banner-sub">内部员工享受更优价格</text>
           </view>
         </swiper-item>
       </swiper>
@@ -92,9 +100,39 @@ import { onShow } from '@dcloudio/uni-app'
 import * as api from '../../utils/api.js'
 
 const products = ref([])
+const bannerProducts = ref([])
 const categories = ref([])
 const loading = ref(true)
 const cartMap = ref({})
+const stores = ref([])
+const storeNames = ref(['全部店铺'])
+const selectedStoreName = ref('全部店铺')
+
+async function loadStores() {
+  try {
+    const res = await api.getStoreList()
+    const storeList = res.data || []
+    stores.value = storeList
+    storeNames.value = ['全部店铺'].concat(storeList.map(s => s.name))
+  } catch (e) {
+    console.error('Failed to load stores:', e)
+  }
+}
+
+function onStoreChange(e) {
+  const index = parseInt(e.detail.value)
+  const app = getApp()
+  if (index === 0) {
+    selectedStoreName.value = '全部店铺'
+    app.globalData.selectedStoreId = 0
+    app.globalData.selectedStoreName = '全部店铺'
+  } else {
+    const store = stores.value[index - 1]
+    selectedStoreName.value = store.name
+    app.globalData.selectedStoreId = store.id
+    app.globalData.selectedStoreName = store.name
+  }
+}
 
 function loadData() {
   loading.value = true
@@ -136,6 +174,7 @@ function loadData() {
     })
 
     products.value = rawProducts
+    bannerProducts.value = rawProducts.filter(p => p._imageUrl).slice(0, 3)
     categories.value = categoryRes.data || []
     cartMap.value = map
     loading.value = false
@@ -184,20 +223,7 @@ function goToCategoryDetail(id) {
 }
 
 function goToProductDetail(id) {
-  const product = products.value.find(p => p.id === id)
-  if (!product) return
-  const app = getApp()
-  if (!app.globalData.userInfo) {
-    uni.navigateTo({ url: '/pages/login/login' })
-    return
-  }
-  uni.showActionSheet({
-    itemList: ['加入购物车', '立即购买'],
-    success: (res) => {
-      if (res.tapIndex === 0) addToCart(product)
-      else if (res.tapIndex === 1) buyNow(product)
-    }
-  })
+  uni.navigateTo({ url: '/pages/product-detail/product-detail?id=' + id })
 }
 
 async function increaseQty(productId) {
@@ -260,8 +286,14 @@ async function addToCart(product) {
 
 async function buyNow(product) {
   const app = getApp()
+  const storeId = app.globalData.selectedStoreId
+  if (!storeId) {
+    uni.showToast({ title: '请先选择店铺', icon: 'none' })
+    return
+  }
   try {
-    const res = await api.addOrder(app.globalData.userInfo.id, product.id, 1)
+    const items = [{ productId: product.id, quantity: 1 }]
+    const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, null, storeId)
     if (res.data && res.data.id) {
       uni.navigateTo({ url: '/pages/payment/payment?orderId=' + res.data.id + '&amount=' + res.data.totalAmount })
     } else {
@@ -273,10 +305,43 @@ async function buyNow(product) {
   }
 }
 
-onShow(() => { loadData() })
+onShow(() => {
+  if (stores.value.length === 0) loadStores()
+  loadData()
+})
 </script>
 
 <style scoped>
+/* Store Selector */
+.store-selector {
+  padding: 16rpx 20rpx 0;
+  background-color: var(--color-primary);
+}
+
+.store-picker {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 16rpx;
+  padding: 12rpx 20rpx;
+}
+
+.store-icon {
+  font-size: 32rpx;
+  margin-right: 10rpx;
+}
+
+.store-name {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.store-arrow {
+  font-size: 20rpx;
+  color: #999;
+}
+
 .search-bar {
   padding: 20rpx;
   background-color: var(--color-primary);
@@ -338,6 +403,29 @@ onShow(() => { loadData() })
   align-items: center;
   justify-content: center;
   border-radius: 16rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-image {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.banner-overlay {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(transparent, rgba(0,0,0,0.5));
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20rpx 24rpx;
+  box-sizing: border-box;
 }
 
 .banner-1 { background: linear-gradient(135deg, #C9A96E, #B8956A); }

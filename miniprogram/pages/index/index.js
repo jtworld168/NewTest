@@ -4,6 +4,7 @@ const sysInfo = wx.getSystemInfoSync()
 Page({
   data: {
     products: [],
+    bannerProducts: [],
     categories: [],
     stores: [],
     storeNames: ['全部店铺'],
@@ -111,6 +112,9 @@ Page({
         }
       }
 
+      // Pick up to 3 products with images for the banner carousel
+      const bannerProducts = products.filter(p => p._imageUrl).slice(0, 3)
+
       // Set cart quantity on products
       products.forEach(p => {
         p._cartQty = cartMap[p.id] ? cartMap[p.id].quantity : 0
@@ -118,6 +122,7 @@ Page({
 
       this.setData({
         products,
+        bannerProducts,
         categories: categoryRes.data || [],
         loading: false,
         cartMap
@@ -174,23 +179,7 @@ Page({
 
   goToProductDetail(e) {
     const id = e.currentTarget.dataset.id
-    const product = this.data.products.find(p => p.id === id)
-    if (!product) return
-    const app = getApp()
-    if (!app.globalData.userInfo) {
-      wx.navigateTo({ url: '/pages/login/login' })
-      return
-    }
-    wx.showActionSheet({
-      itemList: ['加入购物车', '立即购买'],
-      success: (res) => {
-        if (res.tapIndex === 0) {
-          this.addToCart(product)
-        } else if (res.tapIndex === 1) {
-          this.buyNow(product)
-        }
-      }
-    })
+    wx.navigateTo({ url: '/pages/product-detail/product-detail?id=' + id })
   },
 
   async increaseQty(e) {
@@ -300,8 +289,14 @@ Page({
 
   async buyNow(product) {
     const app = getApp()
+    const storeId = app.globalData.selectedStoreId
+    if (!storeId) {
+      wx.showToast({ title: '请先选择店铺', icon: 'none' })
+      return
+    }
     try {
-      const res = await api.addOrder(app.globalData.userInfo.id, product.id, 1)
+      const items = [{ productId: product.id, quantity: 1 }]
+      const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, null, storeId)
       if (res.data && res.data.id) {
         wx.navigateTo({
           url: '/pages/payment/payment?orderId=' + res.data.id + '&amount=' + res.data.totalAmount

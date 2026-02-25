@@ -10,7 +10,8 @@
     "pages/register/register",
     "pages/coupons/coupons",
     "pages/payment/payment",
-    "pages/order-detail/order-detail"
+    "pages/order-detail/order-detail",
+    "pages/product-detail/product-detail"
   ],
   "window": {
     "navigationBarBackgroundColor": "#D4BC8B",

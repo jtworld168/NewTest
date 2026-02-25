@@ -10,7 +10,8 @@
     { "path": "pages/register/register", "style": { "navigationBarTitleText": "注册" } },
     { "path": "pages/coupons/coupons", "style": { "navigationBarTitleText": "我的优惠券" } },
     { "path": "pages/payment/payment", "style": { "navigationBarTitleText": "订单支付" } },
-    { "path": "pages/order-detail/order-detail", "style": { "navigationBarTitleText": "订单详情" } }
+    { "path": "pages/order-detail/order-detail", "style": { "navigationBarTitleText": "订单详情" } },
+    { "path": "pages/product-detail/product-detail", "style": { "navigationBarTitleText": "商品详情" } }
   ],
   "globalStyle": {
     "navigationBarBackgroundColor": "#C9A96E",

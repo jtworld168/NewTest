@@ -348,6 +348,13 @@ function checkout() {
     return
   }
 
+  // Require store selection for checkout
+  const storeId = app.globalData.selectedStoreId
+  if (!storeId) {
+    uni.showToast({ title: '请先在首页选择店铺', icon: 'none' })
+    return
+  }
+
   const totalForCoupon = parseFloat(totalPrice.value)
   if (!isEmployee.value && !selectedCouponId.value && availableCoupons.value.length > 0) {
     const usable = availableCoupons.value.filter(c => totalForCoupon >= c.minAmount)
@@ -382,7 +389,7 @@ async function doCheckout(selectedItems, couponId) {
       quantity: item.quantity
     }))
 
-    const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, couponId)
+    const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, couponId, app.globalData.selectedStoreId || null)
     const order = res.data
 
     // Delete cart items after order creation
