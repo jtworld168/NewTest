@@ -27,19 +27,19 @@
         <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="userId" label="用户" width="120">
           <template #default="{ row }">
-            {{ userMap[row.userId] || '用户' + row.userId }}
+            {{ row.userName || '用户' + row.userId }}
           </template>
         </el-table-column>
         <el-table-column label="店铺" width="120">
           <template #default="{ row }">
-            {{ row.storeId ? (storeMap[row.storeId] || row.storeId) : '-' }}
+            {{ row.storeId ? (row.storeName || row.storeId) : '-' }}
           </template>
         </el-table-column>
         <el-table-column prop="productId" label="商品" width="160">
           <template #default="{ row }">
-            <template v-if="row.productId && productMap[row.productId]">
-              {{ productMap[row.productId].name }}
-              <div style="font-size: 12px; color: #999;" v-if="productMap[row.productId].barcode">条码: {{ productMap[row.productId].barcode }}</div>
+            <template v-if="row.productId && row.productName">
+              {{ row.productName }}
+              <div style="font-size: 12px; color: #999;" v-if="row.productBarcode">条码: {{ row.productBarcode }}</div>
             </template>
             <template v-else>{{ row.productId ? '商品' + row.productId : '-' }}</template>
           </template>
@@ -117,25 +117,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { listOrders, addOrder, updateOrder, deleteOrder, deleteBatchOrders, getOrdersByStatus, listOrdersPage, addMultiItemOrder } from '../../api/order'
+import { ref, reactive, onMounted } from 'vue'
+import { addOrder, updateOrder, deleteOrder, deleteBatchOrders, getOrdersByStatus, listOrdersPage } from '../../api/order'
 import { listStores } from '../../api/store'
-import { listUsers } from '../../api/user'
-import { listProducts } from '../../api/product'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import type { Order, Store, User, Product } from '../../types'
+import type { Order, Store } from '../../types'
 import axios from 'axios'
-import { BASE_URL } from '../../api/request'
 
 const statusMap: Record<string, string> = { PENDING: '待支付', PAID: '已支付', COMPLETED: '已完成', CANCELLED: '已取消' }
 const statusType: Record<string, string> = { PENDING: 'warning', PAID: 'success', COMPLETED: '', CANCELLED: 'danger' }
 
-const tableData = ref<Order[]>([])
+const tableData = ref<any[]>([])
 const selectedIds = ref<number[]>([])
 const stores = ref<Store[]>([])
-const users = ref<User[]>([])
-const products = ref<Product[]>([])
 const filterStatus = ref('')
 const filterStoreId = ref<number | undefined>(undefined)
 const dialogVisible = ref(false)
@@ -144,24 +139,6 @@ const formRef = ref<FormInstance>()
 const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
-
-const storeMap = computed(() => {
-  const map: Record<number, string> = {}
-  stores.value.forEach(s => { if (s.id) map[s.id] = s.name })
-  return map
-})
-
-const userMap = computed(() => {
-  const map: Record<number, string> = {}
-  users.value.forEach(u => { if (u.id) map[u.id] = u.username })
-  return map
-})
-
-const productMap = computed(() => {
-  const map: Record<number, { name: string; barcode?: string }> = {}
-  products.value.forEach(p => { if (p.id) map[p.id] = { name: p.name, barcode: p.barcode } })
-  return map
-})
 
 const defaultForm = () => ({ userId: 1, storeId: undefined as number | undefined, productId: 1, quantity: 1, userCouponId: undefined as number | undefined, status: 'PENDING' as any })
 const form = reactive<any>(defaultForm())
@@ -174,14 +151,8 @@ const rules = {
 
 async function loadStores() {
   try {
-    const [storeRes, userRes, productRes] = await Promise.all([
-      listStores(),
-      listUsers(),
-      listProducts()
-    ])
+    const storeRes = await listStores()
     stores.value = storeRes.data || []
-    users.value = userRes.data || []
-    products.value = productRes.data || []
   } catch { /* ignore */ }
 }
 
@@ -205,7 +176,7 @@ async function handleFilter() {
 async function handleExport() {
   try {
     const token = localStorage.getItem('satoken')
-    const response = await axios.get(`${BASE_URL}/api/excel/export/orders`, {
+    const response = await axios.get('/api/excel/export/orders', {
       responseType: 'blob',
       headers: token ? { satoken: token } : {}
     })

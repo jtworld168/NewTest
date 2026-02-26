@@ -34,55 +34,60 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script>
 import * as api from '../../utils/api.js'
 
-const username = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-const phone = ref('')
-const loading = ref(false)
-
-async function doRegister() {
-  if (!username.value.trim()) {
-    uni.showToast({ title: '请输入用户名', icon: 'none' })
-    return
-  }
-  if (!password.value.trim()) {
-    uni.showToast({ title: '请输入密码', icon: 'none' })
-    return
-  }
-  if (password.value !== confirmPassword.value) {
-    uni.showToast({ title: '两次密码不一致', icon: 'none' })
-    return
-  }
-
-  loading.value = true
-  try {
-    const res = await api.register({
-      username: username.value.trim(),
-      password: password.value.trim(),
-      phone: phone.value.trim() || null,
-      role: 'CUSTOMER'
-    })
-    if (res.code === 200) {
-      uni.showToast({ title: '注册成功', icon: 'success' })
-      setTimeout(() => {
-        uni.navigateBack()
-      }, 1500)
-    } else {
-      uni.showToast({ title: res.message || '注册失败', icon: 'none' })
+export default {
+  data() {
+    return {
+      username: '',
+      password: '',
+      confirmPassword: '',
+      phone: '',
+      loading: false
     }
-  } catch (e) {
-    uni.showToast({ title: '网络错误', icon: 'error' })
-  } finally {
-    loading.value = false
-  }
-}
+  },
+  methods: {
+    async doRegister() {
+      if (!this.username.trim()) {
+        uni.showToast({ title: '请输入用户名', icon: 'none' })
+        return
+      }
+      if (!this.password.trim()) {
+        uni.showToast({ title: '请输入密码', icon: 'none' })
+        return
+      }
+      if (this.password !== this.confirmPassword) {
+        uni.showToast({ title: '两次密码不一致', icon: 'none' })
+        return
+      }
 
-function goLogin() {
-  uni.navigateBack()
+      this.loading = true
+      try {
+        const res = await api.register({
+          username: this.username.trim(),
+          password: this.password.trim(),
+          phone: this.phone.trim() || null,
+          role: 'CUSTOMER'
+        })
+        if (res.code === 200) {
+          uni.showToast({ title: '注册成功', icon: 'success' })
+          setTimeout(() => {
+            uni.navigateBack()
+          }, 1500)
+        } else {
+          uni.showToast({ title: res.message || '注册失败', icon: 'none' })
+        }
+      } catch (e) {
+        uni.showToast({ title: '网络错误', icon: 'error' })
+      } finally {
+        this.loading = false
+      }
+    },
+    goLogin() {
+      uni.navigateBack()
+    }
+  }
 }
 </script>
 

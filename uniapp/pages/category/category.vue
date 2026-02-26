@@ -51,141 +51,137 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { onLoad, onShow } from '@dcloudio/uni-app'
+<script>
 import * as api from '../../utils/api.js'
 
-const categories = ref([])
-const products = ref([])
-const selectedCategoryId = ref(null)
-const loading = ref(true)
-const searchKeyword = ref('')
-
-function enrichProducts(list) {
-  const app = getApp()
-  const isEmployee = app.globalData.userInfo && Boolean(app.globalData.userInfo.isHotelEmployee)
-  return list.map(p => {
-    p._imageUrl = p.image ? api.getFileUrl(p.image) : ''
-    if (isEmployee && p.employeeDiscountRate) {
-      p._isEmployee = true
-      p._displayPrice = (p.price * p.employeeDiscountRate).toFixed(2)
-    } else {
-      p._isEmployee = false
-      p._displayPrice = p.price.toFixed(2)
+export default {
+  data() {
+    return {
+      categories: [],
+      products: [],
+      selectedCategoryId: null,
+      loading: true,
+      searchKeyword: ''
     }
-    return p
-  })
-}
-
-async function loadCategories() {
-  try {
-    const res = await api.getCategoryList()
-    const cats = res.data || []
-    categories.value = cats
-    if (cats.length > 0) {
-      const selId = selectedCategoryId.value || cats[0].id
-      selectedCategoryId.value = selId
-      loadProductsByCategory(selId)
-    } else {
-      loading.value = false
+  },
+  onLoad(options) {
+    if (options && options.categoryId) {
+      this.selectedCategoryId = parseInt(options.categoryId)
     }
-  } catch (e) {
-    console.error('Failed to load categories:', e)
-    loading.value = false
-  }
-}
-
-async function loadProductsByCategory(categoryId) {
-  loading.value = true
-  try {
-    const res = await api.getProductsByCategoryId(categoryId)
-    products.value = enrichProducts(res.data || [])
-    loading.value = false
-  } catch (e) {
-    console.error('Failed to load products:', e)
-    loading.value = false
-  }
-}
-
-function selectCategory(id) {
-  selectedCategoryId.value = id
-  loadProductsByCategory(id)
-}
-
-async function doSearch() {
-  const keyword = searchKeyword.value.trim()
-  if (!keyword) {
-    if (selectedCategoryId.value) {
-      loadProductsByCategory(selectedCategoryId.value)
+    this.loadCategories()
+  },
+  onShow() {
+    if (this.selectedCategoryId && this.categories.length > 0) {
+      this.loadProductsByCategory(this.selectedCategoryId)
     }
-    return
-  }
-  loading.value = true
-  try {
-    const res = await api.searchProducts(keyword)
-    products.value = enrichProducts(res.data || [])
-    selectedCategoryId.value = null
-    loading.value = false
-  } catch (e) {
-    loading.value = false
-  }
-}
-
-function goToProductDetail(id) {
-  const product = products.value.find(p => p.id === id)
-  if (!product) return
-  const app = getApp()
-  if (!app.globalData.userInfo) {
-    uni.navigateTo({ url: '/pages/login/login' })
-    return
-  }
-  uni.showActionSheet({
-    itemList: ['加入购物车', '立即购买'],
-    success: (res) => {
-      if (res.tapIndex === 0) addToCart(product)
-      else if (res.tapIndex === 1) buyNow(product)
+  },
+  methods: {
+    enrichProducts(list) {
+      const app = getApp()
+      const isEmployee = app.globalData.userInfo && Boolean(app.globalData.userInfo.isHotelEmployee)
+      return list.map(p => {
+        p._imageUrl = p.image ? api.getFileUrl(p.image) : ''
+        if (isEmployee && p.employeeDiscountRate) {
+          p._isEmployee = true
+          p._displayPrice = (p.price * p.employeeDiscountRate).toFixed(2)
+        } else {
+          p._isEmployee = false
+          p._displayPrice = p.price.toFixed(2)
+        }
+        return p
+      })
+    },
+    async loadCategories() {
+      try {
+        const res = await api.getCategoryList()
+        const cats = res.data || []
+        this.categories = cats
+        if (cats.length > 0) {
+          const selId = this.selectedCategoryId || cats[0].id
+          this.selectedCategoryId = selId
+          this.loadProductsByCategory(selId)
+        } else {
+          this.loading = false
+        }
+      } catch (e) {
+        console.error('Failed to load categories:', e)
+        this.loading = false
+      }
+    },
+    async loadProductsByCategory(categoryId) {
+      this.loading = true
+      try {
+        const res = await api.getProductsByCategoryId(categoryId)
+        this.products = this.enrichProducts(res.data || [])
+        this.loading = false
+      } catch (e) {
+        console.error('Failed to load products:', e)
+        this.loading = false
+      }
+    },
+    selectCategory(id) {
+      this.selectedCategoryId = id
+      this.loadProductsByCategory(id)
+    },
+    async doSearch() {
+      const keyword = this.searchKeyword.trim()
+      if (!keyword) {
+        if (this.selectedCategoryId) {
+          this.loadProductsByCategory(this.selectedCategoryId)
+        }
+        return
+      }
+      this.loading = true
+      try {
+        const res = await api.searchProducts(keyword)
+        this.products = this.enrichProducts(res.data || [])
+        this.selectedCategoryId = null
+        this.loading = false
+      } catch (e) {
+        this.loading = false
+      }
+    },
+    goToProductDetail(id) {
+      const product = this.products.find(p => p.id === id)
+      if (!product) return
+      const app = getApp()
+      if (!app.globalData.userInfo) {
+        uni.navigateTo({ url: '/pages/login/login' })
+        return
+      }
+      uni.showActionSheet({
+        itemList: ['加入购物车', '立即购买'],
+        success: (res) => {
+          if (res.tapIndex === 0) this.addToCart(product)
+          else if (res.tapIndex === 1) this.buyNow(product)
+        }
+      })
+    },
+    async addToCart(product) {
+      const app = getApp()
+      try {
+        await api.addCartItem({ userId: app.globalData.userInfo.id, productId: product.id, quantity: 1 })
+        uni.showToast({ title: '已加入购物车', icon: 'success' })
+      } catch (e) {
+        uni.showToast({ title: '添加失败', icon: 'error' })
+      }
+    },
+    async buyNow(product) {
+      const app = getApp()
+      try {
+        const res = await api.addOrder(app.globalData.userInfo.id, product.id, 1, null, app.globalData.selectedStoreId || null)
+        if (res.data && res.data.id) {
+          uni.navigateTo({ url: '/pages/payment/payment?orderId=' + res.data.id + '&amount=' + res.data.totalAmount })
+        } else {
+          uni.showToast({ title: '下单成功', icon: 'success' })
+          setTimeout(() => uni.switchTab({ url: '/pages/orders/orders' }), 1500)
+        }
+      } catch (e) {
+        uni.showToast({ title: '下单失败', icon: 'error' })
+      }
     }
-  })
-}
-
-async function addToCart(product) {
-  const app = getApp()
-  try {
-    await api.addCartItem({ userId: app.globalData.userInfo.id, productId: product.id, quantity: 1 })
-    uni.showToast({ title: '已加入购物车', icon: 'success' })
-  } catch (e) {
-    uni.showToast({ title: '添加失败', icon: 'error' })
   }
 }
-
-async function buyNow(product) {
-  const app = getApp()
-  try {
-    const res = await api.addOrder(app.globalData.userInfo.id, product.id, 1)
-    if (res.data && res.data.id) {
-      uni.navigateTo({ url: '/pages/payment/payment?orderId=' + res.data.id + '&amount=' + res.data.totalAmount })
-    } else {
-      uni.showToast({ title: '下单成功', icon: 'success' })
-      setTimeout(() => uni.switchTab({ url: '/pages/orders/orders' }), 1500)
-    }
-  } catch (e) {
-    uni.showToast({ title: '下单失败', icon: 'error' })
-  }
-}
-
-onLoad((options) => {
-  if (options && options.categoryId) {
-    selectedCategoryId.value = parseInt(options.categoryId)
-  }
-  loadCategories()
-})
-
-onShow(() => {
-  if (selectedCategoryId.value && categories.value.length > 0) {
-    loadProductsByCategory(selectedCategoryId.value)
-  }
-})
 </script>
 
 <style scoped>

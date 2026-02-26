@@ -3,10 +3,27 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>店铺商品管理</span>
+          <div class="card-header-left">
+            <span>店铺商品管理</span>
+            <div class="stats-badges">
+              <el-tag type="info" size="small">共计: {{ stats.total }}</el-tag>
+              <el-tag type="success" size="small">上架: {{ stats.onShelf }}</el-tag>
+              <el-tag type="danger" size="small">下架: {{ stats.offShelf }}</el-tag>
+            </div>
+          </div>
           <div>
             <el-button type="danger" :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
-            <el-button type="primary" @click="openDialog()">新增店铺商品</el-button>
+            <el-button type="success" @click="handleExport">导出Excel</el-button>
+            <el-upload
+              action=""
+              :before-upload="handleImport"
+              :show-file-list="false"
+              accept=".xlsx,.xls"
+              style="display: inline-block; margin-left: 12px;"
+            >
+              <el-button type="info">导入Excel</el-button>
+            </el-upload>
+            <el-button type="primary" @click="openDialog()" style="margin-left: 12px;">新增店铺商品</el-button>
           </div>
         </div>
       </template>
@@ -26,13 +43,13 @@
         <el-table-column prop="storeId" label="店铺ID" width="80" align="center" />
         <el-table-column label="店铺名称" width="140">
           <template #default="{ row }">
-            {{ storeMap[row.storeId] || '-' }}
+            {{ row.storeName || '-' }}
           </template>
         </el-table-column>
         <el-table-column prop="productId" label="商品ID" width="80" align="center" />
         <el-table-column label="商品名称" width="140">
           <template #default="{ row }">
-            {{ productMap[row.productId] || '-' }}
+            {{ row.productName || '-' }}
           </template>
         </el-table-column>
         <el-table-column prop="storePrice" label="店铺售价" width="100" align="center">
@@ -122,16 +139,18 @@
         <el-button type="primary" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { listStoreProductsPage, addStoreProduct, addStoreProductWithName, updateStoreProduct, deleteStoreProduct, deleteBatchStoreProducts } from '../../api/storeProduct'
+import { ref, reactive, onMounted } from 'vue'
+import { listStoreProducts, listStoreProductsPage, addStoreProduct, addStoreProductWithName, updateStoreProduct, deleteStoreProduct, deleteBatchStoreProducts, getStoreProductsByStoreId } from '../../api/storeProduct'
 import { listStores } from '../../api/store'
 import { listProducts } from '../../api/product'
+import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FormInstance } from 'element-plus'
+import type { FormInstance, UploadRawFile } from 'element-plus'
 
 const tableData = ref<any[]>([])
 const storeList = ref<any[]>([])
@@ -146,17 +165,7 @@ const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 
-const storeMap = computed(() => {
-  const map: Record<number, string> = {}
-  storeList.value.forEach((s: any) => { if (s.id) map[s.id] = s.name })
-  return map
-})
-
-const productMap = computed(() => {
-  const map: Record<number, string> = {}
-  productList.value.forEach((p: any) => { if (p.id) map[p.id] = p.name })
-  return map
-})
+const stats = reactive({ total: 0, onShelf: 0, offShelf: 0 })
 
 const defaultForm = () => ({ storeId: undefined, productId: undefined, productName: '', storePrice: undefined as number | undefined, storeStock: 0, safetyStock: 10, status: 1 })
 const form = reactive<any>(defaultForm())
@@ -176,6 +185,20 @@ async function loadData() {
   ])
   tableData.value = res.data?.records || []
   total.value = res.data?.total || 0
+
+  // Compute accurate stats using full data (not paginated)
+  let allProducts: any[] = []
+  if (filterStoreId.value) {
+    const allRes = await getStoreProductsByStoreId(filterStoreId.value)
+    allProducts = allRes.data || []
+  } else {
+    const allRes = await listStoreProducts()
+    allProducts = allRes.data || []
+  }
+  stats.total = allProducts.length
+  stats.onShelf = allProducts.filter((r: any) => r.status === 1).length
+  stats.offShelf = allProducts.filter((r: any) => r.status !== 1).length
+
   storeList.value = storeRes.data || []
   productList.value = productRes.data || []
 }
@@ -187,7 +210,7 @@ function handleSelectionChange(rows: any[]) {
 function openDialog(row?: any) {
   isEdit.value = !!row
   if (row) {
-    Object.assign(form, { ...row, productName: productMap.value[row.productId] || '' })
+    Object.assign(form, { ...row, productName: row.productName || '' })
   } else {
     Object.assign(form, defaultForm())
   }
@@ -248,10 +271,49 @@ async function handleBatchDelete() {
   loadData()
 }
 
+function handleExport() {
+  const token = localStorage.getItem('satoken')
+  const params: any = {}
+  if (filterStoreId.value) params.storeId = filterStoreId.value
+  if (searchProductName.value.trim()) params.productName = searchProductName.value.trim()
+  axios.get('/api/excel/export/store-products', {
+    params,
+    responseType: 'blob',
+    headers: token ? { satoken: token } : {}
+  }).then(res => {
+    const blob = new Blob([res.data])
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = '店铺商品数据.xlsx'
+    link.click()
+    URL.revokeObjectURL(link.href)
+  })
+}
+
+function handleImport(file: UploadRawFile) {
+  const token = localStorage.getItem('satoken')
+  const formData = new FormData()
+  formData.append('file', file)
+  axios.post('/api/excel/import/store-products', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      ...(token ? { satoken: token } : {})
+    }
+  }).then(res => {
+    ElMessage.success(res.data?.data || '导入成功')
+    loadData()
+  }).catch(() => {
+    ElMessage.error('导入失败')
+  })
+  return false
+}
+
 onMounted(loadData)
 </script>
 
 <style scoped>
 .card-header { display: flex; justify-content: space-between; align-items: center; }
+.card-header-left { display: flex; align-items: center; gap: 12px; }
+.stats-badges { display: flex; gap: 8px; }
 .search-bar { margin-bottom: 16px; display: flex; gap: 12px; }
 </style>

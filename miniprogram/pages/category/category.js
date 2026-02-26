@@ -120,7 +120,7 @@ Page({
   async buyNow(product) {
     const app = getApp()
     try {
-      await api.addOrder(app.globalData.userInfo.id, product.id, 1)
+      await api.addOrder(app.globalData.userInfo.id, product.id, 1, null, app.globalData.selectedStoreId || null)
       wx.showToast({ title: '下单成功', icon: 'success' })
       setTimeout(() => wx.switchTab({ url: '/pages/orders/orders' }), 1500)
     } catch (e) {

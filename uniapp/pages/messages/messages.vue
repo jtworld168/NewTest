@@ -1,0 +1,148 @@
+<template>
+  <view class="container">
+    <view class="header-bar">
+      <text class="header-title">消息通知</text>
+      <text class="mark-all" @click="markAllRead" v-if="messages.length > 0">全部已读</text>
+    </view>
+    <view v-if="messages.length === 0" class="empty">
+      <text class="empty-icon">📭</text>
+      <text class="empty-text">暂无消息</text>
+    </view>
+    <view v-for="(item, index) in messages" :key="item.id" :class="['msg-item', item.isRead === 0 ? 'unread' : '']" @click="readMessage(item.id, index)">
+      <view class="msg-header">
+        <view class="msg-type-row">
+          <text :class="['msg-type', item.type === 'ORDER' ? 'type-order' : item.type === 'COUPON' ? 'type-coupon' : 'type-system']">{{ typeMap[item.type] || '系统消息' }}</text>
+          <view class="unread-dot" v-if="item.isRead === 0"></view>
+        </view>
+        <text class="msg-time">{{ item.createTime }}</text>
+      </view>
+      <text class="msg-title">{{ item.title }}</text>
+      <text class="msg-content">{{ item.content }}</text>
+    </view>
+  </view>
+</template>
+
+<script>
+import * as api from '../../utils/api.js'
+
+export default {
+  data() {
+    return {
+      messages: [],
+      typeMap: { SYSTEM: '系统消息', ORDER: '订单消息', COUPON: '优惠券消息' }
+    }
+  },
+  onShow() {
+    this.loadMessages()
+  },
+  methods: {
+    async loadMessages() {
+      const app = getApp()
+      const userInfo = app.globalData.userInfo
+      if (!userInfo) return
+      try {
+        const res = await api.getUserMessages(userInfo.id)
+        this.messages = res.data || []
+      } catch (e) {
+        console.error('Failed to load messages:', e)
+      }
+    },
+    async readMessage(id, index) {
+      if (this.messages[index] && this.messages[index].isRead === 0) {
+        try {
+          await api.markMessageAsRead(id)
+          this.messages[index].isRead = 1
+        } catch (e) {
+          console.error('Failed to mark as read:', e)
+        }
+      }
+    },
+    async markAllRead() {
+      const app = getApp()
+      const userInfo = app.globalData.userInfo
+      if (!userInfo) return
+      try {
+        await api.markAllMessagesAsRead(userInfo.id)
+        this.messages = this.messages.map(m => ({ ...m, isRead: 1 }))
+        uni.showToast({ title: '全部已读', icon: 'success' })
+      } catch (e) {
+        console.error('Failed to mark all as read:', e)
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+.container {
+  padding: 20rpx;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+.header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 10rpx;
+}
+.header-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333;
+}
+.mark-all {
+  font-size: 26rpx;
+  color: #C9A96E;
+}
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 0;
+}
+.empty-icon { font-size: 80rpx; margin-bottom: 20rpx; }
+.empty-text { font-size: 28rpx; color: #999; }
+.msg-item {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+.msg-item.unread { border-left: 6rpx solid #C9A96E; }
+.msg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+.msg-type-row { display: flex; align-items: center; gap: 10rpx; }
+.msg-type {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  color: #fff;
+}
+.type-system { background-color: #909399; }
+.type-order { background-color: #E6A23C; }
+.type-coupon { background-color: #67C23A; }
+.unread-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background-color: #ff4d4f;
+}
+.msg-time { font-size: 22rpx; color: #999; }
+.msg-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 8rpx;
+}
+.msg-content {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.6;
+  display: block;
+}
+</style>

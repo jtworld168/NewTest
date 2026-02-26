@@ -90,10 +90,13 @@ function getOrderById(id) {
   return request({ url: '/orders/get/' + id })
 }
 
-function addOrder(userId, productId, quantity, userCouponId) {
+function addOrder(userId, productId, quantity, userCouponId, storeId) {
   let url = '/orders/add?userId=' + userId + '&productId=' + productId + '&quantity=' + quantity
   if (userCouponId) {
     url += '&userCouponId=' + userCouponId
+  }
+  if (storeId) {
+    url += '&storeId=' + storeId
   }
   return request({ url: url, method: 'POST' })
 }
@@ -179,6 +182,24 @@ function getStoreById(id) {
   return request({ url: '/stores/get/' + id })
 }
 
+// ==================== Message ====================
+
+function getUserMessages(userId) {
+  return request({ url: '/messages/user/' + userId, method: 'GET' })
+}
+
+function getUnreadCount(userId) {
+  return request({ url: '/messages/unread/' + userId, method: 'GET' })
+}
+
+function markMessageAsRead(id) {
+  return request({ url: '/messages/read/' + id, method: 'PUT' })
+}
+
+function markAllMessagesAsRead(userId) {
+  return request({ url: '/messages/readAll/' + userId, method: 'PUT' })
+}
+
 // ==================== File ====================
 
 function getFileUrl(filename) {
@@ -221,5 +242,9 @@ module.exports = {
   getPaymentsByOrderId,
   getFileUrl,
   getStoreList,
-  getStoreById
+  getStoreById,
+  getUserMessages,
+  getUnreadCount,
+  markMessageAsRead,
+  markAllMessagesAsRead
 }

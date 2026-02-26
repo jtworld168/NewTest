@@ -12,7 +12,8 @@ Page({
     isLoggedIn: false,
     roleText: '',
     isEmployee: false,
-    avatarUrl: '/images/default-avatar.png'
+    avatarUrl: '/images/default-avatar.png',
+    unreadCount: 0
   },
 
   onShow() {
@@ -28,6 +29,7 @@ Page({
         avatarUrl
       })
       this.refreshUserInfo(userInfo.id)
+      this.loadUnreadCount(userInfo.id)
     } else {
       this.setData({ userInfo: null, isLoggedIn: false, avatarUrl: '/images/default-avatar.png' })
     }
@@ -71,6 +73,28 @@ Page({
 
   goCoupons() {
     wx.navigateTo({ url: '/pages/coupons/coupons' })
+  },
+
+  goMessages() {
+    wx.navigateTo({ url: '/pages/messages/messages' })
+  },
+
+  async loadUnreadCount(userId) {
+    try {
+      const res = await api.getUnreadCount(userId)
+      this.setData({ unreadCount: (res.data && res.data.count) || 0 })
+    } catch (e) {
+      console.error('Failed to load unread count:', e)
+    }
+  },
+
+  showAbout() {
+    wx.showModal({
+      title: '关于我们',
+      content: '智慧零售小程序 v1.0.0\n\n无人超市智能购物系统，为您提供便捷的扫码购物体验。',
+      showCancel: false,
+      confirmText: '知道了'
+    })
   },
 
   async doLogout() {

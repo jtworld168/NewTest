@@ -268,6 +268,13 @@ Page({
       return
     }
 
+    // Require store selection for checkout
+    const storeId = app.globalData.selectedStoreId
+    if (!storeId) {
+      wx.showToast({ title: '请先在首页选择店铺', icon: 'none' })
+      return
+    }
+
     // Check if any coupon meets minimum spend but none selected
     const totalForCoupon = parseFloat(this.data.totalPrice)
     if (!isEmployee && !selectedCouponId && availableCoupons.length > 0) {

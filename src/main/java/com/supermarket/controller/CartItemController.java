@@ -2,15 +2,23 @@ package com.supermarket.controller;
 
 import com.supermarket.common.Result;
 import com.supermarket.entity.CartItem;
+import com.supermarket.entity.Product;
+import com.supermarket.entity.User;
 import com.supermarket.service.CartItemService;
+import com.supermarket.service.ProductService;
+import com.supermarket.service.UserService;
+import com.supermarket.vo.CartItemVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Tag(name = "购物车管理", description = "购物车增删改查接口")
 @RestController
@@ -19,6 +27,33 @@ import java.util.List;
 public class CartItemController {
 
     private final CartItemService cartItemService;
+    private final UserService userService;
+    private final ProductService productService;
+
+    private CartItemVO toVO(CartItem item, Map<Long, User> userMap, Map<Long, Product> productMap) {
+        CartItemVO vo = new CartItemVO();
+        BeanUtils.copyProperties(item, vo);
+        if (item.getUserId() != null) {
+            User user = userMap.get(item.getUserId());
+            if (user != null) vo.setUserName(user.getUsername());
+        }
+        if (item.getProductId() != null) {
+            Product product = productMap.get(item.getProductId());
+            if (product != null) {
+                vo.setProductName(product.getName());
+                vo.setProductBarcode(product.getBarcode());
+            }
+        }
+        return vo;
+    }
+
+    private List<CartItemVO> toVOList(List<CartItem> items) {
+        Map<Long, User> userMap = userService.listAll().stream()
+                .collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
+        Map<Long, Product> productMap = productService.listAll().stream()
+                .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
+        return items.stream().map(item -> toVO(item, userMap, productMap)).collect(Collectors.toList());
+    }
 
     @Operation(summary = "根据ID查询购物车商品")
     @GetMapping("/get/{id}")
@@ -29,28 +64,34 @@ public class CartItemController {
 
     @Operation(summary = "查询所有购物车商品")
     @GetMapping("/list")
-    public Result<List<CartItem>> getAllCartItems() {
-        return Result.success(cartItemService.listAll());
+    public Result<List<CartItemVO>> getAllCartItems() {
+        return Result.success(toVOList(cartItemService.listAll()));
     }
 
     @Operation(summary = "根据用户ID查询购物车")
     @GetMapping("/getByUserId/{userId}")
-    public Result<List<CartItem>> getCartItemsByUserId(@Parameter(description = "用户ID") @PathVariable Long userId) {
-        return Result.success(cartItemService.getCartItemsByUserId(userId));
+    public Result<List<CartItemVO>> getCartItemsByUserId(@Parameter(description = "用户ID") @PathVariable Long userId) {
+        return Result.success(toVOList(cartItemService.getCartItemsByUserId(userId)));
     }
 
     @Operation(summary = "根据商品ID查询购物车记录")
     @GetMapping("/getByProductId/{productId}")
-    public Result<List<CartItem>> getCartItemsByProductId(@Parameter(description = "商品ID") @PathVariable Long productId) {
-        return Result.success(cartItemService.getCartItemsByProductId(productId));
+    public Result<List<CartItemVO>> getCartItemsByProductId(@Parameter(description = "商品ID") @PathVariable Long productId) {
+        return Result.success(toVOList(cartItemService.getCartItemsByProductId(productId)));
     }
 
     @Operation(summary = "分页查询购物车商品列表")
     @GetMapping("/listPage")
-    public Result<IPage<CartItem>> listPage(
+    public Result<IPage<CartItemVO>> listPage(
             @Parameter(description = "页码（默认1）") @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "每页数量（默认10）") @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(cartItemService.listPage(pageNum, pageSize));
+        IPage<CartItem> page = cartItemService.listPage(pageNum, pageSize);
+        Map<Long, User> userMap = userService.listAll().stream()
+                .collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
+        Map<Long, Product> productMap = productService.listAll().stream()
+                .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
+        IPage<CartItemVO> voPage = page.convert(item -> toVO(item, userMap, productMap));
+        return Result.success(voPage);
     }
 
     @Operation(summary = "添加商品到购物车")

@@ -1,0 +1,21 @@
+<view class="container">
+  <view class="header-bar">
+    <text class="header-title">消息通知</text>
+    <text class="mark-all" bindtap="markAllRead" wx:if="{{messages.length > 0}}">全部已读</text>
+  </view>
+  <view wx:if="{{messages.length === 0}}" class="empty">
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">暂无消息</text>
+  </view>
+  <view wx:for="{{messages}}" wx:key="id" class="msg-item {{item.isRead === 0 ? 'unread' : ''}}" bindtap="readMessage" data-id="{{item.id}}" data-index="{{index}}">
+    <view class="msg-header">
+      <view class="msg-type-row">
+        <text class="msg-type {{item.type === 'ORDER' ? 'type-order' : item.type === 'COUPON' ? 'type-coupon' : 'type-system'}}">{{typeMap[item.type] || '系统消息'}}</text>
+        <view class="unread-dot" wx:if="{{item.isRead === 0}}"></view>
+      </view>
+      <text class="msg-time">{{item.createTime}}</text>
+    </view>
+    <text class="msg-title">{{item.title}}</text>
+    <text class="msg-content">{{item.content}}</text>
+  </view>
+</view>

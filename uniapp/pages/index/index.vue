@@ -1,5 +1,16 @@
 <template>
   <view class="container">
+    <!-- Store Selector -->
+    <view class="store-selector">
+      <picker mode="selector" :range="storeNames" @change="onStoreChange">
+        <view class="store-picker">
+          <text class="store-icon">🏪</text>
+          <text class="store-name">{{ selectedStoreName }}</text>
+          <text class="store-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+
     <!-- Search Bar with Scan Button -->
     <view class="search-bar">
       <view class="search-input" @click="goToCategory">
@@ -11,25 +22,16 @@
       </view>
     </view>
 
-    <!-- Swiper Banner -->
+    <!-- Swiper Banner (local images) -->
     <view class="swiper-section">
       <swiper class="banner-swiper" indicator-dots autoplay :interval="3000" circular>
-        <swiper-item>
-          <view class="banner-item banner-1">
-            <text class="banner-text">智慧零售 · 智能购物</text>
-            <text class="banner-sub">随时随地，扫码即购</text>
-          </view>
-        </swiper-item>
-        <swiper-item>
-          <view class="banner-item banner-2">
-            <text class="banner-text">新品上架</text>
-            <text class="banner-sub">更多优质好物等你来发现</text>
-          </view>
-        </swiper-item>
-        <swiper-item>
-          <view class="banner-item banner-3">
-            <text class="banner-text">员工专享折扣</text>
-            <text class="banner-sub">内部员工享受更优价格</text>
+        <swiper-item v-for="item in banners" :key="item.id">
+          <view class="banner-item" @click="goToCategory">
+            <image class="banner-image" :src="item.image" mode="aspectFill" />
+            <view class="banner-overlay">
+              <text class="banner-text">{{ item.title }}</text>
+              <text class="banner-sub">{{ item.subtitle }}</text>
+            </view>
           </view>
         </swiper-item>
       </swiper>
@@ -86,197 +88,251 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+<script>
 import * as api from '../../utils/api.js'
 
-const products = ref([])
-const categories = ref([])
-const loading = ref(true)
-const cartMap = ref({})
-
-function loadData() {
-  loading.value = true
-  Promise.all([
-    api.getProductList(),
-    api.getCategoryList()
-  ]).then(async ([productRes, categoryRes]) => {
-    const rawProducts = (productRes.data || []).slice(0, 8)
-    const app = getApp()
-    const isEmployee = app.globalData.userInfo && Boolean(app.globalData.userInfo.isHotelEmployee)
-
-    rawProducts.forEach(p => {
-      p._imageUrl = p.image ? api.getFileUrl(p.image) : ''
-      if (isEmployee && p.employeeDiscountRate) {
-        p._isEmployee = true
-        p._displayPrice = (p.price * p.employeeDiscountRate).toFixed(2)
-      } else {
-        p._isEmployee = false
-        p._displayPrice = p.price.toFixed(2)
-      }
-      p._bouncing = false
-    })
-
-    let map = {}
-    if (app.globalData.userInfo) {
-      try {
-        const cartRes = await api.getCartByUserId(app.globalData.userInfo.id)
-        const cartItems = cartRes.data || []
-        cartItems.forEach(item => {
-          map[item.productId] = item
-        })
-      } catch (e) {
-        console.error('Failed to load cart:', e)
-      }
+export default {
+  data() {
+    return {
+      products: [],
+      banners: [
+        { id: 1, image: '/static/banner1.png', title: '智慧零售 · 智能购物', subtitle: '随时随地，扫码即购' },
+        { id: 2, image: '/static/banner2.png', title: '新品上架', subtitle: '每日精选，品质保证' },
+        { id: 3, image: '/static/banner3.png', title: '优惠活动', subtitle: '限时特惠，不容错过' }
+      ],
+      categories: [],
+      loading: true,
+      cartMap: {},
+      stores: [],
+      storeNames: ['全部店铺'],
+      selectedStoreName: '全部店铺'
     }
+  },
+  onShow() {
+    if (this.stores.length === 0) this.loadStores()
+    this.loadData()
+  },
+  methods: {
+    async loadStores() {
+      try {
+        const res = await api.getStoreList()
+        const storeList = res.data || []
+        this.stores = storeList
+        this.storeNames = ['全部店铺'].concat(storeList.map(s => s.name))
+      } catch (e) {
+        console.error('Failed to load stores:', e)
+      }
+    },
+    onStoreChange(e) {
+      const index = parseInt(e.detail.value)
+      const app = getApp()
+      if (index === 0) {
+        this.selectedStoreName = '全部店铺'
+        app.globalData.selectedStoreId = 0
+        app.globalData.selectedStoreName = '全部店铺'
+      } else {
+        const store = this.stores[index - 1]
+        this.selectedStoreName = store.name
+        app.globalData.selectedStoreId = store.id
+        app.globalData.selectedStoreName = store.name
+      }
+    },
+    loadData() {
+      this.loading = true
+      Promise.all([
+        api.getProductList(),
+        api.getCategoryList()
+      ]).then(async ([productRes, categoryRes]) => {
+        const rawProducts = (productRes.data || []).slice(0, 8)
+        const app = getApp()
+        const isEmployee = app.globalData.userInfo && Boolean(app.globalData.userInfo.isHotelEmployee)
 
-    rawProducts.forEach(p => {
-      p._cartQty = map[p.id] ? map[p.id].quantity : 0
-    })
+        rawProducts.forEach(p => {
+          p._imageUrl = p.image ? api.getFileUrl(p.image) : ''
+          if (isEmployee && p.employeeDiscountRate) {
+            p._isEmployee = true
+            p._displayPrice = (p.price * p.employeeDiscountRate).toFixed(2)
+          } else {
+            p._isEmployee = false
+            p._displayPrice = p.price.toFixed(2)
+          }
+          p._bouncing = false
+        })
 
-    products.value = rawProducts
-    categories.value = categoryRes.data || []
-    cartMap.value = map
-    loading.value = false
-  }).catch(e => {
-    console.error('Failed to load data:', e)
-    loading.value = false
-  })
-}
-
-function goToCategory() {
-  uni.navigateTo({ url: '/pages/category/category' })
-}
-
-function onScan() {
-  uni.scanCode({
-    onlyFromCamera: true,
-    success: (res) => {
-      const code = res.result
-      uni.showLoading({ title: '查找商品...' })
-      api.searchProducts(code).then(searchRes => {
-        uni.hideLoading()
-        const found = searchRes.data || []
-        if (found.length > 0) {
-          const product = found[0]
-          uni.showActionSheet({
-            itemList: ['加入购物车', '立即购买'],
-            success: (actionRes) => {
-              if (actionRes.tapIndex === 0) addToCart(product)
-              else if (actionRes.tapIndex === 1) buyNow(product)
-            }
-          })
-        } else {
-          uni.showToast({ title: '未找到该商品', icon: 'none' })
+        let map = {}
+        if (app.globalData.userInfo) {
+          try {
+            const cartRes = await api.getCartByUserId(app.globalData.userInfo.id)
+            const cartItems = cartRes.data || []
+            cartItems.forEach(item => {
+              map[item.productId] = item
+            })
+          } catch (e) {
+            console.error('Failed to load cart:', e)
+          }
         }
-      }).catch(() => {
-        uni.hideLoading()
-        uni.showToast({ title: '查找失败', icon: 'error' })
+
+        rawProducts.forEach(p => {
+          p._cartQty = map[p.id] ? map[p.id].quantity : 0
+        })
+
+        this.products = rawProducts
+        this.categories = categoryRes.data || []
+        this.cartMap = map
+        this.loading = false
+      }).catch(e => {
+        console.error('Failed to load data:', e)
+        this.loading = false
       })
     },
-    fail: () => {}
-  })
-}
-
-function goToCategoryDetail(id) {
-  uni.navigateTo({ url: '/pages/category/category?categoryId=' + id })
-}
-
-function goToProductDetail(id) {
-  const product = products.value.find(p => p.id === id)
-  if (!product) return
-  const app = getApp()
-  if (!app.globalData.userInfo) {
-    uni.navigateTo({ url: '/pages/login/login' })
-    return
-  }
-  uni.showActionSheet({
-    itemList: ['加入购物车', '立即购买'],
-    success: (res) => {
-      if (res.tapIndex === 0) addToCart(product)
-      else if (res.tapIndex === 1) buyNow(product)
+    goToCategory() {
+      uni.navigateTo({ url: '/pages/category/category' })
+    },
+    onScan() {
+      uni.scanCode({
+        onlyFromCamera: true,
+        success: (res) => {
+          const code = res.result
+          uni.showLoading({ title: '查找商品...' })
+          api.searchProducts(code).then(searchRes => {
+            uni.hideLoading()
+            const found = searchRes.data || []
+            if (found.length > 0) {
+              const product = found[0]
+              uni.showActionSheet({
+                itemList: ['加入购物车', '立即购买'],
+                success: (actionRes) => {
+                  if (actionRes.tapIndex === 0) this.addToCart(product)
+                  else if (actionRes.tapIndex === 1) this.buyNow(product)
+                }
+              })
+            } else {
+              uni.showToast({ title: '未找到该商品', icon: 'none' })
+            }
+          }).catch(() => {
+            uni.hideLoading()
+            uni.showToast({ title: '查找失败', icon: 'error' })
+          })
+        },
+        fail: () => {}
+      })
+    },
+    goToCategoryDetail(id) {
+      uni.navigateTo({ url: '/pages/category/category?categoryId=' + id })
+    },
+    goToProductDetail(id) {
+      uni.navigateTo({ url: '/pages/product-detail/product-detail?id=' + id })
+    },
+    async increaseQty(productId) {
+      const app = getApp()
+      if (!app.globalData.userInfo) {
+        uni.navigateTo({ url: '/pages/login/login' })
+        return
+      }
+      const cartItem = this.cartMap[productId]
+      try {
+        if (cartItem) {
+          await api.updateCartItem({ id: cartItem.id, userId: cartItem.userId, productId: cartItem.productId, quantity: cartItem.quantity + 1 })
+        } else {
+          await api.addCartItem({ userId: app.globalData.userInfo.id, productId, quantity: 1 })
+        }
+        uni.showToast({ title: '已添加', icon: 'success', duration: 800 })
+        const idx = this.products.findIndex(p => p.id === productId)
+        if (idx !== -1) {
+          this.products[idx]._bouncing = true
+          setTimeout(() => {
+            this.products[idx]._bouncing = false
+          }, 500)
+        }
+        this.loadData()
+      } catch (err) {
+        uni.showToast({ title: '操作失败', icon: 'error' })
+      }
+    },
+    async decreaseQty(productId) {
+      const app = getApp()
+      if (!app.globalData.userInfo) {
+        uni.navigateTo({ url: '/pages/login/login' })
+        return
+      }
+      const cartItem = this.cartMap[productId]
+      if (!cartItem || cartItem.quantity <= 0) return
+      try {
+        if (cartItem.quantity <= 1) {
+          await api.deleteCartItem(cartItem.id)
+        } else {
+          await api.updateCartItem({ id: cartItem.id, userId: cartItem.userId, productId: cartItem.productId, quantity: cartItem.quantity - 1 })
+        }
+        this.loadData()
+      } catch (err) {
+        uni.showToast({ title: '操作失败', icon: 'error' })
+      }
+    },
+    async addToCart(product) {
+      const app = getApp()
+      try {
+        await api.addCartItem({ userId: app.globalData.userInfo.id, productId: product.id, quantity: 1 })
+        uni.showToast({ title: '已加入购物车', icon: 'success' })
+        this.loadData()
+      } catch (err) {
+        uni.showToast({ title: '添加失败', icon: 'error' })
+      }
+    },
+    async buyNow(product) {
+      const app = getApp()
+      const storeId = app.globalData.selectedStoreId
+      if (!storeId) {
+        uni.showToast({ title: '请先选择店铺', icon: 'none' })
+        return
+      }
+      try {
+        const items = [{ productId: product.id, quantity: 1 }]
+        const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, null, storeId)
+        if (res.data && res.data.id) {
+          uni.navigateTo({ url: '/pages/payment/payment?orderId=' + res.data.id + '&amount=' + res.data.totalAmount })
+        } else {
+          uni.showToast({ title: '下单成功', icon: 'success' })
+          setTimeout(() => uni.switchTab({ url: '/pages/orders/orders' }), 1500)
+        }
+      } catch (err) {
+        uni.showToast({ title: '下单失败', icon: 'error' })
+      }
     }
-  })
-}
-
-async function increaseQty(productId) {
-  const app = getApp()
-  if (!app.globalData.userInfo) {
-    uni.navigateTo({ url: '/pages/login/login' })
-    return
-  }
-  const cartItem = cartMap.value[productId]
-  try {
-    if (cartItem) {
-      await api.updateCartItem({ id: cartItem.id, userId: cartItem.userId, productId: cartItem.productId, quantity: cartItem.quantity + 1 })
-    } else {
-      await api.addCartItem({ userId: app.globalData.userInfo.id, productId, quantity: 1 })
-    }
-    uni.showToast({ title: '已添加', icon: 'success', duration: 800 })
-    const idx = products.value.findIndex(p => p.id === productId)
-    if (idx !== -1) {
-      products.value[idx]._bouncing = true
-      setTimeout(() => {
-        products.value[idx]._bouncing = false
-      }, 500)
-    }
-    loadData()
-  } catch (err) {
-    uni.showToast({ title: '操作失败', icon: 'error' })
   }
 }
-
-async function decreaseQty(productId) {
-  const app = getApp()
-  if (!app.globalData.userInfo) {
-    uni.navigateTo({ url: '/pages/login/login' })
-    return
-  }
-  const cartItem = cartMap.value[productId]
-  if (!cartItem || cartItem.quantity <= 0) return
-  try {
-    if (cartItem.quantity <= 1) {
-      await api.deleteCartItem(cartItem.id)
-    } else {
-      await api.updateCartItem({ id: cartItem.id, userId: cartItem.userId, productId: cartItem.productId, quantity: cartItem.quantity - 1 })
-    }
-    loadData()
-  } catch (err) {
-    uni.showToast({ title: '操作失败', icon: 'error' })
-  }
-}
-
-async function addToCart(product) {
-  const app = getApp()
-  try {
-    await api.addCartItem({ userId: app.globalData.userInfo.id, productId: product.id, quantity: 1 })
-    uni.showToast({ title: '已加入购物车', icon: 'success' })
-    loadData()
-  } catch (err) {
-    uni.showToast({ title: '添加失败', icon: 'error' })
-  }
-}
-
-async function buyNow(product) {
-  const app = getApp()
-  try {
-    const res = await api.addOrder(app.globalData.userInfo.id, product.id, 1)
-    if (res.data && res.data.id) {
-      uni.navigateTo({ url: '/pages/payment/payment?orderId=' + res.data.id + '&amount=' + res.data.totalAmount })
-    } else {
-      uni.showToast({ title: '下单成功', icon: 'success' })
-      setTimeout(() => uni.switchTab({ url: '/pages/orders/orders' }), 1500)
-    }
-  } catch (err) {
-    uni.showToast({ title: '下单失败', icon: 'error' })
-  }
-}
-
-onShow(() => { loadData() })
 </script>
 
 <style scoped>
+/* Store Selector */
+.store-selector {
+  padding: 16rpx 20rpx 0;
+  background-color: var(--color-primary);
+}
+
+.store-picker {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 16rpx;
+  padding: 12rpx 20rpx;
+}
+
+.store-icon {
+  font-size: 32rpx;
+  margin-right: 10rpx;
+}
+
+.store-name {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.store-arrow {
+  font-size: 20rpx;
+  color: #999;
+}
+
 .search-bar {
   padding: 20rpx;
   background-color: var(--color-primary);
@@ -338,6 +394,29 @@ onShow(() => { loadData() })
   align-items: center;
   justify-content: center;
   border-radius: 16rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-image {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.banner-overlay {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(transparent, rgba(0,0,0,0.5));
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20rpx 24rpx;
+  box-sizing: border-box;
 }
 
 .banner-1 { background: linear-gradient(135deg, #C9A96E, #B8956A); }

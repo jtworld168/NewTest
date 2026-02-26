@@ -26,7 +26,7 @@ public interface OrderService extends IService<Order> {
 
     IPage<Order> listPageByStoreId(Long storeId, int pageNum, int pageSize);
 
-    Order addOrder(Long userId, Long productId, Integer quantity, Long userCouponId);
+    Order addOrder(Long userId, Long productId, Integer quantity, Long userCouponId, Long storeId);
 
     Order addMultiItemOrder(Long userId, Long storeId, List<Map<String, Object>> items, Long userCouponId);
 

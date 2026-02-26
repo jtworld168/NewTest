@@ -62,6 +62,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public boolean updateUser(User user) {
+        // If password is provided, hash it; otherwise, preserve existing password
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            user.setPassword(BCrypt.hashpw(user.getPassword()));
+        } else {
+            user.setPassword(null); // null fields are not updated by MyBatis-Plus updateById
+        }
         return updateById(user);
     }
 

@@ -98,7 +98,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listPayments, addPayment, updatePayment, deletePayment, deleteBatchPayments, searchPayments, getPaymentsByStatus, listPaymentsPage } from '../../api/payment'
+import { addPayment, updatePayment, deletePayment, deleteBatchPayments, searchPayments, getPaymentsByStatus, listPaymentsPage } from '../../api/payment'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { Payment } from '../../types'

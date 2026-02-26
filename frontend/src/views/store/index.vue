@@ -24,7 +24,6 @@
         <el-table-column prop="name" label="店铺名称" />
         <el-table-column prop="address" label="店铺地址" />
         <el-table-column prop="phone" label="联系电话" width="140" />
-        <el-table-column prop="safetyStock" label="安全库存" width="100" align="center" />
         <el-table-column label="状态" prop="status" width="80" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">{{ row.status === 1 ? '营业' : '关闭' }}</el-tag>
@@ -60,9 +59,6 @@
         <el-form-item label="联系电话" prop="phone">
           <el-input v-model="form.phone" />
         </el-form-item>
-        <el-form-item label="安全库存" prop="safetyStock">
-          <el-input-number v-model="form.safetyStock" :min="0" style="width: 100%" />
-        </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-select v-model="form.status" placeholder="请选择状态" style="width: 100%">
             <el-option label="营业" :value="1" />
@@ -81,7 +77,6 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { listStoresPage, addStore, updateStore, deleteStore, deleteBatchStores, searchStores } from '../../api/store'
-import { BASE_URL } from '../../api/request'
 import axios from 'axios'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
@@ -96,7 +91,7 @@ const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 
-const defaultForm = () => ({ name: '', address: '', phone: '', safetyStock: 10, status: 1 })
+const defaultForm = () => ({ name: '', address: '', phone: '', status: 1 })
 const form = reactive<any>(defaultForm())
 
 const rules = {
@@ -159,7 +154,7 @@ async function handleBatchDelete() {
 
 function handleExport() {
   const token = localStorage.getItem('satoken')
-  axios.get(BASE_URL + '/api/excel/export/stores', {
+  axios.get('/api/excel/export/stores', {
     responseType: 'blob',
     headers: token ? { satoken: token } : {}
   }).then(res => {

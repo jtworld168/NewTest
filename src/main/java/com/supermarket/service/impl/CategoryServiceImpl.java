@@ -7,18 +7,37 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.supermarket.entity.Category;
 import com.supermarket.mapper.CategoryMapper;
 import com.supermarket.service.CategoryService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements CategoryService {
 
+    private static final String CACHE_CATEGORY_ALL = "cache:category:all";
+    private static final String CACHE_CATEGORY_ID = "cache:category:id:";
+    private static final long CACHE_TTL_MINUTES = 30;
+
+    @Autowired(required = false)
+    private RedisTemplate<String, Object> redisTemplate;
+
     @Override
     public Category getCategoryById(Long id) {
+        if (redisTemplate != null) {
+            @SuppressWarnings("unchecked")
+            Category cached = (Category) redisTemplate.opsForValue().get(CACHE_CATEGORY_ID + id);
+            if (cached != null) return cached;
+        }
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Category::getId, id);
-        return getOne(wrapper);
+        Category category = getOne(wrapper);
+        if (category != null && redisTemplate != null) {
+            redisTemplate.opsForValue().set(CACHE_CATEGORY_ID + id, category, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+        }
+        return category;
     }
 
     @Override
@@ -46,28 +65,61 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Override
     public boolean addCategory(Category category) {
-        return save(category);
+        boolean result = save(category);
+        if (result) evictCategoryCache();
+        return result;
     }
 
     @Override
     public boolean updateCategory(Category category) {
-        return updateById(category);
+        boolean result = updateById(category);
+        if (result) {
+            evictCategoryCache();
+            if (category.getId() != null && redisTemplate != null) {
+                redisTemplate.delete(CACHE_CATEGORY_ID + category.getId());
+            }
+        }
+        return result;
     }
 
     @Override
     public boolean deleteCategory(Long id) {
-        return removeById(id);
+        boolean result = removeById(id);
+        if (result) {
+            evictCategoryCache();
+            if (redisTemplate != null) {
+                redisTemplate.delete(CACHE_CATEGORY_ID + id);
+            }
+        }
+        return result;
     }
 
     @Override
     public boolean deleteBatchCategories(List<Long> ids) {
-        return removeByIds(ids);
+        boolean result = removeByIds(ids);
+        if (result) evictCategoryCache();
+        return result;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<Category> listAll() {
+        if (redisTemplate != null) {
+            List<Category> cached = (List<Category>) redisTemplate.opsForValue().get(CACHE_CATEGORY_ALL);
+            if (cached != null) return cached;
+        }
         LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByDesc(Category::getCreateTime);
-        return list(wrapper);
+        List<Category> categories = list(wrapper);
+        if (redisTemplate != null) {
+            redisTemplate.opsForValue().set(CACHE_CATEGORY_ALL, categories, CACHE_TTL_MINUTES, TimeUnit.MINUTES);
+        }
+        return categories;
+    }
+
+    private void evictCategoryCache() {
+        if (redisTemplate != null) {
+            redisTemplate.delete(CACHE_CATEGORY_ALL);
+        }
     }
 }

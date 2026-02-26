@@ -4,13 +4,17 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.supermarket.common.Result;
 import com.supermarket.entity.Category;
 import com.supermarket.entity.Order;
+import com.supermarket.entity.OrderItem;
 import com.supermarket.entity.Product;
+import com.supermarket.entity.User;
 import com.supermarket.enums.OrderStatus;
 import com.supermarket.entity.StoreProduct;
 import com.supermarket.service.OrderService;
+import com.supermarket.service.OrderItemService;
 import com.supermarket.service.ProductService;
 import com.supermarket.service.CategoryService;
 import com.supermarket.service.StoreProductService;
+import com.supermarket.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,9 +35,11 @@ import java.util.stream.Collectors;
 public class SalesController {
 
     private final OrderService orderService;
+    private final OrderItemService orderItemService;
     private final ProductService productService;
     private final CategoryService categoryService;
     private final StoreProductService storeProductService;
+    private final UserService userService;
 
     @Operation(summary = "获取销量总览（按天统计）")
     @GetMapping("/summary/daily")
@@ -205,5 +213,110 @@ public class SalesController {
         }
         wrapper.orderByDesc(Order::getCreateTime);
         return orderService.list(wrapper);
+    }
+
+    @Operation(summary = "获取近7天销售趋势")
+    @GetMapping("/trend/weekly")
+    public Result<List<Map<String, Object>>> getWeeklySalesTrend(
+            @Parameter(description = "店铺ID（可选）") @RequestParam(required = false) Long storeId) {
+        List<Order> orders = getCompletedOrders(storeId);
+        LocalDate today = LocalDate.now();
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            BigDecimal dayTotal = BigDecimal.ZERO;
+            int dayCount = 0;
+            for (Order order : orders) {
+                if (order.getCreateTime() != null && order.getCreateTime().toLocalDate().equals(date)) {
+                    dayTotal = dayTotal.add(order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO);
+                    dayCount++;
+                }
+            }
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("date", date.toString());
+            item.put("label", (date.getMonthValue()) + "/" + date.getDayOfMonth());
+            item.put("totalAmount", dayTotal);
+            item.put("orderCount", dayCount);
+            result.add(item);
+        }
+        return Result.success(result);
+    }
+
+    @Operation(summary = "获取近6个月用户增长趋势")
+    @GetMapping("/user-growth")
+    public Result<List<Map<String, Object>>> getUserGrowth() {
+        List<User> allUsers = userService.listAll();
+        LocalDate today = LocalDate.now();
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (int i = 5; i >= 0; i--) {
+            LocalDate monthStart = today.minusMonths(i).withDayOfMonth(1);
+            LocalDate nextMonthStart = monthStart.plusMonths(1);
+            int monthUsers = 0;
+            int totalByMonth = 0;
+            for (User user : allUsers) {
+                if (user.getCreateTime() != null) {
+                    LocalDate created = user.getCreateTime().toLocalDate();
+                    if (!created.isBefore(monthStart) && created.isBefore(nextMonthStart)) {
+                        monthUsers++;
+                    }
+                    if (created.isBefore(nextMonthStart)) {
+                        totalByMonth++;
+                    }
+                }
+            }
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("month", monthStart.getYear() + "-" + String.format("%02d", monthStart.getMonthValue()));
+            item.put("label", monthStart.getMonthValue() + "月");
+            item.put("newUsers", monthUsers);
+            item.put("totalUsers", totalByMonth);
+            result.add(item);
+        }
+        return Result.success(result);
+    }
+
+    @Operation(summary = "获取热门商品TOP10")
+    @GetMapping("/top-products")
+    public Result<List<Map<String, Object>>> getTopProducts(
+            @Parameter(description = "店铺ID（可选）") @RequestParam(required = false) Long storeId) {
+        List<Order> orders = getCompletedOrders(storeId);
+        Map<Long, Product> productMap = productService.listAll().stream()
+                .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
+
+        // Aggregate: productId -> {totalQty, totalAmount}
+        Map<Long, int[]> productStats = new LinkedHashMap<>();
+        for (Order order : orders) {
+            if (order.getProductId() != null) {
+                productStats.computeIfAbsent(order.getProductId(), k -> new int[]{0, 0});
+                productStats.get(order.getProductId())[0] += order.getQuantity() != null ? order.getQuantity() : 0;
+            }
+        }
+
+        // Also aggregate from order_items for multi-item orders
+        List<OrderItem> allItems = orderItemService.listAll();
+        Set<Long> completedOrderIds = orders.stream().map(Order::getId).collect(Collectors.toSet());
+        for (OrderItem item : allItems) {
+            if (completedOrderIds.contains(item.getOrderId()) && item.getProductId() != null) {
+                productStats.computeIfAbsent(item.getProductId(), k -> new int[]{0, 0});
+                productStats.get(item.getProductId())[0] += item.getQuantity() != null ? item.getQuantity() : 0;
+            }
+        }
+
+        List<Map<String, Object>> result = productStats.entrySet().stream()
+                .sorted((a, b) -> Integer.compare(b.getValue()[0], a.getValue()[0]))
+                .limit(10)
+                .map(entry -> {
+                    Map<String, Object> item = new LinkedHashMap<>();
+                    Product p = productMap.get(entry.getKey());
+                    item.put("productId", entry.getKey());
+                    item.put("productName", p != null ? p.getName() : "商品#" + entry.getKey());
+                    item.put("totalQuantity", entry.getValue()[0]);
+                    item.put("price", p != null ? p.getPrice() : BigDecimal.ZERO);
+                    return item;
+                })
+                .collect(Collectors.toList());
+
+        return Result.success(result);
     }
 }

@@ -12,6 +12,8 @@ public interface ProductService extends IService<Product> {
 
     Product getProductByName(String name);
 
+    Product getProductByBarcode(String barcode);
+
     List<Product> searchProductsByName(String name);
 
     List<Product> searchProducts(String keyword);

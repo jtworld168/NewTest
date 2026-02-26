@@ -2,7 +2,7 @@
   <el-container class="layout-container">
     <el-aside width="220px" class="aside">
       <div class="logo">
-        <h2>智慧零售系统</h2>
+        <h2>{{ $t('common.systemName') }}</h2>
       </div>
       <el-menu
         :default-active="activeMenu"
@@ -13,97 +13,101 @@
       >
         <el-menu-item index="/dashboard">
           <el-icon><HomeFilled /></el-icon>
-          <span>首页</span>
+          <span>{{ $t('menu.home') }}</span>
         </el-menu-item>
         <el-sub-menu index="statistics">
           <template #title>
             <el-icon><DataLine /></el-icon>
-            <span>数据统计</span>
+            <span>{{ $t('menu.statistics') }}</span>
           </template>
           <el-menu-item index="/statistics/bar">
             <el-icon><Histogram /></el-icon>
-            <span>柱状图</span>
+            <span>{{ $t('menu.barChart') }}</span>
           </el-menu-item>
           <el-menu-item index="/statistics/pie">
             <el-icon><PieChart /></el-icon>
-            <span>饼图</span>
+            <span>{{ $t('menu.pieChart') }}</span>
           </el-menu-item>
           <el-menu-item index="/statistics/line">
             <el-icon><TrendCharts /></el-icon>
-            <span>折线图</span>
+            <span>{{ $t('menu.lineChart') }}</span>
           </el-menu-item>
         </el-sub-menu>
         <el-menu-item index="/users">
           <el-icon><User /></el-icon>
-          <span>用户管理</span>
+          <span>{{ $t('menu.userMgmt') }}</span>
         </el-menu-item>
         <el-sub-menu index="product-mgmt">
           <template #title>
             <el-icon><Goods /></el-icon>
-            <span>商品管理</span>
+            <span>{{ $t('menu.productMgmt') }}</span>
           </template>
           <el-menu-item index="/categories">
             <el-icon><Menu /></el-icon>
-            <span>分类管理</span>
+            <span>{{ $t('menu.categoryMgmt') }}</span>
           </el-menu-item>
           <el-menu-item index="/products">
             <el-icon><Goods /></el-icon>
-            <span>商品列表</span>
+            <span>{{ $t('menu.productList') }}</span>
           </el-menu-item>
         </el-sub-menu>
         <el-sub-menu index="order-mgmt">
           <template #title>
             <el-icon><Document /></el-icon>
-            <span>订单管理</span>
+            <span>{{ $t('menu.orderMgmt') }}</span>
           </template>
           <el-menu-item index="/orders">
             <el-icon><Document /></el-icon>
-            <span>订单列表</span>
+            <span>{{ $t('menu.orderList') }}</span>
           </el-menu-item>
           <el-menu-item index="/order-items">
             <el-icon><List /></el-icon>
-            <span>订单明细</span>
+            <span>{{ $t('menu.orderDetail') }}</span>
           </el-menu-item>
           <el-menu-item index="/payments">
             <el-icon><CreditCard /></el-icon>
-            <span>支付管理</span>
+            <span>{{ $t('menu.paymentMgmt') }}</span>
           </el-menu-item>
         </el-sub-menu>
         <el-sub-menu index="coupon-mgmt">
           <template #title>
             <el-icon><Ticket /></el-icon>
-            <span>优惠券管理</span>
+            <span>{{ $t('menu.couponMgmt') }}</span>
           </template>
           <el-menu-item index="/coupons">
             <el-icon><Ticket /></el-icon>
-            <span>优惠券模板</span>
+            <span>{{ $t('menu.couponTemplate') }}</span>
           </el-menu-item>
           <el-menu-item index="/user-coupons">
             <el-icon><Present /></el-icon>
-            <span>用户优惠券</span>
+            <span>{{ $t('menu.userCoupon') }}</span>
           </el-menu-item>
         </el-sub-menu>
         <el-menu-item index="/cart-items">
           <el-icon><ShoppingCart /></el-icon>
-          <span>购物车管理</span>
+          <span>{{ $t('menu.cartMgmt') }}</span>
         </el-menu-item>
         <el-sub-menu index="store-mgmt">
           <template #title>
             <el-icon><OfficeBuilding /></el-icon>
-            <span>店铺管理</span>
+            <span>{{ $t('menu.storeMgmt') }}</span>
           </template>
           <el-menu-item index="/stores">
             <el-icon><OfficeBuilding /></el-icon>
-            <span>店铺列表</span>
+            <span>{{ $t('menu.storeList') }}</span>
           </el-menu-item>
           <el-menu-item index="/store-products">
             <el-icon><Goods /></el-icon>
-            <span>店铺商品</span>
+            <span>{{ $t('menu.storeProduct') }}</span>
           </el-menu-item>
         </el-sub-menu>
+        <el-menu-item index="/messages">
+          <el-icon><ChatDotRound /></el-icon>
+          <span>{{ $t('menu.messageMgmt') }}</span>
+        </el-menu-item>
         <el-menu-item index="/sales">
           <el-icon><TrendCharts /></el-icon>
-          <span>销量管理</span>
+          <span>{{ $t('menu.salesMgmt') }}</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -111,12 +115,16 @@
       <el-header class="header">
         <span class="header-title">{{ currentTitle }}</span>
         <div class="header-right">
+          <el-select v-model="currentLocale" size="small" style="width: 100px" @change="switchLocale">
+            <el-option label="中文" value="zh-CN" />
+            <el-option label="English" value="en" />
+          </el-select>
           <template v-if="userStore.currentUser">
-            <el-avatar v-if="userStore.currentUser.avatar" :src="BASE_URL + '/api' + userStore.currentUser.avatar" :size="32" />
+            <el-avatar v-if="userStore.currentUser.avatar" :src="'/api' + userStore.currentUser.avatar" :size="32" />
             <el-avatar v-else :size="32">{{ userStore.currentUser.username?.charAt(0).toUpperCase() }}</el-avatar>
             <span class="username">{{ userStore.currentUser.username }}</span>
           </template>
-          <el-button type="danger" size="small" @click="handleLogout">退出</el-button>
+          <el-button type="danger" size="small" @click="handleLogout">{{ $t('common.logout') }}</el-button>
         </div>
       </el-header>
       <el-main class="main">
@@ -127,23 +135,32 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useUserStore } from '../stores/user'
 import { logout } from '../api/auth'
-import { BASE_URL } from '../api/request'
 import { ElMessage } from 'element-plus'
 import {
   HomeFilled, User, Menu, Goods, Document, List, Ticket, CreditCard, Present, ShoppingCart,
-  DataLine, PieChart, TrendCharts, Histogram, OfficeBuilding
+  DataLine, PieChart, TrendCharts, Histogram, OfficeBuilding, ChatDotRound
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const { locale } = useI18n()
+
+const currentLocale = ref(localStorage.getItem('locale') || 'zh-CN')
 
 const activeMenu = computed(() => route.path)
-const currentTitle = computed(() => (route.meta.title as string) || '首页')
+const currentTitle = computed(() => (route.meta.title as string) || '')
+
+function switchLocale(val: string) {
+  locale.value = val
+  localStorage.setItem('locale', val)
+  location.reload()
+}
 
 async function handleLogout() {
   try {

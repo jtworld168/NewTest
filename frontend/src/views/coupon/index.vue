@@ -84,7 +84,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { listCoupons, addCoupon, updateCoupon, deleteCoupon, deleteBatchCoupons, searchCoupons, listCouponsPage } from '../../api/coupon'
+import { addCoupon, updateCoupon, deleteCoupon, deleteBatchCoupons, searchCoupons, listCouponsPage } from '../../api/coupon'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { Coupon } from '../../types'

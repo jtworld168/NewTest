@@ -103,327 +103,340 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+<script>
 import * as api from '../../utils/api.js'
 
-const cartItems = ref([])
-const productMap = ref({})
-const loading = ref(true)
-const totalPrice = ref('0.00')
-const selectedIds = ref([])
-const isEmployee = ref(false)
-const employeeTotal = ref('0.00')
-const hasEmployeeDiscount = ref(false)
-const availableCoupons = ref([])
-const selectedCouponId = ref(null)
-const selectedCouponDiscount = ref(0)
-const showCouponPicker = ref(false)
-const finalPrice = ref('0.00')
-
-async function loadCart() {
-  const app = getApp()
-  if (!app.globalData.userInfo) {
-    loading.value = false
-    cartItems.value = []
-    return
-  }
-  loading.value = true
-  try {
-    const userInfo = app.globalData.userInfo
-    isEmployee.value = Boolean(userInfo.isHotelEmployee)
-
-    const res = await api.getCartByUserId(userInfo.id)
-    const rawCartItems = res.data || []
-
-    const pMap = {}
-    await Promise.all(rawCartItems.map(item =>
-      api.getProductById(item.productId).then(pRes => {
-        if (pRes.data) pMap[item.productId] = pRes.data
-      }).catch(() => {})
-    ))
-
-    const items = rawCartItems.map(item => {
-      const product = pMap[item.productId]
-      const price = product ? product.price : 0
-      const hasDiscount = isEmployee.value && product && product.employeeDiscountRate
-      const effectivePrice = hasDiscount ? (price * product.employeeDiscountRate) : price
-      return {
-        ...item,
-        _productName: product ? product.name : '商品',
-        _price: price.toFixed(2),
-        _employeePrice: hasDiscount ? (price * product.employeeDiscountRate).toFixed(2) : '',
-        _subtotal: (effectivePrice * item.quantity).toFixed(2),
-        _imageUrl: product && product.image ? api.getFileUrl(product.image) : ''
+export default {
+  data() {
+    return {
+      cartItems: [],
+      productMap: {},
+      loading: true,
+      totalPrice: '0.00',
+      selectedIds: [],
+      isEmployee: false,
+      employeeTotal: '0.00',
+      hasEmployeeDiscount: false,
+      availableCoupons: [],
+      selectedCouponId: null,
+      selectedCouponDiscount: 0,
+      showCouponPicker: false,
+      finalPrice: '0.00'
+    }
+  },
+  onShow() {
+    this.loadCart()
+  },
+  methods: {
+    async loadCart() {
+      const app = getApp()
+      if (!app.globalData.userInfo) {
+        this.loading = false
+        this.cartItems = []
+        return
       }
-    })
+      this.loading = true
+      try {
+        const userInfo = app.globalData.userInfo
+        this.isEmployee = Boolean(userInfo.isHotelEmployee)
 
-    const selIds = items.map(item => item.id)
+        const res = await api.getCartByUserId(userInfo.id)
+        const rawCartItems = res.data || []
 
-    let coupons = []
-    try {
-      const couponRes = await api.getUserCouponsByUserIdAndStatus(userInfo.id, 'AVAILABLE')
-      const userCoupons = couponRes.data || []
-      const couponIds = [...new Set(userCoupons.map(uc => uc.couponId).filter(Boolean))]
-      const couponMap = {}
-      await Promise.all(couponIds.map(id =>
-        api.getCouponById(id).then(cRes => {
-          if (cRes.data) couponMap[id] = cRes.data
-        }).catch(() => {})
-      ))
-      coupons = userCoupons.map(uc => ({
-        ...uc,
-        couponName: couponMap[uc.couponId] ? couponMap[uc.couponId].name : '优惠券',
-        discount: couponMap[uc.couponId] ? couponMap[uc.couponId].discount : 0,
-        minAmount: couponMap[uc.couponId] ? couponMap[uc.couponId].minAmount : 0
-      }))
-    } catch (e) {
-      console.error('Failed to load coupons:', e)
-    }
+        const pMap = {}
+        await Promise.all(rawCartItems.map(item =>
+          api.getProductById(item.productId).then(pRes => {
+            if (pRes.data) pMap[item.productId] = pRes.data
+          }).catch(() => {})
+        ))
 
-    cartItems.value = items
-    productMap.value = pMap
-    selectedIds.value = selIds
-    availableCoupons.value = coupons
-    selectedCouponId.value = null
-    selectedCouponDiscount.value = 0
-    loading.value = false
-    calculateTotal()
-  } catch (e) {
-    console.error('Failed to load cart:', e)
-    loading.value = false
-  }
-}
+        const items = rawCartItems.map(item => {
+          const product = pMap[item.productId]
+          const price = product ? product.price : 0
+          const hasDiscount = this.isEmployee && product && product.employeeDiscountRate
+          const effectivePrice = hasDiscount ? (price * product.employeeDiscountRate) : price
+          return {
+            ...item,
+            _productName: product ? product.name : '商品',
+            _price: price.toFixed(2),
+            _employeePrice: hasDiscount ? (price * product.employeeDiscountRate).toFixed(2) : '',
+            _subtotal: (effectivePrice * item.quantity).toFixed(2),
+            _imageUrl: product && product.image ? api.getFileUrl(product.image) : ''
+          }
+        })
 
-function toggleSelect(id) {
-  const idx = selectedIds.value.indexOf(id)
-  if (idx > -1) {
-    selectedIds.value.splice(idx, 1)
-  } else {
-    selectedIds.value.push(id)
-  }
-  calculateTotal()
-}
+        const selIds = items.map(item => item.id)
 
-function toggleSelectAll() {
-  if (selectedIds.value.length === cartItems.value.length) {
-    selectedIds.value = []
-  } else {
-    selectedIds.value = cartItems.value.map(item => item.id)
-  }
-  calculateTotal()
-}
-
-function calculateTotal() {
-  let originalTotal = 0
-  let empTotal = 0
-  let hasEmpDiscount = false
-
-  cartItems.value.forEach(item => {
-    if (selectedIds.value.includes(item.id)) {
-      const product = productMap.value[item.productId]
-      if (product) {
-        const itemOriginal = product.price * item.quantity
-        originalTotal += itemOriginal
-        if (isEmployee.value && product.employeeDiscountRate) {
-          empTotal += product.price * product.employeeDiscountRate * item.quantity
-          hasEmpDiscount = true
-        } else {
-          empTotal += itemOriginal
-        }
-      }
-    }
-  })
-
-  let basePrice = isEmployee.value && hasEmpDiscount ? empTotal : originalTotal
-  let couponDiscount = 0
-  if (!isEmployee.value && selectedCouponId.value) {
-    const coupon = availableCoupons.value.find(c => c.id === selectedCouponId.value)
-    if (coupon && originalTotal >= coupon.minAmount) {
-      couponDiscount = coupon.discount
-    }
-  }
-
-  const final = Math.max(0, basePrice - couponDiscount)
-  totalPrice.value = originalTotal.toFixed(2)
-  employeeTotal.value = empTotal.toFixed(2)
-  hasEmployeeDiscount.value = hasEmpDiscount
-  selectedCouponDiscount.value = couponDiscount
-  finalPrice.value = final.toFixed(2)
-}
-
-function toggleCouponPicker() {
-  if (isEmployee.value) {
-    uni.showToast({ title: '员工折扣与优惠券不可叠加', icon: 'none' })
-    return
-  }
-  showCouponPicker.value = !showCouponPicker.value
-}
-
-function selectCoupon(couponId) {
-  if (selectedCouponId.value === couponId) {
-    selectedCouponId.value = null
-  } else {
-    selectedCouponId.value = couponId
-  }
-  showCouponPicker.value = false
-  calculateTotal()
-}
-
-function clearCoupon() {
-  selectedCouponId.value = null
-  showCouponPicker.value = false
-  calculateTotal()
-}
-
-async function changeQuantity(id, action) {
-  const item = cartItems.value.find(i => i.id === id)
-  if (!item) return
-  let newQuantity = item.quantity
-  if (action === 'add') {
-    newQuantity++
-  } else if (action === 'minus') {
-    if (newQuantity <= 1) {
-      deleteItem(id)
-      return
-    }
-    newQuantity--
-  }
-  try {
-    await api.updateCartItem({ id: item.id, userId: item.userId, productId: item.productId, quantity: newQuantity })
-    loadCart()
-  } catch (err) {
-    uni.showToast({ title: '更新失败', icon: 'error' })
-  }
-}
-
-function deleteItem(id) {
-  uni.showModal({
-    title: '提示',
-    content: '确定要移除该商品吗？',
-    success: async (res) => {
-      if (res.confirm) {
+        let coupons = []
         try {
-          await api.deleteCartItem(id)
-          uni.showToast({ title: '已移除', icon: 'success' })
-          loadCart()
-        } catch (err) {
-          uni.showToast({ title: '移除失败', icon: 'error' })
+          const couponRes = await api.getUserCouponsByUserIdAndStatus(userInfo.id, 'AVAILABLE')
+          const userCoupons = couponRes.data || []
+          const couponIds = [...new Set(userCoupons.map(uc => uc.couponId).filter(Boolean))]
+          const couponMap = {}
+          await Promise.all(couponIds.map(id =>
+            api.getCouponById(id).then(cRes => {
+              if (cRes.data) couponMap[id] = cRes.data
+            }).catch(() => {})
+          ))
+          coupons = userCoupons.map(uc => ({
+            ...uc,
+            couponName: couponMap[uc.couponId] ? couponMap[uc.couponId].name : '优惠券',
+            discount: couponMap[uc.couponId] ? couponMap[uc.couponId].discount : 0,
+            minAmount: couponMap[uc.couponId] ? couponMap[uc.couponId].minAmount : 0
+          }))
+        } catch (e) {
+          console.error('Failed to load coupons:', e)
         }
+
+        this.cartItems = items
+        this.productMap = pMap
+        this.selectedIds = selIds
+        this.availableCoupons = coupons
+        this.selectedCouponId = null
+        this.selectedCouponDiscount = 0
+        this.loading = false
+        this.calculateTotal()
+      } catch (e) {
+        console.error('Failed to load cart:', e)
+        this.loading = false
       }
-    }
-  })
-}
+    },
 
-function doClearCart() {
-  const app = getApp()
-  if (!app.globalData.userInfo) return
-  uni.showModal({
-    title: '提示',
-    content: '确定要清空购物车吗？',
-    success: async (res) => {
-      if (res.confirm) {
-        try {
-          await api.clearCart(app.globalData.userInfo.id)
-          uni.showToast({ title: '已清空', icon: 'success' })
-          loadCart()
-        } catch (err) {
-          uni.showToast({ title: '清空失败', icon: 'error' })
-        }
+    toggleSelect(id) {
+      const idx = this.selectedIds.indexOf(id)
+      if (idx > -1) {
+        this.selectedIds.splice(idx, 1)
+      } else {
+        this.selectedIds.push(id)
       }
-    }
-  })
-}
+      this.calculateTotal()
+    },
 
-function checkout() {
-  const app = getApp()
-  if (!app.globalData.userInfo) {
-    uni.navigateTo({ url: '/pages/login/login' })
-    return
-  }
-  const selectedItems = cartItems.value.filter(item => selectedIds.value.includes(item.id))
-  if (selectedItems.length === 0) {
-    uni.showToast({ title: '请选择商品', icon: 'none' })
-    return
-  }
+    toggleSelectAll() {
+      if (this.selectedIds.length === this.cartItems.length) {
+        this.selectedIds = []
+      } else {
+        this.selectedIds = this.cartItems.map(item => item.id)
+      }
+      this.calculateTotal()
+    },
 
-  const totalForCoupon = parseFloat(totalPrice.value)
-  if (!isEmployee.value && !selectedCouponId.value && availableCoupons.value.length > 0) {
-    const usable = availableCoupons.value.filter(c => totalForCoupon >= c.minAmount)
-    if (usable.length > 0) {
-      uni.showModal({
-        title: '提示',
-        content: '您有' + usable.length + '张可用优惠券，是否使用？',
-        confirmText: '去选券',
-        cancelText: '不使用',
-        success: (res) => {
-          if (res.confirm) {
-            showCouponPicker.value = true
-          } else {
-            doCheckout(selectedItems, null)
+    calculateTotal() {
+      let originalTotal = 0
+      let empTotal = 0
+      let hasEmpDiscount = false
+
+      this.cartItems.forEach(item => {
+        if (this.selectedIds.includes(item.id)) {
+          const product = this.productMap[item.productId]
+          if (product) {
+            const itemOriginal = product.price * item.quantity
+            originalTotal += itemOriginal
+            if (this.isEmployee && product.employeeDiscountRate) {
+              empTotal += product.price * product.employeeDiscountRate * item.quantity
+              hasEmpDiscount = true
+            } else {
+              empTotal += itemOriginal
+            }
           }
         }
       })
-      return
-    }
-  }
-  doCheckout(selectedItems, (!isEmployee.value && selectedCouponId.value) ? selectedCouponId.value : null)
-}
 
-async function doCheckout(selectedItems, couponId) {
-  const app = getApp()
-  try {
-    uni.showLoading({ title: '创建订单中...' })
-
-    // Build multi-item order: one order with all selected products
-    const items = selectedItems.map(item => ({
-      productId: item.productId,
-      quantity: item.quantity
-    }))
-
-    const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, couponId)
-    const order = res.data
-
-    // Delete cart items after order creation
-    for (const item of selectedItems) {
-      await api.deleteCartItem(item.id)
-    }
-
-    uni.hideLoading()
-
-    if (selectedCouponId.value) {
-      try {
-        await api.updateUserCoupon({
-          id: selectedCouponId.value,
-          status: 'USED',
-          useTime: new Date().toISOString().replace('T', ' ').substring(0, 19)
-        })
-      } catch (err) {
-        console.error('Failed to mark coupon as used:', err)
+      let basePrice = this.isEmployee && hasEmpDiscount ? empTotal : originalTotal
+      let couponDiscount = 0
+      if (!this.isEmployee && this.selectedCouponId) {
+        const coupon = this.availableCoupons.find(c => c.id === this.selectedCouponId)
+        if (coupon && originalTotal >= coupon.minAmount) {
+          couponDiscount = coupon.discount
+        }
       }
-    }
 
-    if (order && order.id) {
-      uni.navigateTo({ url: '/pages/payment/payment?orderId=' + order.id + '&amount=' + (order.totalAmount || finalPrice.value) })
-    } else {
-      uni.showToast({ title: '下单成功', icon: 'success' })
-      setTimeout(() => {
-        loadCart()
-        uni.switchTab({ url: '/pages/orders/orders' })
-      }, 1500)
+      const final = Math.max(0, basePrice - couponDiscount)
+      this.totalPrice = originalTotal.toFixed(2)
+      this.employeeTotal = empTotal.toFixed(2)
+      this.hasEmployeeDiscount = hasEmpDiscount
+      this.selectedCouponDiscount = couponDiscount
+      this.finalPrice = final.toFixed(2)
+    },
+
+    toggleCouponPicker() {
+      if (this.isEmployee) {
+        uni.showToast({ title: '员工折扣与优惠券不可叠加', icon: 'none' })
+        return
+      }
+      this.showCouponPicker = !this.showCouponPicker
+    },
+
+    selectCoupon(couponId) {
+      if (this.selectedCouponId === couponId) {
+        this.selectedCouponId = null
+      } else {
+        this.selectedCouponId = couponId
+      }
+      this.showCouponPicker = false
+      this.calculateTotal()
+    },
+
+    clearCoupon() {
+      this.selectedCouponId = null
+      this.showCouponPicker = false
+      this.calculateTotal()
+    },
+
+    async changeQuantity(id, action) {
+      const item = this.cartItems.find(i => i.id === id)
+      if (!item) return
+      let newQuantity = item.quantity
+      if (action === 'add') {
+        newQuantity++
+      } else if (action === 'minus') {
+        if (newQuantity <= 1) {
+          this.deleteItem(id)
+          return
+        }
+        newQuantity--
+      }
+      try {
+        await api.updateCartItem({ id: item.id, userId: item.userId, productId: item.productId, quantity: newQuantity })
+        this.loadCart()
+      } catch (err) {
+        uni.showToast({ title: '更新失败', icon: 'error' })
+      }
+    },
+
+    deleteItem(id) {
+      uni.showModal({
+        title: '提示',
+        content: '确定要移除该商品吗？',
+        success: async (res) => {
+          if (res.confirm) {
+            try {
+              await api.deleteCartItem(id)
+              uni.showToast({ title: '已移除', icon: 'success' })
+              this.loadCart()
+            } catch (err) {
+              uni.showToast({ title: '移除失败', icon: 'error' })
+            }
+          }
+        }
+      })
+    },
+
+    doClearCart() {
+      const app = getApp()
+      if (!app.globalData.userInfo) return
+      uni.showModal({
+        title: '提示',
+        content: '确定要清空购物车吗？',
+        success: async (res) => {
+          if (res.confirm) {
+            try {
+              await api.clearCart(app.globalData.userInfo.id)
+              uni.showToast({ title: '已清空', icon: 'success' })
+              this.loadCart()
+            } catch (err) {
+              uni.showToast({ title: '清空失败', icon: 'error' })
+            }
+          }
+        }
+      })
+    },
+
+    checkout() {
+      const app = getApp()
+      if (!app.globalData.userInfo) {
+        uni.navigateTo({ url: '/pages/login/login' })
+        return
+      }
+      const selectedItems = this.cartItems.filter(item => this.selectedIds.includes(item.id))
+      if (selectedItems.length === 0) {
+        uni.showToast({ title: '请选择商品', icon: 'none' })
+        return
+      }
+
+      // Require store selection for checkout
+      const storeId = app.globalData.selectedStoreId
+      if (!storeId) {
+        uni.showToast({ title: '请先在首页选择店铺', icon: 'none' })
+        return
+      }
+
+      const totalForCoupon = parseFloat(this.totalPrice)
+      if (!this.isEmployee && !this.selectedCouponId && this.availableCoupons.length > 0) {
+        const usable = this.availableCoupons.filter(c => totalForCoupon >= c.minAmount)
+        if (usable.length > 0) {
+          uni.showModal({
+            title: '提示',
+            content: '您有' + usable.length + '张可用优惠券，是否使用？',
+            confirmText: '去选券',
+            cancelText: '不使用',
+            success: (res) => {
+              if (res.confirm) {
+                this.showCouponPicker = true
+              } else {
+                this.doCheckout(selectedItems, null)
+              }
+            }
+          })
+          return
+        }
+      }
+      this.doCheckout(selectedItems, (!this.isEmployee && this.selectedCouponId) ? this.selectedCouponId : null)
+    },
+
+    async doCheckout(selectedItems, couponId) {
+      const app = getApp()
+      try {
+        uni.showLoading({ title: '创建订单中...' })
+
+        // Build multi-item order: one order with all selected products
+        const items = selectedItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity
+        }))
+
+        const res = await api.addMultiItemOrder(app.globalData.userInfo.id, items, couponId, app.globalData.selectedStoreId || null)
+        const order = res.data
+
+        // Delete cart items after order creation
+        for (const item of selectedItems) {
+          await api.deleteCartItem(item.id)
+        }
+
+        uni.hideLoading()
+
+        if (this.selectedCouponId) {
+          try {
+            await api.updateUserCoupon({
+              id: this.selectedCouponId,
+              status: 'USED',
+              useTime: new Date().toISOString().replace('T', ' ').substring(0, 19)
+            })
+          } catch (err) {
+            console.error('Failed to mark coupon as used:', err)
+          }
+        }
+
+        if (order && order.id) {
+          uni.navigateTo({ url: '/pages/payment/payment?orderId=' + order.id + '&amount=' + (order.totalAmount || this.finalPrice) })
+        } else {
+          uni.showToast({ title: '下单成功', icon: 'success' })
+          setTimeout(() => {
+            this.loadCart()
+            uni.switchTab({ url: '/pages/orders/orders' })
+          }, 1500)
+        }
+      } catch (err) {
+        uni.hideLoading()
+        uni.showToast({ title: '下单失败', icon: 'error' })
+      }
+    },
+
+    goShopping() {
+      uni.switchTab({ url: '/pages/index/index' })
     }
-  } catch (err) {
-    uni.hideLoading()
-    uni.showToast({ title: '下单失败', icon: 'error' })
   }
 }
-
-function goShopping() {
-  uni.switchTab({ url: '/pages/index/index' })
-}
-
-onShow(() => { loadCart() })
 </script>
 
 <style scoped>

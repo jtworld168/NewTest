@@ -26,54 +26,59 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script>
 import * as api from '../../utils/api.js'
 
-const username = ref('')
-const password = ref('')
-const loading = ref(false)
-
-async function doLogin() {
-  if (!username.value.trim()) {
-    uni.showToast({ title: '请输入用户名', icon: 'none' })
-    return
-  }
-  if (!password.value.trim()) {
-    uni.showToast({ title: '请输入密码', icon: 'none' })
-    return
-  }
-
-  loading.value = true
-  try {
-    const res = await api.login(username.value.trim(), password.value.trim())
-    if (res.code === 200 && res.data) {
-      const app = getApp()
-      const userData = res.data.userInfo || res.data
-      const token = res.data.token || res.data.satoken || ''
-
-      app.globalData.userInfo = userData
-      uni.setStorageSync('userInfo', userData)
-      if (token) {
-        uni.setStorageSync('satoken', token)
+export default {
+  data() {
+    return {
+      username: '',
+      password: '',
+      loading: false
+    }
+  },
+  methods: {
+    async doLogin() {
+      if (!this.username.trim()) {
+        uni.showToast({ title: '请输入用户名', icon: 'none' })
+        return
+      }
+      if (!this.password.trim()) {
+        uni.showToast({ title: '请输入密码', icon: 'none' })
+        return
       }
 
-      uni.showToast({ title: '登录成功', icon: 'success' })
-      setTimeout(() => {
-        uni.switchTab({ url: '/pages/index/index' })
-      }, 1500)
-    } else {
-      uni.showToast({ title: res.message || '登录失败', icon: 'none' })
-    }
-  } catch (e) {
-    uni.showToast({ title: '网络错误', icon: 'error' })
-  } finally {
-    loading.value = false
-  }
-}
+      this.loading = true
+      try {
+        const res = await api.login(this.username.trim(), this.password.trim())
+        if (res.code === 200 && res.data) {
+          const app = getApp()
+          const userData = res.data.userInfo || res.data
+          const token = res.data.token || res.data.satoken || ''
 
-function goRegister() {
-  uni.navigateTo({ url: '/pages/register/register' })
+          app.globalData.userInfo = userData
+          uni.setStorageSync('userInfo', userData)
+          if (token) {
+            uni.setStorageSync('satoken', token)
+          }
+
+          uni.showToast({ title: '登录成功', icon: 'success' })
+          setTimeout(() => {
+            uni.switchTab({ url: '/pages/index/index' })
+          }, 1500)
+        } else {
+          uni.showToast({ title: res.message || '登录失败', icon: 'none' })
+        }
+      } catch (e) {
+        uni.showToast({ title: '网络错误', icon: 'error' })
+      } finally {
+        this.loading = false
+      }
+    },
+    goRegister() {
+      uni.navigateTo({ url: '/pages/register/register' })
+    }
+  }
 }
 </script>
 

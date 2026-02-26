@@ -22,10 +22,10 @@
         <el-table-column type="selection" width="50" />
         <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="userId" label="用户" width="120">
-          <template #default="{ row }">{{ userMap[row.userId] || '用户' + row.userId }}</template>
+          <template #default="{ row }">{{ row.userName || '用户' + row.userId }}</template>
         </el-table-column>
         <el-table-column prop="couponId" label="优惠券" width="140">
-          <template #default="{ row }">{{ couponMap[row.couponId] || '优惠券' + row.couponId }}</template>
+          <template #default="{ row }">{{ row.couponName || '优惠券' + row.couponId }}</template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
@@ -76,22 +76,40 @@
         <el-button type="primary" @click="handleSubmit">确定</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="distributeDialogVisible" title="一键发放优惠券给所有用户" width="500">
+      <el-form label-width="120px">
+        <el-form-item label="优惠券模板">
+          <el-select v-model="selectedDistributeCouponId" placeholder="请选择优惠券模板" style="width: 100%" filterable>
+            <el-option v-for="c in coupons" :key="c.id" :label="c.name" :value="c.id">
+              <span>{{ c.name }}</span>
+              <span style="float: right; color: #999; font-size: 12px">ID: {{ c.id }}</span>
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="优惠券ID">
+          <el-input :model-value="selectedDistributeCouponId ? String(selectedDistributeCouponId) : ''" disabled />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="distributeDialogVisible = false">取消</el-button>
+        <el-button type="primary" :disabled="!selectedDistributeCouponId" @click="handleConfirmDistribute">确定发放</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { listUserCoupons, getUserCouponsByStatus, addUserCoupon, updateUserCoupon, deleteUserCoupon, deleteBatchUserCoupons, listUserCouponsPage, distributeToAllUsers } from '../../api/userCoupon'
-import { listUsers } from '../../api/user'
+import { ref, reactive, onMounted } from 'vue'
+import { getUserCouponsByStatus, addUserCoupon, updateUserCoupon, deleteUserCoupon, deleteBatchUserCoupons, listUserCouponsPage, distributeToAllUsers } from '../../api/userCoupon'
 import { listCoupons } from '../../api/coupon'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance } from 'element-plus'
-import type { UserCoupon, User, Coupon } from '../../types'
+import type { UserCoupon, Coupon } from '../../types'
 
 const statusMap: Record<string, string> = { AVAILABLE: '可用', USED: '已使用', EXPIRED: '已过期' }
-const tableData = ref<UserCoupon[]>([])
+const tableData = ref<any[]>([])
 const selectedIds = ref<number[]>([])
-const users = ref<User[]>([])
 const coupons = ref<Coupon[]>([])
 const filterStatus = ref('')
 const dialogVisible = ref(false)
@@ -101,17 +119,8 @@ const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 
-const userMap = computed(() => {
-  const map: Record<number, string> = {}
-  users.value.forEach(u => { if (u.id) map[u.id] = u.username })
-  return map
-})
-
-const couponMap = computed(() => {
-  const map: Record<number, string> = {}
-  coupons.value.forEach(c => { if (c.id) map[c.id] = c.name })
-  return map
-})
+const distributeDialogVisible = ref(false)
+const selectedDistributeCouponId = ref<number | undefined>(undefined)
 
 const defaultForm = (): UserCoupon => ({ userId: 1, couponId: 1, status: 'AVAILABLE' as any })
 const form = reactive<UserCoupon>(defaultForm())
@@ -180,29 +189,21 @@ async function handleDistribute() {
     ElMessage.warning('暂无优惠券模板')
     return
   }
-  try {
-    const { value } = await ElMessageBox.prompt('请选择要发放的优惠券ID', '一键发放优惠券给所有用户', {
-      inputValue: coupons.value[0]?.id?.toString() || '',
-      inputPlaceholder: '优惠券ID',
-      confirmButtonText: '确定发放',
-      cancelButtonText: '取消',
-      inputValidator: (v: string) => {
-        if (!v || isNaN(Number(v))) return '请输入有效的优惠券ID'
-        return true
-      }
-    })
-    await distributeToAllUsers(Number(value))
-    ElMessage.success('发放成功')
-    loadData()
-  } catch {
-    // cancelled
-  }
+  distributeDialogVisible.value = true
+  selectedDistributeCouponId.value = undefined
+}
+
+async function handleConfirmDistribute() {
+  if (!selectedDistributeCouponId.value) return
+  await distributeToAllUsers(selectedDistributeCouponId.value)
+  ElMessage.success('发放成功')
+  distributeDialogVisible.value = false
+  loadData()
 }
 
 onMounted(async () => {
   try {
-    const [userRes, couponRes] = await Promise.all([listUsers(), listCoupons()])
-    users.value = userRes.data || []
+    const couponRes = await listCoupons()
     coupons.value = couponRes.data || []
   } catch {}
   loadData()

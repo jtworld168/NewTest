@@ -44,59 +44,64 @@
   </view>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+<script>
 import * as api from '../../utils/api.js'
 
-const coupons = ref([])
-const loading = ref(true)
-const currentTab = ref('AVAILABLE')
-const tabs = ref([
-  { key: 'AVAILABLE', name: '可使用' },
-  { key: 'USED', name: '已使用' },
-  { key: 'EXPIRED', name: '已过期' }
-])
+export default {
+  data() {
+    return {
+      coupons: [],
+      loading: true,
+      currentTab: 'AVAILABLE',
+      tabs: [
+        { key: 'AVAILABLE', name: '可使用' },
+        { key: 'USED', name: '已使用' },
+        { key: 'EXPIRED', name: '已过期' }
+      ]
+    }
+  },
+  onShow() {
+    this.loadCoupons()
+  },
+  methods: {
+    async loadCoupons() {
+      const app = getApp()
+      if (!app.globalData.userInfo) {
+        this.loading = false
+        this.coupons = []
+        return
+      }
+      this.loading = true
+      try {
+        const res = await api.getUserCouponsByUserId(app.globalData.userInfo.id)
+        const userCoupons = res.data || []
 
-async function loadCoupons() {
-  const app = getApp()
-  if (!app.globalData.userInfo) {
-    loading.value = false
-    coupons.value = []
-    return
-  }
-  loading.value = true
-  try {
-    const res = await api.getUserCouponsByUserId(app.globalData.userInfo.id)
-    const userCoupons = res.data || []
+        const couponIds = [...new Set(userCoupons.map(uc => uc.couponId).filter(Boolean))]
+        const couponMap = {}
+        await Promise.all(couponIds.map(id =>
+          api.getCouponById(id).then(cRes => {
+            if (cRes.data) couponMap[id] = cRes.data
+          }).catch(() => {})
+        ))
 
-    const couponIds = [...new Set(userCoupons.map(uc => uc.couponId).filter(Boolean))]
-    const couponMap = {}
-    await Promise.all(couponIds.map(id =>
-      api.getCouponById(id).then(cRes => {
-        if (cRes.data) couponMap[id] = cRes.data
-      }).catch(() => {})
-    ))
-
-    coupons.value = userCoupons.map(uc => ({
-      ...uc,
-      couponName: couponMap[uc.couponId] ? couponMap[uc.couponId].name : '优惠券',
-      discount: couponMap[uc.couponId] ? couponMap[uc.couponId].discount : 0,
-      minAmount: couponMap[uc.couponId] ? couponMap[uc.couponId].minAmount : 0,
-      endTime: couponMap[uc.couponId] ? couponMap[uc.couponId].endTime : ''
-    }))
-    loading.value = false
-  } catch (e) {
-    console.error('Failed to load coupons:', e)
-    loading.value = false
+        this.coupons = userCoupons.map(uc => ({
+          ...uc,
+          couponName: couponMap[uc.couponId] ? couponMap[uc.couponId].name : '优惠券',
+          discount: couponMap[uc.couponId] ? couponMap[uc.couponId].discount : 0,
+          minAmount: couponMap[uc.couponId] ? couponMap[uc.couponId].minAmount : 0,
+          endTime: couponMap[uc.couponId] ? couponMap[uc.couponId].endTime : ''
+        }))
+        this.loading = false
+      } catch (e) {
+        console.error('Failed to load coupons:', e)
+        this.loading = false
+      }
+    },
+    switchTab(tab) {
+      this.currentTab = tab
+    }
   }
 }
-
-function switchTab(tab) {
-  currentTab.value = tab
-}
-
-onShow(() => { loadCoupons() })
 </script>
 
 <style scoped>

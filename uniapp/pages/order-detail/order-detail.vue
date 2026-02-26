@@ -85,123 +85,125 @@
   </view>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
-import { onLoad } from '@dcloudio/uni-app'
+<script>
 import * as api from '../../utils/api.js'
 
-const order = ref(null)
-const payment = ref(null)
-const loading = ref(true)
-
-const statusIcon = computed(() => {
-  if (!order.value) return ''
-  const map = { PENDING: '⏳', PAID: '✅', COMPLETED: '🎉', CANCELLED: '❌' }
-  return map[order.value.status] || ''
-})
-
-const statusLabel = computed(() => {
-  if (!order.value) return ''
-  const map = { PENDING: '待支付', PAID: '已支付', COMPLETED: '已完成', CANCELLED: '已取消' }
-  return map[order.value.status] || order.value.status
-})
-
-const paymentMethodText = computed(() => {
-  if (!payment.value) return ''
-  const map = { WECHAT: '微信支付', ALIPAY: '支付宝', CARD: '银行卡', CASH: '现金' }
-  return map[payment.value.paymentMethod] || payment.value.paymentMethod
-})
-
-async function loadOrderDetail(orderId) {
-  loading.value = true
-  try {
-    const res = await api.getOrderById(orderId)
-    const o = res.data
-    if (!o) {
-      uni.showToast({ title: '订单不存在', icon: 'none' })
-      loading.value = false
-      return
+export default {
+  data() {
+    return {
+      order: null,
+      payment: null,
+      loading: true
     }
-
-    let product = null
-    if (o.productId) {
-      try { product = (await api.getProductById(o.productId)).data } catch (e) {}
+  },
+  computed: {
+    statusIcon() {
+      if (!this.order) return ''
+      const map = { PENDING: '⏳', PAID: '✅', COMPLETED: '🎉', CANCELLED: '❌' }
+      return map[this.order.status] || ''
+    },
+    statusLabel() {
+      if (!this.order) return ''
+      const map = { PENDING: '待支付', PAID: '已支付', COMPLETED: '已完成', CANCELLED: '已取消' }
+      return map[this.order.status] || this.order.status
+    },
+    paymentMethodText() {
+      if (!this.payment) return ''
+      const map = { WECHAT: '微信支付', ALIPAY: '支付宝', CARD: '银行卡', CASH: '现金' }
+      return map[this.payment.paymentMethod] || this.payment.paymentMethod
     }
+  },
+  onLoad(options) {
+    if (options.id) this.loadOrderDetail(Number(options.id))
+  },
+  methods: {
+    async loadOrderDetail(orderId) {
+      this.loading = true
+      try {
+        const res = await api.getOrderById(orderId)
+        const o = res.data
+        if (!o) {
+          uni.showToast({ title: '订单不存在', icon: 'none' })
+          this.loading = false
+          return
+        }
 
-    let store = null
-    if (o.storeId) {
-      try { store = (await api.getStoreById(o.storeId)).data } catch (e) {}
+        let product = null
+        if (o.productId) {
+          try { product = (await api.getProductById(o.productId)).data } catch (e) {}
+        }
+
+        let store = null
+        if (o.storeId) {
+          try { store = (await api.getStoreById(o.storeId)).data } catch (e) {}
+        }
+
+        o._productName = product ? product.name : '商品 #' + o.productId
+        o._imageUrl = product && product.image ? api.getFileUrl(product.image) : ''
+        o._barcode = product ? (product.barcode || '') : ''
+        o._storeName = store ? store.name : ''
+        o._hasEmployeeDiscount = product && o.priceAtPurchase && o.priceAtPurchase < product.price
+        o._originalPrice = product ? (product.price * o.quantity).toFixed(2) : ''
+        o._discountAmount = o._hasEmployeeDiscount
+          ? ((product.price * o.quantity) - (o.priceAtPurchase * o.quantity)).toFixed(2)
+          : '0.00'
+        o._couponDiscount = o.userCouponId ? ((o.priceAtPurchase * o.quantity) - o.totalAmount).toFixed(2) : '0.00'
+
+        let paymentData = null
+        try {
+          const payRes = await api.getPaymentsByOrderId(orderId)
+          const payments = payRes.data || []
+          if (payments.length > 0) paymentData = payments[0]
+        } catch (e) {}
+
+        this.order = o
+        this.payment = paymentData
+        this.loading = false
+      } catch (e) {
+        console.error('Failed to load order detail:', e)
+        this.loading = false
+        uni.showToast({ title: '加载失败', icon: 'error' })
+      }
+    },
+    goToPay() {
+      uni.navigateTo({ url: '/pages/payment/payment?orderId=' + this.order.id + '&amount=' + this.order.totalAmount })
+    },
+    cancelOrder() {
+      uni.showModal({
+        title: '提示',
+        content: '确定要取消该订单吗？',
+        success: async (res) => {
+          if (res.confirm) {
+            try {
+              await api.updateOrder({ id: this.order.id, status: 'CANCELLED' })
+              uni.showToast({ title: '已取消', icon: 'success' })
+              this.loadOrderDetail(this.order.id)
+            } catch (err) {
+              uni.showToast({ title: '取消失败', icon: 'error' })
+            }
+          }
+        }
+      })
+    },
+    confirmReceive() {
+      uni.showModal({
+        title: '提示',
+        content: '确认已收到商品？',
+        success: async (res) => {
+          if (res.confirm) {
+            try {
+              await api.updateOrder({ id: this.order.id, status: 'COMPLETED' })
+              uni.showToast({ title: '已确认收货', icon: 'success' })
+              this.loadOrderDetail(this.order.id)
+            } catch (err) {
+              uni.showToast({ title: '操作失败', icon: 'error' })
+            }
+          }
+        }
+      })
     }
-
-    o._productName = product ? product.name : '商品 #' + o.productId
-    o._imageUrl = product && product.image ? api.getFileUrl(product.image) : ''
-    o._barcode = product ? (product.barcode || '') : ''
-    o._storeName = store ? store.name : ''
-    o._hasEmployeeDiscount = product && o.priceAtPurchase && o.priceAtPurchase < product.price
-    o._originalPrice = product ? (product.price * o.quantity).toFixed(2) : ''
-    o._discountAmount = o._hasEmployeeDiscount
-      ? ((product.price * o.quantity) - (o.priceAtPurchase * o.quantity)).toFixed(2)
-      : '0.00'
-    o._couponDiscount = o.userCouponId ? ((o.priceAtPurchase * o.quantity) - o.totalAmount).toFixed(2) : '0.00'
-
-    let paymentData = null
-    try {
-      const payRes = await api.getPaymentsByOrderId(orderId)
-      const payments = payRes.data || []
-      if (payments.length > 0) paymentData = payments[0]
-    } catch (e) {}
-
-    order.value = o
-    payment.value = paymentData
-    loading.value = false
-  } catch (e) {
-    console.error('Failed to load order detail:', e)
-    loading.value = false
-    uni.showToast({ title: '加载失败', icon: 'error' })
   }
 }
-
-function goToPay() {
-  uni.navigateTo({ url: '/pages/payment/payment?orderId=' + order.value.id + '&amount=' + order.value.totalAmount })
-}
-
-function cancelOrder() {
-  uni.showModal({
-    title: '提示',
-    content: '确定要取消该订单吗？',
-    success: async (res) => {
-      if (res.confirm) {
-        try {
-          await api.updateOrder({ id: order.value.id, status: 'CANCELLED' })
-          uni.showToast({ title: '已取消', icon: 'success' })
-          loadOrderDetail(order.value.id)
-        } catch (err) {
-          uni.showToast({ title: '取消失败', icon: 'error' })
-        }
-      }
-    }
-  })
-}
-
-function confirmReceive() {
-  uni.showModal({
-    title: '提示',
-    content: '确认已收到商品？',
-    success: async (res) => {
-      if (res.confirm) {
-        try {
-          await api.updateOrder({ id: order.value.id, status: 'COMPLETED' })
-          uni.showToast({ title: '已确认收货', icon: 'success' })
-          loadOrderDetail(order.value.id)
-        } catch (err) {
-          uni.showToast({ title: '操作失败', icon: 'error' })
-        }
-      }
-    }
-  })
-}
-
-onLoad((options) => { if (options.id) loadOrderDetail(Number(options.id)) })
 </script>
 
 <style scoped>

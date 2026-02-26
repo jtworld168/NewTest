@@ -25,7 +25,7 @@ export function getOrdersByUserCouponId(userCouponId: number): Promise<Result<Or
   return request.get(`/orders/getByUserCouponId/${userCouponId}`)
 }
 
-export function addOrder(params: { userId: number; productId: number; quantity: number; userCouponId?: number }): Promise<Result<void>> {
+export function addOrder(params: { userId: number; productId: number; quantity: number; userCouponId?: number; storeId?: number }): Promise<Result<void>> {
   return request.post('/orders/add', null, { params })
 }
 

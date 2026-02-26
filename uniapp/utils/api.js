@@ -94,18 +94,24 @@ export function getOrderById(id) {
   return request({ url: '/orders/get/' + id })
 }
 
-export function addOrder(userId, productId, quantity, userCouponId) {
+export function addOrder(userId, productId, quantity, userCouponId, storeId) {
   let url = '/orders/add?userId=' + userId + '&productId=' + productId + '&quantity=' + quantity
   if (userCouponId) {
     url += '&userCouponId=' + userCouponId
   }
+  if (storeId) {
+    url += '&storeId=' + storeId
+  }
   return request({ url: url, method: 'POST' })
 }
 
-export function addMultiItemOrder(userId, items, userCouponId) {
+export function addMultiItemOrder(userId, items, userCouponId, storeId) {
   var data = { userId: userId, items: items }
   if (userCouponId) {
     data.userCouponId = userCouponId
+  }
+  if (storeId) {
+    data.storeId = storeId
   }
   return request({ url: '/orders/addMultiItem', method: 'POST', data: data })
 }
@@ -180,6 +186,24 @@ export function getStoreById(id) {
   return request({ url: '/stores/get/' + id })
 }
 
+// ==================== Message ====================
+
+export function getUserMessages(userId) {
+  return request({ url: '/messages/user/' + userId, method: 'GET' })
+}
+
+export function getUnreadCount(userId) {
+  return request({ url: '/messages/unread/' + userId, method: 'GET' })
+}
+
+export function markMessageAsRead(id) {
+  return request({ url: '/messages/read/' + id, method: 'PUT' })
+}
+
+export function markAllMessagesAsRead(userId) {
+  return request({ url: '/messages/readAll/' + userId, method: 'PUT' })
+}
+
 // ==================== File ====================
 
 export function getFileUrl(filename) {
@@ -219,5 +243,9 @@ export default {
   getPaymentsByOrderId,
   getStoreList,
   getStoreById,
-  getFileUrl
+  getFileUrl,
+  getUserMessages,
+  getUnreadCount,
+  markMessageAsRead,
+  markAllMessagesAsRead
 }
